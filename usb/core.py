@@ -61,6 +61,38 @@ class _InterfaceClaimPolicy(object):
     def __del__(self):
         self.release_interfaces()
 
+# Map the bInterfaceNumber field with
+# the active alternate setting
+class _AlternateSettingMapper(object):
+    def __init__(self):
+        self.alt_map = {}
+    def __setitem__(self, intf, alt):
+        self.alt_map[intf] = alt
+    def __getitem__(self, intf):
+        try:
+            return self.alt_map[intf]
+        except KeyError:
+            self.alt_map[intf] = 0
+            return 0
+
+# Map the endpoint address and the
+# endpoint type
+class _EndpointTypeMapper(object):
+    def __init__(self, dev):
+        self.dev = dev
+        self.ep_map = {}
+    def get(self, ep, cfg, intf, alt):
+        try:
+            return self.ep_map[ep]
+        except KeyError:
+            l = filter(lambda e: ep == e.bEndpointAddress, (e for e in Interface(dev, intf, alt, cfg)))
+            if len(l) == 0:
+                raise USBError('Invalid endpoint address %02X' % (ep))
+            type = util.endpoint__type(l[0].bmAttributes)
+            self.ep_map[ep] = type
+            return type
+
+
 class USBError(IOError):
     r"""Exception class for USB errors."""
     pass
@@ -81,10 +113,11 @@ class Endpoint(object):
             configuration - the logical configuration index for which the Endpoint belongs to.
         """
         self.device = device
-        self.interface = interface
+        intf = Interface(device, interface, alternate_setting, configuration)
+        self.interface = intf.bInterfaceNumber
 
-        desc = device._Device__devmgr.backend.get_endpoint_descriptor(
-                    device._Device__devmgr.dev,
+        desc = device.devmgr.backend.get_endpoint_descriptor(
+                    device.devmgr.dev,
                     endpoint,
                     interface,
                     alternate_setting,
@@ -94,30 +127,13 @@ class Endpoint(object):
             ('bLength', 'bDescriptorType', 'bEndpointAddress', 'bmAttributes',
             'wMaxPacketSize', 'bInterval', 'bRefresh', 'bSynchAddress'))
 
-    def transfer(self, buffer_or_length, timeout = _DEFAULT_TIMEOUT):
-        r"""Do a data transfer through the Endpoint.
+    def write(self, data, timeout = _DEFAULT_TIMEOUT):
+        r"""Write data to the endpoint."""
+        return self.device.write(self.bEndpointAddress, data, self.interface, timeout)
 
-        The transfer type and direction are automatically
-        inferred from the endpoint type.
-
-        Parameters:
-            buffer_or_length - on out transfers, it is the buffer containing
-                            the data to be trasferered. For in transfers,
-                            is the number of bytes to read.
-            timeout - timeout of the operation.
-
-        Return:
-            On write calls, the number of bytes transfered. On read calls,
-            the data read.
-        """
-        transfer_map = {util.ENDPOINT_TYPE_BULK:self.self.device.bulk_transfer,
-                        uitl.ENDPOINT_TYPE_INTERRUPT:self.device.interrupt_transfer,
-                        uitl.ENDPOINT_TYPE_ISOCHRONOUS:self.device.isochronous_transfer}
-
-        return transfer_map[util.endpoint_transfer_type(self.bmAttributes)](
-                self.bEndpointAddress,
-                buffer_or_length,
-                self.interface)
+    def read(self, size, timeout = _DEFAULT_TIMEOUT):
+        r"""Read data from the endpoint."""
+        return self.device.read(self.bEndpointAddress, size, self.interface, timeout)
 
 class Interface(object):
     r"""Represent an interface descriptor."""
@@ -139,8 +155,8 @@ class Interface(object):
         self.index = interface
         self.configuration = configuration
 
-        desc = device._Device__devmgr.backend.get_interface_descriptor(
-                    self.device._Device__devmgr.dev,
+        desc = device.devmgr.backend.get_interface_descriptor(
+                    self.device.devmgr.dev,
                     interface,
                     alternate_setting,
                     configuration)
@@ -173,13 +189,13 @@ class Configuration(object):
         self.device = device
         self.index = configuration
 
-        desc = device._Device__devmgr.backend.get_configuration_descriptor(
-                self.device._Device__devmgr.dev,
+        desc = device.devmgr.backend.get_configuration_descriptor(
+                self.device.devmgr.dev,
                 configuration)
 
         _set_attr(desc, self,
             ('bLength', 'bDescriptorType', 'wTotalLength', 'bNumInterfaces',
-             'bConfigurationValue', 'iConfiguration', 'bmAttributes', 'MaxPower'))
+             'bConfigurationValue', 'iConfiguration', 'bmAttributes', 'bMaxPower'))
 
     def set(self):
         r"""Set this configuration as the active one."""
@@ -207,9 +223,12 @@ class Device(object):
             dev - the device representation returned by backend.enumerate_devices()
             backend - the backend object.
         """
-        self.__devmgr = _DeviceManager(dev, backend)
-        self.__intf_claim = _InterfaceClaimPolicy(self.__devmgr)
-        desc = backend.get_device_descriptor(self.__devmgr.dev)
+        self.devmgr = _DeviceManager(dev, backend)
+        self.intf_claimed = _InterfaceClaimPolicy(self.devmgr)
+        desc = backend.get_device_descriptor(self.devmgr.dev)
+        self.current_configuration = -1
+        self.alt_map = _AlternateSettingMapper()
+        self.ep_map = _EndpointTypeMapper(self)
 
         _set_attr(desc, self,
             ('bLength', 'bDescriptorType', 'bcdUSB', 'bDeviceClass',
@@ -223,8 +242,16 @@ class Device(object):
         Parameters:
             configuration - the bConfigurationValue field of the desired configuration.
         """
-        self.__devmgr.open()
-        self.__devmgr.backend.set_configuration(self.__devmgr.handle, configuration_value)
+        self.devmgr.open()
+        self.devmgr.backend.set_configuration(self.devmgr.handle, configuration)
+        self.current_configuration = 0
+        # discover the configuration index
+        for c in self:
+            if c.bConfigurationValue == configuration:
+                break
+            self.current_configuration += 1
+        else:
+            assert not "Configuration not found????"
 
     def set_interface_altsetting(self, interface = 0, alternate_setting = 0):
         r"""Set the alternate setting for an interface.
@@ -233,103 +260,55 @@ class Device(object):
             interface - the bInterfaceNumber field of the interface.
             alternate_setting - the bAlternateSetting field of the interface.
         """
-        self.__intf_claim.claim(interface)
-        self.__devmgr.backend.set_interface_altsetting(interface, alternate_setting)
+        self.intf_claimed.claim(interface)
+        self.devmgr.backend.set_interface_altsetting(interface, alternate_setting)
+        self.alt_map[interface] = alternate_setting
 
     def reset(self):
         r"""Reset the device."""
-        self.__devmgr.open()
-        self.__devmgr.backend.reset_device(self.__devmgr.handle)
+        self.devmgr.open()
+        self.devmgr.backend.reset_device(self.devmgr.handle)
 
-    def bulk_transfer(self, endpoint, data_or_length, interface = 0, timeout = _DEFAULT_TIMEOUT):
-        r"""Do an USB bulk transfer.
-
-        The bulk_transfer() function writes or reads data to/from the USB device. The
-        direction of the transfer is inferred from the endpoint address.
+    def write(self, endpoint, data, interface = 0, timeout = _DEFAULT_TIMEOUT):
+        r"""Write data to the endpoint.
 
         Parameters:
-            endpoint - the endpoint address.
-            data_or_length - For out transfers, the data buffer to be transmitted.
-                             For in transfers, the number of bytes to read.
-            interface - the bInterfaceNumber field of the interface which the endpoint belongs to.
-            timeout - the timeout of the operation.
+            endpoint - endpoint address.
+            data - data to transfer.
+            interface - bInterfaceNumber.
+            timeout - operation timeout.
 
-        Return the number of bytes written (for out transfers) or the data
-        read (for in transfers).
+        Return the number of data written.
         """
-        if util.endpoint_address(endpoint) == util.ENDPOINT_OUT:
-            a = array.array('B', data_or_length)
-        else:
-            a = data_or_length
+        def get_write_fn():
+            fn_map = {util.ENDPOINT_TYPE_BULK:self.devmgr.backend.bulk_write,
+                      util.ENDPOINT_TYPE_INTR:self.devmgr.backend.intr_write,
+                      util.ENDPOINT_TYPE_ISO:self.devmgr.backend.iso_write}
+            alt = self.alt_map[interface]
+            return fn_map[self.ep_map.get(endpoint, self.current_configuration, interface, alt)]
+        self.devmgr.backend.claim_interface(self.devmgr.handle, interface)
+        return get_write_fn()(self.devmgr.handle, endpoint, interface, array.array('B', data), timeout)
 
-        self.__devmgr.open()
-
-        return self.__devmgr.backend.bulk_transfer(
-                    self.__devmgr.handle,
-                    endpoint,
-                    a,
-                    interface,
-                    timeout)
-
-    def interrupt_transfer(self, endpoint, data_or_length, interface = 0, timeout = _DEFAULT_TIMEOUT):
-        r"""Do an USB interrupt transfer.
-
-        The interrupt_transfer() function writes or reads data to/from the USB device. The
-        direction of the transfer is inferred from the endpoint address.
+    def read(self, endpoint, size, interface = 0, timeout = _DEFAULT_TIMEOUT):
+        r"""Read data from the endpoint.
 
         Parameters:
-            endpoint - the endpoint address.
-            data_or_length - For out transfers, the data buffer to be transmitted.
-                             For in transfers, the number of bytes to read.
-            interface - the bInterfaceNumber field of the interface which the endpoint belongs to.
-            timeout - the timeout of the operation.
+            endpoint - endpoint address.
+            size - number of data to read.
+            interface - bInterfaceNumber.
+            timeout - operation timeout.
 
-        Return the number of bytes written (for out transfers) or the data
-        read (for in transfers).
+        Return the data read as a array object.
         """
-        if util.endpoint_address(endpoint) == util.ENDPOINT_OUT:
-            a = array.array('B', data_or_length)
-        else:
-            a = data_or_length
+        def get_read_fn():
+            fn_map = {util.ENDPOINT_TYPE_BULK:self.devmgr.backend.bulk_read,
+                      util.ENDPOINT_TYPE_INTR:self.devmgr.backend.intr_read,
+                      util.ENDPOINT_TYPE_ISO:self.devmgr.backend.iso_read}
+            alt = self.alt_map[interface]
+            return fn_map[self.ep_map.get(endpoint, self.current_configuration, interface, alt)]
+        self.devmgr.backend.claim_interface(self.devmgr.handle, interface)
+        return get_read_fn()(self.devmgr.handle, endpoint, interface, size, timeout)
 
-        self.__devmgr.open()
-
-        return self.__devmgr.backend.bulk_transfer(
-                    self.__devmgr.handle,
-                    endpoint,
-                    a,
-                    interface,
-                    timeout)
-
-    def interrupt_transfer(self, endpoint, data_or_length, interface = 0, timeout = _DEFAULT_TIMEOUT):
-        r"""Do an USB isochronous transfer.
-
-        The isochronous_transfer() function writes or reads data to/from the USB device. The
-        direction of the transfer is inferred from the endpoint address.
-
-        Parameters:
-            endpoint - the endpoint address.
-            data_or_length - For out transfers, the data buffer to be transmitted.
-                             For in transfers, the number of bytes to read.
-            interface - the bInterfaceNumber field of the interface which the endpoint belongs to.
-            timeout - the timeout of the operation.
-
-        Return the number of bytes written (for out transfers) or the data
-        read (for in transfers).
-        """
-        if util.endpoint_address(endpoint) == util.ENDPOINT_OUT:
-            a = array.array('B', data_or_length)
-        else:
-            a = data_or_length
-
-        self.__devmgr.open()
-
-        return self.__devmgr.backend.bulk_transfer(
-                    self.__devmgr.handle,
-                    endpoint,
-                    a,
-                    interface,
-                    timeout)
 
     def ctrl_transfer(bmRequestType, bRequest, wValue, wIndex,
             data_or_wLength = None, timeout = _DEFAULT_TIMEOUT):
@@ -351,12 +330,12 @@ class Device(object):
         if util.endpoint_address(endpoint) == util.ENDPOINT_OUT:
             a = array.array('B', data_or_wLength)
         else:
-            a = data_or_wLength
+            a = (data_or_wLength is None) and 0 or data_or_wLength
 
-        self.__devmgr.open()
+        self.devmgr.open()
 
-        return self.__devmgr.backend.ctrl_transfer(
-                    self.__devmgr.handle,
+        return self.devmgr.backend.ctrl_transfer(
+                    self.devmgr.handle,
                     bmRequest,
                     bRequest,
                     wValue,
@@ -366,15 +345,15 @@ class Device(object):
 
     def is_kernel_driver_active(self, interface):
         r"""Determine if there is kernel driver associated with the interface."""
-        return self.__devmgr.backend.is_kernel_driver_active(self.__devmgr.handle, interface)
+        return self.devmgr.backend.is_kernel_driver_active(self.devmgr.handle, interface)
     
     def detach_kernel_driver(self, interface):
         r"""Detach a kernel driver."""
-        self.__devmgr.backend.detach_kernel_driver(self.__devmgr.handle, interface)
+        self.devmgr.backend.detach_kernel_driver(self.devmgr.handle, interface)
 
     def attach_kernel_driver(self, interface):
         r"""Attach a kernel driver."""
-        self.__devmgr.backend.attach_kernel_driver(self.__devmgr.handle, interface)
+        self.devmgr.backend.attach_kernel_driver(self.devmgr.handle, interface)
 
     def __iter__(self):
         r"""Iterate on the all configurations of the device"""

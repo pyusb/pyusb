@@ -67,7 +67,7 @@ class Endpoint(object):
         self.address = ep.bEndpointAddress
         self.interval = ep.bInterval
         self.maxPacketSize = ep.wMaxPacketSize
-        self.type = util.endpoint_transfer_type(ep.bmAttributes)
+        self.type = util.endpoint_type(ep.bmAttributes)
 
 class Interface(object):
     r"""Interface descriptor object"""
@@ -84,7 +84,7 @@ class Configuration(object):
     r"""Configuration descriptor object"""
     def __init__(self, cfg):
         self.iConfiguration = cfg.iConfiguration
-        self.maxPower = cfg.MaxPower << 2
+        self.maxPower = cfg.bMaxPower << 2
         self.remoteWakeup = (cfg.bmAttributes >> 5) & 1
         self.selfPowered = (cfg.bmAttributes >> 6) & 1
         self.totalLength = cfg.wTotalLength
@@ -108,7 +108,7 @@ class DeviceHandle(object):
                 timeout: operation timeout in miliseconds. (default: 100)
                          Returns the number of bytes written.
         """
-        return self.dev.bulk_transfer(endpoint, buffer, self.__claimed_interface, timeout)
+        return self.dev.write(endpoint, buffer, self.__claimed_interface, timeout)
 
     def bulkRead(endpoint, size, timeout = 100):
         r"""Performs a bulk read request to the endpoint specified.
@@ -119,7 +119,7 @@ class DeviceHandle(object):
                 timeout: operation timeout in miliseconds. (default: 100)
             Return a tuple with the data read.
         """
-        return self.dev.bulk_transfer(endpoint, size, self.__claimed_interface, timeout)
+        return self.dev.read(endpoint, size, self.__claimed_interface, timeout)
 
     def interruptWrite(endpoint, buffer, timeout = 100):
         r"""Perform a interrupt write request to the endpoint specified.
@@ -131,7 +131,7 @@ class DeviceHandle(object):
                 timeout: operation timeout in miliseconds. (default: 100)
                          Returns the number of bytes written.
         """
-        return self.dev.interrupt_transfer(endpoint, buffer, timeout = timeout)
+        return self.dev.write(endpoint, buffer, self.__claimed_interface, timeout)
 
     def interruptRead(endpoint, size, timeout = 100):
         r"""Performs a interrupt read request to the endpoint specified.
@@ -142,7 +142,7 @@ class DeviceHandle(object):
                 timeout: operation timeout in miliseconds. (default: 100)
             Return a tuple with the data read.
         """
-        return self.dev.interrupt_transfer(endpoint, size, self.__claimed_interface, timeout)
+        return self.dev.read(endpoint, size, self.__claimed_interface, timeout)
 
     def controlMsg(requestType, request, buffer, value = 0, index = 0, timeout = 100):
         r"""Perform a control request to the default control pipe on a device.

@@ -1,4 +1,4 @@
-import ctypes
+from ctypes import *
 import os
 import usb.backend
 import usb.util
@@ -9,199 +9,199 @@ import array
 _PC_PATH_MAX = 4
 _PATH_MAX = os.pathconf('.', _PC_PATH_MAX)
 
-class _usb_descriptor_header(ctypes.Structure):
+# Data structures
+
+class _usb_descriptor_header(Structure):
     _pack_ = 1
-    _fields_ = [('blength', ctypes.c_uint8),
-                ('bDescriptorType', ctypes.c_uint8)]
+    _fields_ = [('blength', c_uint8),
+                ('bDescriptorType', c_uint8)]
 
-class _usb_string_descriptor(ctypes.Structure):
+class _usb_string_descriptor(Structure):
     _pack_ = 1
-    _fields_ = [('bLength', ctypes.c_uint8),
-                ('bDescriptorType', ctypes.c_uint8),
-                ('wData', ctypes.c_uint16)]
+    _fields_ = [('bLength', c_uint8),
+                ('bDescriptorType', c_uint8),
+                ('wData', c_uint16)]
 
-class _usb_endpoint_descriptor(ctypes.Structure):
-    _fields_ = [('bLength', ctypes.c_uint8),
-                ('bDescriptorType', ctypes.c_uint8),
-                ('bEndpointAddress', ctypes.c_uint8),
-                ('bmAttributes', ctypes.c_uint8),
-                ('wMaxPacketSize', ctypes.c_uint8),
-                ('bInterval', ctypes.c_uint8),
-                ('bRefresh', ctypes.c_uint8),
-                ('bSynchAddress', ctypes.c_uint8),
-                ('extra', ctypes.POINTER(ctypes.c_uint8)),
-                ('extralen', ctypes.c_int)]
+class _usb_endpoint_descriptor(Structure):
+    _fields_ = [('bLength', c_uint8),
+                ('bDescriptorType', c_uint8),
+                ('bEndpointAddress', c_uint8),
+                ('bmAttributes', c_uint8),
+                ('wMaxPacketSize', c_uint8),
+                ('bInterval', c_uint8),
+                ('bRefresh', c_uint8),
+                ('bSynchAddress', c_uint8),
+                ('extra', POINTER(c_uint8)),
+                ('extralen', c_int)]
 
-class _usb_interface_descriptor(ctypes.Structure):
-    _fields_ = [('bLength', ctypes.c_uint8),
-                ('bDescriptorType', ctypes.c_uint8),
-                ('bInterfaceNumber', ctypes.c_uint8),
-                ('bAlternateSetting', ctypes.c_uint8),
-                ('bNumEndpoints', ctypes.c_uint8),
-                ('bInterfaceClass', ctypes.c_uint8),
-                ('bInterfaceSubClass', ctypes.c_uint8),
-                ('bInterfaceProtocol', ctypes.c_uint8),
-                ('iInterface', ctypes.c_uint8),
-                ('endpoint', ctypes.POINTER(_usb_endpoint_descriptor)),
-                ('extra', ctypes.POINTER(ctypes.c_uint8)),
-                ('extralen', ctypes.c_int)]
+class _usb_interface_descriptor(Structure):
+    _fields_ = [('bLength', c_uint8),
+                ('bDescriptorType', c_uint8),
+                ('bInterfaceNumber', c_uint8),
+                ('bAlternateSetting', c_uint8),
+                ('bNumEndpoints', c_uint8),
+                ('bInterfaceClass', c_uint8),
+                ('bInterfaceSubClass', c_uint8),
+                ('bInterfaceProtocol', c_uint8),
+                ('iInterface', c_uint8),
+                ('endpoint', POINTER(_usb_endpoint_descriptor)),
+                ('extra', POINTER(c_uint8)),
+                ('extralen', c_int)]
 
-class _usb_interface(ctypes.Structure):
-    _fields_ = [('altsetting', ctypes.POINTER(_usb_interface_descriptor)),
-                ('num_altsetting', ctypes.c_int)]
+class _usb_interface(Structure):
+    _fields_ = [('altsetting', POINTER(_usb_interface_descriptor)),
+                ('num_altsetting', c_int)]
 
-class _usb_config_descriptor(ctypes.Structure):
-    _fields_ = [('bLength', ctypes.c_uint8),
-                ('bDescriptorType', ctypes.c_uint8),
-                ('wTotalLength', ctypes.c_uint16),
-                ('bNumInterfaces', ctypes.c_uint8),
-                ('bConfigurationValue', ctypes.c_uint8),
-                ('iConfiguration', ctypes.c_uint8),
-                ('bmAttributes', ctypes.c_uint8),
-                ('MaxPower', ctypes.c_uint8),
-                ('interface', ctypes.POINTER(_usb_interface)),
-                ('extra', ctypes.POINTER(ctypes.c_uint8)),
-                ('extralen', ctypes.c_int)]
+class _usb_config_descriptor(Structure):
+    _fields_ = [('bLength', c_uint8),
+                ('bDescriptorType', c_uint8),
+                ('wTotalLength', c_uint16),
+                ('bNumInterfaces', c_uint8),
+                ('bConfigurationValue', c_uint8),
+                ('iConfiguration', c_uint8),
+                ('bmAttributes', c_uint8),
+                ('bMaxPower', c_uint8),
+                ('interface', POINTER(_usb_interface)),
+                ('extra', POINTER(c_uint8)),
+                ('extralen', c_int)]
 
-class _usb_device_descriptor(ctypes.Structure):
+class _usb_device_descriptor(Structure):
     _pack_ = 1
-    _fields_ = [('bLength', ctypes.c_uint8),
-                ('bDescriptorType', ctypes.c_uint8),
-                ('bcdUSB', ctypes.c_uint16),
-                ('bDeviceClass', ctypes.c_uint8),
-                ('bDeviceSubClass', ctypes.c_uint8),
-                ('bDeviceProtocol', ctypes.c_uint8),
-                ('bMaxPacketSize0', ctypes.c_uint8),
-                ('idVendor', ctypes.c_uint16),
-                ('idProduct', ctypes.c_uint16),
-                ('bcdDevice', ctypes.c_uint16),
-                ('iManufacturer', ctypes.c_uint8),
-                ('iProduct', ctypes.c_uint8),
-                ('iSerialNumber', ctypes.c_uint8),
-                ('bNumConfigurations', ctypes.c_uint8)]
+    _fields_ = [('bLength', c_uint8),
+                ('bDescriptorType', c_uint8),
+                ('bcdUSB', c_uint16),
+                ('bDeviceClass', c_uint8),
+                ('bDeviceSubClass', c_uint8),
+                ('bDeviceProtocol', c_uint8),
+                ('bMaxPacketSize0', c_uint8),
+                ('idVendor', c_uint16),
+                ('idProduct', c_uint16),
+                ('bcdDevice', c_uint16),
+                ('iManufacturer', c_uint8),
+                ('iProduct', c_uint8),
+                ('iSerialNumber', c_uint8),
+                ('bNumConfigurations', c_uint8)]
 
-class _usb_device(ctypes.Structure):
+class _usb_device(Structure):
     pass
 
-class _usb_bus(ctypes.Structure):
+class _usb_bus(Structure):
     pass
 
-_usb_device._fields_ = [('next', ctypes.POINTER(_usb_device)),
-                        ('prev', ctypes.POINTER(_usb_device)),
-                        ('filename', ctypes.c_int8 * (_PATH_MAX + 1)),
-                        ('bus', ctypes.POINTER(_usb_bus)),
+_usb_device._fields_ = [('next', POINTER(_usb_device)),
+                        ('prev', POINTER(_usb_device)),
+                        ('filename', c_int8 * (_PATH_MAX + 1)),
+                        ('bus', POINTER(_usb_bus)),
                         ('descriptor', _usb_device_descriptor),
-                        ('config', ctypes.POINTER(_usb_config_descriptor)),
-                        ('dev', ctypes.c_void_p),
-                        ('devnum', ctypes.c_uint8),
-                        ('num_children', ctypes.c_ubyte),
-                        ('children', ctypes.POINTER(ctypes.POINTER(_usb_device)))]
+                        ('config', POINTER(_usb_config_descriptor)),
+                        ('dev', c_void_p),
+                        ('devnum', c_uint8),
+                        ('num_children', c_ubyte),
+                        ('children', POINTER(POINTER(_usb_device)))]
 
-_usb_bus._fields_ = [('next', ctypes.POINTER(_usb_bus)),
-                    ('prev', ctypes.POINTER(_usb_bus)),
-                    ('dirname', ctypes.c_char * (_PATH_MAX + 1)),
-                    ('devices', ctypes.POINTER(_usb_device)),
-                    ('location', ctypes.c_uint32),
-                    ('root_dev', ctypes.POINTER(_usb_device))]
+_usb_bus._fields_ = [('next', POINTER(_usb_bus)),
+                    ('prev', POINTER(_usb_bus)),
+                    ('dirname', c_char * (_PATH_MAX + 1)),
+                    ('devices', POINTER(_usb_device)),
+                    ('location', c_uint32),
+                    ('root_dev', POINTER(_usb_device))]
 
-_usb_dev_handle = ctypes.c_void_p
+_usb_dev_handle = c_void_p
 
-_dll = ctypes.CDLL('libusb.so')
+_dll = CDLL('libusb.so')
+
+# Function prototypes
 
 # usb_dev_handle *usb_open(struct usb_device *dev);
-_dll.usb_open.argtypes = [ctypes.POINTER(_usb_device)]
+_dll.usb_open.argtypes = [POINTER(_usb_device)]
 _dll.usb_open.restype = _usb_dev_handle
 
 # int usb_close(usb_dev_handle *dev);
 _dll.usb_close.argtypes = [_usb_dev_handle]
 
 # int usb_get_string(usb_dev_handle *dev, int index, int langid, char *buf,size_t buflen);
-_dll.usb_get_string.argtypes = [_usb_dev_handle, ctypes.c_int, ctypes.c_int,
-                                ctypes.c_char_p, ctypes.c_size_t]
+_dll.usb_get_string.argtypes = [_usb_dev_handle, c_int, c_int, c_char_p, c_size_t]
 
 
 # int usb_get_string_simple(usb_dev_handle *dev, int index, char *buf, size_t buflen);
-_dll.usb_get_string_simple.argtypes = [_usb_dev_handle, ctypes.c_int,
-                                        ctypes.c_char_p, ctypes.c_size_t]
+_dll.usb_get_string_simple.argtypes = [_usb_dev_handle, c_int, c_char_p, c_size_t]
 
 
 # int usb_get_descriptor_by_endpoint(usb_dev_handle *udev, int ep,
 #	unsigned char type, unsigned char index, void *buf, int size);
-_dll.usb_get_descriptor_by_endpoint.argtypes = [_usb_dev_handle, ctypes.c_int, ctypes.c_ubyte,
-                                                ctypes.c_ubyte, ctypes.c_void_p, ctypes.c_int]
+_dll.usb_get_descriptor_by_endpoint.argtypes = [_usb_dev_handle, c_int, c_ubyte,
+                                                c_ubyte, c_void_p, c_int]
 
 
 # int usb_get_descriptor(usb_dev_handle *udev, unsigned char type,
 #	unsigned char index, void *buf, int size);
-_dll.usb_get_descriptor.argtypes = [_usb_dev_handle, ctypes.c_ubyte,
-                                    ctypes.c_ubyte, ctypes.c_void_p, ctypes.c_int]
+_dll.usb_get_descriptor.argtypes = [_usb_dev_handle, c_ubyte, c_ubyte,
+                                    c_void_p, c_int]
 
 
 # int usb_bulk_write(usb_dev_handle *dev, int ep, const char *bytes, int size,
 #	int timeout);
-_dll.usb_bulk_write.argtypes = [_usb_dev_handle, ctypes.c_int, ctypes.c_char_p,
-                                ctypes.c_int, ctypes.c_int]
+_dll.usb_bulk_write.argtypes = [_usb_dev_handle, c_int, c_char_p, c_int, c_int]
 
 
 # int usb_bulk_read(usb_dev_handle *dev, int ep, char *bytes, int size,
 #	int timeout);
-_dll.usb_bulk_read.argtypes = [_usb_dev_handle, ctypes.c_int, ctypes.c_char_p,
-                                ctypes.c_int, ctypes.c_int]
+_dll.usb_bulk_read.argtypes = [_usb_dev_handle, c_int, c_char_p, c_int, c_int]
 
 # int usb_interrupt_write(usb_dev_handle *dev, int ep, const char *bytes, int size,
 #         int timeout);
-_dll.usb_interrupt_write.argtypes = [_usb_dev_handle, ctypes.c_int, ctypes.c_char_p,
-                                    ctypes.c_int, ctypes.c_int]
+_dll.usb_interrupt_write.argtypes = [_usb_dev_handle, c_int, c_char_p,
+                                    c_int, c_int]
 
 # int usb_interrupt_read(usb_dev_handle *dev, int ep, char *bytes, int size,
 #         int timeout);
-_dll.usb_interrupt_read.argtypes = [_usb_dev_handle, ctypes.c_int, ctypes.c_char_p,
-                                    ctypes.c_int, ctypes.c_int]
+_dll.usb_interrupt_read.argtypes = [_usb_dev_handle, c_int, c_char_p,
+                                    c_int, c_int]
 
 # int usb_control_msg(usb_dev_handle *dev, int requesttype, int request,
 # 	int value, int index, char *bytes, int size, int timeout);
-_dll.usb_control_msg.argtypes = [_usb_dev_handle, ctypes.c_int, ctypes.c_int, ctypes.c_int,
-                                ctypes.c_int, ctypes.c_char_p, ctypes.c_int, ctypes.c_int]
+_dll.usb_control_msg.argtypes = [_usb_dev_handle, c_int, c_int, c_int,
+                                c_int, c_char_p, c_int, c_int]
 
 # int usb_set_configuration(usb_dev_handle *dev, int configuration);
-_dll.usb_set_configuration.argtypes = [_usb_dev_handle, ctypes.c_int]
+_dll.usb_set_configuration.argtypes = [_usb_dev_handle, c_int]
 
 # int usb_claim_interface(usb_dev_handle *dev, int interface);
-_dll.usb_claim_interface.argtypes = [_usb_dev_handle, ctypes.c_int]
+_dll.usb_claim_interface.argtypes = [_usb_dev_handle, c_int]
 
 # int usb_release_interface(usb_dev_handle *dev, int interface);
-_dll.usb_release_interface.argtypes = [_usb_dev_handle, ctypes.c_int]
+_dll.usb_release_interface.argtypes = [_usb_dev_handle, c_int]
 
 # int usb_set_altinterface(usb_dev_handle *dev, int alternate);
-_dll.usb_set_altinterface.argtypes = [_usb_dev_handle, ctypes.c_int]
+_dll.usb_set_altinterface.argtypes = [_usb_dev_handle, c_int]
 
 # int usb_resetep(usb_dev_handle *dev, unsigned int ep);
-_dll.usb_resetep.argtypes = [_usb_dev_handle, ctypes.c_int]
+_dll.usb_resetep.argtypes = [_usb_dev_handle, c_int]
 
 # int usb_clear_halt(usb_dev_handle *dev, unsigned int ep);
-_dll.usb_clear_halt.argtypes = [_usb_dev_handle, ctypes.c_int]
+_dll.usb_clear_halt.argtypes = [_usb_dev_handle, c_int]
 
 # int usb_reset(usb_dev_handle *dev);
 _dll.usb_reset.argtypes = [_usb_dev_handle]
 
 # char *usb_strerror(void);
 _dll.usb_strerror.argtypes = []
-_dll.usb_strerror.restype = ctypes.c_char_p
+_dll.usb_strerror.restype = c_char_p
 
 # void usb_set_debug(int level);
-_dll.usb_set_debug.argtypes = [ctypes.c_int]
+_dll.usb_set_debug.argtypes = [c_int]
 
 # struct usb_device *usb_device(usb_dev_handle *dev);
 _dll.usb_device.argtypes = [_usb_dev_handle]
-_dll.usb_device.restype = ctypes.POINTER(_usb_device)
+_dll.usb_device.restype = POINTER(_usb_device)
 
 # struct usb_bus *usb_get_busses(void);
-_dll.usb_get_busses.restype = ctypes.POINTER(_usb_bus)
+_dll.usb_get_busses.restype = POINTER(_usb_bus)
 
 def _check(retval):
     from usb.core import USBError
-    if isinstance(retval, ctypes.c_int):
-        if retval < 0:
+    if isinstance(retval, c_int):
+        if retval.value < 0:
             raise USBError(_dll.usb_strerror())
     elif retval == None:
         raise USBError(_dll.usb_strerror())
@@ -266,16 +266,17 @@ class LibUSB(usb.backend.IBackend):
     def release_interface(self, dev_handle, intf):
         _check(_dll.usb_release_interface(dev_handle, intf))
 
-    def bulk_transfer(self, dev_handle, ep, intf, data_or_length, timeout):
-        return self.__transfer(_dll.usb_bulk_write, _dll.usb_bulk_read, dev_handle, ep,
-                                intf, data_or_legnth, timeout)
-    def interrupt_transfer(self, dev_handle, ep, data_or_length, intf, timeout):
-        return self.__transfer(_dll.usb_interrupt_write, _dll.usb_interrupt_read, dev_handle, ep,
-                                intf, data_or_legnth, timeout)
+    def bulk_write(self, dev_handle, ep, intf, data, timeout):
+        return self.__write(_dll.usb_bulk_write, dev_handle, ep, intf, data, timeout)
 
-    def isochronous_transfer(self, dev_handle, ep, data_or_length, intf, timeout):
-        return self.__transfer(_dll.usb_isochronous_write, _dll.usb_isochronous_read,
-                                dev_handle, ep, intf, data_or_legnth, timeout)
+    def bulk_read(self, dev_handle, ep, intf, size, timeout):
+        return self.__read(_dll.usb_bulk_read, dev_handle, ep, intf, size, timeout)
+
+    def intr_write(self, dev_handle, ep, intf, data, timeout):
+        return self.__write(_dll.usb_interrupt_write, dev_handle, ep, intf, data, timeout)
+
+    def intr_read(self, dev_handle, ep, intf, size, timeout):
+        return self.__read(_dll.usb_interrupt_read, dev_handle, ep, intf, size, timeout)
 
     def ctrl_transfer(self, dev_handle, bmRequestType, bRequest, wValue, wIndex, data_or_wLength, timeout):
         if usb.util.ctrl_direction(bmRequestType) == usb.util.CTRL_OUT:
@@ -295,14 +296,13 @@ class LibUSB(usb.backend.IBackend):
     def detach_kernel_driver(self, dev_handle, intf):
         _check(_dll.usb_detach_kernel_driver_np(dev_handle, intf))
 
-    def __transfer(write_func, read_func, dev_handle, ep, intf, data_or_length,  timeout):
-        if usb.util.endpoint_direction == usb.util.ENDPOINT_OUT:
-            address, length = data_or_length.buffer_info()
-            length *= data_or_length.itemsize()
-            return int(_check(write_func(dev_handle, ep, address, length, timeout)))
-        else:
-            buffer = array.array('B', '\x00' * data_or_length)
-            read = int(_check(read_func(dev_handle, ep,
-                        buffer.buffer_info()[0], data_or_length, timeout)))
-            return buffer[:read]
+    def __write(self, fn, dev_handle, ep, intf, data, timeout):
+        address, length = data.buffer_info()
+        return int(_check(fn(dev_handle, ep, address, length, timeout)))
+
+    def __read(self, fn, dev_handle, ep, intf, size, timeout):
+        buffer = array.array('B', '\x00' * size)
+        address, length = buffer.buffer_info()
+        ret = int(_check(fn(dev_handle, ep, address, length, timeout)))
+        return buffer[:ret]
 

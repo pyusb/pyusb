@@ -85,15 +85,6 @@ class IBackend(object):
         """
         _not_implemented(self.set_interface_altsetting)
 
-    def get_interface_altsetting(self, dev_handle, intf):
-        r"""Return the current interface alternate setting.
-
-        Parameters:
-            dev_handle - device handle
-            intf - bInterfaceNumber field value.
-        """
-        _not_implemented(self.get_interface_altsetting)
-
     def claim_interface(self, dev_handle, intf):
         r"""Claim the interface.
 
@@ -112,47 +103,90 @@ class IBackend(object):
         """
         _not_implemented(self.release_interface)
 
-    def bulk_transfer(self, dev_handle, ep, intf, data_or_length, timeout):
-        r"""Do a bulk transfer.
+    def bulk_write(self, dev_handle, ep, intf, data, timeout):
+        r"""Do a bulk write.
 
         Parameters:
             dev_handle - device handle.
             ep - endpoint address.
             intf - bInterfaceNumber field value.
-            data_or_length - For out transfers, data to be transfered. It is expected
-                             to an instance of the array.array class. For in transfers,
-                             number of bytes to read.
+            data - Data to be written. Must be a instance of array object.
             timeout - timeout in miliseconds.
-        """
-        _not_implemented(self.bulk_transfer)
 
-    def interrupt_transfer(self, dev_handle, ep, data_or_length, intf, timeout):
-        r"""Do an interrupt transfer.
+        Return the number of bytes written.
+        """
+        _not_implemented(self.bulk_write)
+
+    def bulk_read(self, dev_handle, ep, intf, size, timeout):
+        r"""Do a bulk read.
 
         Parameters:
             dev_handle - device handle.
             ep - endpoint address.
             intf - bInterfaceNumber field value.
-            data_or_length - For out transfers, data to be transfered. It is expected
-                             to an instance of the array.array class. For in transfers,
-                             number of bytes to read.
+            size - Number of data to read.
             timeout - timeout in miliseconds.
-        """
-        _not_implemented(self.interrupt_transfer)
 
-    def isochronous_transfer(self, dev_handle, ep, data_or_length, intf, timeout):
-        r"""Do an isochronous transfer.
+        Return a array object with the data read.
+        """
+        _not_implemented(self.bulk_read)
+
+    def intr_write(self, dev_handle, ep, intf, data, timeout):
+        r"""Do a interrupt write.
 
         Parameters:
             dev_handle - device handle.
             ep - endpoint address.
             intf - bInterfaceNumber field value.
-            data_or_length - For out transfers, data to be transfered. It is expected
-                             to an instance of the array.array class. For in transfers,
-                             number of bytes to read.
+            data - Data to be written. Must be a instance of array object.
             timeout - timeout in miliseconds.
+
+        Return the number of bytes written.
         """
-        _not_implemented(self.isochronous_transfer)
+        _not_implemented(self.intr_write)
+
+    def intr_read(self, dev_handle, ep, intf, size, timeout):
+        r"""Do a interrut read.
+
+        Parameters:
+            dev_handle - device handle.
+            ep - endpoint address.
+            intf - bInterfaceNumber field value.
+            size - Number of data to read.
+            timeout - timeout in miliseconds.
+
+        Return a array object with the data read.
+        """
+        _not_implemented(self.intr_read)
+
+    def iso_write(self, dev_handle, ep, intf, data, timeout):
+        r"""Do a isochronous write.
+
+        Parameters:
+            dev_handle - device handle.
+            ep - endpoint address.
+            intf - bInterfaceNumber field value.
+            data - Data to be written. Must be a instance of array object.
+            timeout - timeout in miliseconds.
+
+        Return the number of bytes written.
+        """
+        _not_implemented(self.iso_write)
+
+    def iso_read(self, dev_handle, ep, intf, size, timeout):
+        r"""Do a isochronous read.
+
+        Parameters:
+            dev_handle - device handle.
+            ep - endpoint address.
+            intf - bInterfaceNumber field value.
+            size - Number of data to read.
+            timeout - timeout in miliseconds.
+
+        Return a array object with the data read.
+        """
+        _not_implemented(self.iso_read)
+
 
     def ctrl_transfer(self, dev_handle, bmRequestType, bRequest, wValue, wIndex, data_or_wLength, timeout):
         r"""Do a control transfer on endpoint 0.

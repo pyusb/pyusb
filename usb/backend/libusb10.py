@@ -1,6 +1,10 @@
-import ctypes
+from ctypes import *
 import usb.util
 import array
+
+# libusb.h
+
+# return codes
 
 _LIBUSB_SUCCESS = 0
 _LIBUSB_ERROR_IO = -1
@@ -17,6 +21,7 @@ _LIBUSB_ERROR_NO_MEM = -11
 _LIBUSB_ERROR_NOT_SUPPORTED = -12
 _LIBUSB_ERROR_OTHER = -99
 
+# map return codes to strings
 _str_error = {_LIBUSB_SUCCESS:'LIBUSB_SUCCESS',
             _LIBUSB_ERROR_IO:'LIBUSB_ERROR_IO',
             _LIBUSB_ERROR_INVALID_PARAM:'LIBUSB_ERROR_INVALID_PARAM',
@@ -32,168 +37,173 @@ _str_error = {_LIBUSB_SUCCESS:'LIBUSB_SUCCESS',
             _LIBUSB_ERROR_NOT_SUPPORTED:'LIBUSB_ERROR_NOT_SUPPORTED',
             _LIBUSB_ERROR_OTHER:'LIBUSB_ERROR_OTHER'}
 
-class _libusb_endpoint_descriptor(ctypes.Structure):
-    _fields_ = [('bLength', ctypes.c_uint8),
-                ('bDescriptorType', ctypes.c_uint8),
-                ('bEndpointAddress', ctypes.c_uint8),
-                ('bmAttributes', ctypes.c_uint8),
-                ('wMaxPacketSize', ctypes.c_uint16),
-                ('bInterval', ctypes.c_uint8),
-                ('bRefresh', ctypes.c_uint8),
-                ('bSynchAddress', ctypes.c_uint8),
-                ('extra', ctypes.POINTER(ctypes.c_ubyte)),
-                ('extra_length', ctypes.c_int)]
+# Data structures
 
-class _libusb_interface_descriptor(ctypes.Structure):
-    _fields_ = [('bLength', ctypes.c_uint8),
-                ('bDescriptorType', ctypes.c_uint8),
-                ('bInterfaceNumber', ctypes.c_uint8),
-                ('bAlternateSetting', ctypes.c_uint8),
-                ('bNumEndpoints', ctypes.c_uint8),
-                ('bInterfaceClass', ctypes.c_uint8),
-                ('bInterfaceSubClass', ctypes.c_uint8),
-                ('bInterfaceProtocol', ctypes.c_uint8),
-                ('endpoint', ctypes.POINTER(_libusb_endpoint_descriptor)),
-                ('extra', ctypes.POINTER(ctypes.c_ubyte)),
-                ('extra_length', ctypes.c_int)]
+class _libusb_endpoint_descriptor(Structure):
+    _fields_ = [('bLength', c_uint8),
+                ('bDescriptorType', c_uint8),
+                ('bEndpointAddress', c_uint8),
+                ('bmAttributes', c_uint8),
+                ('wMaxPacketSize', c_uint16),
+                ('bInterval', c_uint8),
+                ('bRefresh', c_uint8),
+                ('bSynchAddress', c_uint8),
+                ('extra', POINTER(c_ubyte)),
+                ('extra_length', c_int)]
 
-class _libusb_interface(ctypes.Structure):
-    _fields_ = [('altsetting', ctypes.POINTER(_libusb_interface_descriptor)),
-                ('num_altsetting', ctypes.c_int)]
+class _libusb_interface_descriptor(Structure):
+    _fields_ = [('bLength', c_uint8),
+                ('bDescriptorType', c_uint8),
+                ('bInterfaceNumber', c_uint8),
+                ('bAlternateSetting', c_uint8),
+                ('bNumEndpoints', c_uint8),
+                ('bInterfaceClass', c_uint8),
+                ('bInterfaceSubClass', c_uint8),
+                ('bInterfaceProtocol', c_uint8),
+                ('endpoint', POINTER(_libusb_endpoint_descriptor)),
+                ('extra', POINTER(c_ubyte)),
+                ('extra_length', c_int)]
 
-class _libusb_config_descriptor(ctypes.Structure):
-    _fields_ = [('bLength', ctypes.c_uint8),
-                ('bDescriptorType', ctypes.c_uint8),
-                ('wTotalLength', ctypes.c_uint16),
-                ('bNumInterfaces', ctypes.c_uint8),
-                ('bConfigurationValue', ctypes.c_uint8),
-                ('iConfiguration', ctypes.c_uint8),
-                ('bmAttributes', ctypes.c_uint8),
-                ('MaxPower', ctypes.c_uint8),
-                ('interface', ctypes.POINTER(_libusb_interface)),
-                ('extra', ctypes.POINTER(ctypes.c_ubyte)),
-                ('extra_length', ctypes.c_int)]
+class _libusb_interface(Structure):
+    _fields_ = [('altsetting', POINTER(_libusb_interface_descriptor)),
+                ('num_altsetting', c_int)]
 
-class _libusb_device_descriptor(ctypes.Structure):
-    _fields_ = [('bLength', ctypes.c_uint8),
-                ('bDescriptorType', ctypes.c_uint8),
-                ('bcdUSB', ctypes.c_uint16),
-                ('bDeviceClass', ctypes.c_uint8),
-                ('bDeviceSubClass', ctypes.c_uint8),
-                ('bDeviceProtocol', ctypes.c_uint8),
-                ('bMaxPacketSize0', ctypes.c_uint8),
-                ('idVendor', ctypes.c_uint16),
-                ('idProduct', ctypes.c_uint16),
-                ('bcdDevice', ctypes.c_uint16),
-                ('iManufacturer', ctypes.c_uint8),
-                ('iProduct', ctypes.c_uint8),
-                ('iSerialNumber', ctypes.c_uint8),
-                ('bNumConfigurations', ctypes.c_uint8)]
+class _libusb_config_descriptor(Structure):
+    _fields_ = [('bLength', c_uint8),
+                ('bDescriptorType', c_uint8),
+                ('wTotalLength', c_uint16),
+                ('bNumInterfaces', c_uint8),
+                ('bConfigurationValue', c_uint8),
+                ('iConfiguration', c_uint8),
+                ('bmAttributes', c_uint8),
+                ('bMaxPower', c_uint8),
+                ('interface', POINTER(_libusb_interface)),
+                ('extra', POINTER(c_ubyte)),
+                ('extra_length', c_int)]
 
-_dll = ctypes.CDLL('libusb.so')
+class _libusb_device_descriptor(Structure):
+    _fields_ = [('bLength', c_uint8),
+                ('bDescriptorType', c_uint8),
+                ('bcdUSB', c_uint16),
+                ('bDeviceClass', c_uint8),
+                ('bDeviceSubClass', c_uint8),
+                ('bDeviceProtocol', c_uint8),
+                ('bMaxPacketSize0', c_uint8),
+                ('idVendor', c_uint16),
+                ('idProduct', c_uint16),
+                ('bcdDevice', c_uint16),
+                ('iManufacturer', c_uint8),
+                ('iProduct', c_uint8),
+                ('iSerialNumber', c_uint8),
+                ('bNumConfigurations', c_uint8)]
 
-_libusb_device_handle = ctypes.c_void_p
+_dll = CDLL('libusb.so')
+
+_libusb_device_handle = c_void_p
+
+# Function prototypes
 
 # void libusb_set_debug (libusb_context *ctx, int level)
-_dll.libusb_set_debug.argtypes = [ctypes.c_void_p, ctypes.c_int]
+_dll.libusb_set_debug.argtypes = [c_void_p, c_int]
 
 # int libusb_init (libusb_context **context)
-_dll.libusb_init(ctypes.POINTER(ctypes.c_void_p))
+_dll.libusb_init(POINTER(c_void_p))
 
 # void libusb_exit (struct libusb_context *ctx)
-_dll.libusb_exit(ctypes.c_void_p)
+_dll.libusb_exit(c_void_p)
 
 # ssize_t libusb_get_device_list (libusb_context *ctx, libusb_device ***list)
-_dll.libusb_get_device_list.argtypes = [ctypes.c_void_p,
-            ctypes.POINTER(ctypes.POINTER(c_void_p))]
+_dll.libusb_get_device_list.argtypes = [c_void_p, POINTER(POINTER(c_void_p))]
 
 # void libusb_free_device_list (libusb_device **list, int unref_devices)
-_dll.libusb_free_device_list.argtypes = [ctypes.POINTER(ctypes.c_void_p), c_int]
+_dll.libusb_free_device_list.argtypes = [POINTER(c_void_p), c_int]
 
 # libusb_device *libusb_ref_device (libusb_device *dev)
-_dll.libusb_ref_device.argtypes = [ctypes.c_void_p]
+_dll.libusb_ref_device.argtypes = [c_void_p]
 _dll.libusb_ref_device.restype = c_void_p
 
 # void libusb_unref_device (libusb_device *dev)
-_dll.libusb_unref_device.argtypes = [ctypes.c_void_p]
+_dll.libusb_unref_device.argtypes = [c_void_p]
 
 # int libusb_open (libusb_device *dev, libusb_device_handle **handle)
-_dll.libusb_open.argtypes = [ctypes.c_void_p, ctypes.POINTER(_libusb_device_handle)]
+_dll.libusb_open.argtypes = [c_void_p, POINTER(_libusb_device_handle)]
 
 # void libusb_close (libusb_device_handle *dev_handle)
 _dll.libusb_close.argtypes = [_libusb_device_handle]
 
 # int libusb_set_configuration (libusb_device_handle *dev, int configuration)
-_dll.liusb_set_configuration(_libusb_device_handle, ctypes.c_int)
+_dll.liusb_set_configuration(_libusb_device_handle, c_int)
 
 # int libusb_claim_interface (libusb_device_handle *dev, int interface_number)
-_dll.libusb_claim_interface.argtypes = [_libusb_device_handle, ctypes.c_int]
+_dll.libusb_claim_interface.argtypes = [_libusb_device_handle, c_int]
 
 # int libusb_release_interface (libusb_device_handle *dev, int interface_number)
-_dll.libusb_release_interface.argtypes = [_libusb_device_handle, ctypes.c_int]
+_dll.libusb_release_interface.argtypes = [_libusb_device_handle, c_int]
 
 # int libusb_set_interface_alt_setting (libusb_device_handle *dev, int interface_number, int alternate_setting)
-_dll.libusb_set_interface_alt_setting.argtypes = [_libusb_device_handle, ctypes.c_int, ctypes.c_int]
+_dll.libusb_set_interface_alt_setting.argtypes = [_libusb_device_handle, c_int, c_int]
 
 # int libusb_reset_device (libusb_device_handle *dev)
 _dll.libusb_reset_device.argtypes = [_libusb_device_handle]
 
 # int libusb_kernel_driver_active (libusb_device_handle *dev, int interface)
-_dll.libusb_kernel_driver_active.argtypes = [_libusb_device_handle, ctypes.c_int]
+_dll.libusb_kernel_driver_active.argtypes = [_libusb_device_handle, c_int]
 
 # int libusb_detach_kernel_driver (libusb_device_handle *dev, int interface)
-_dll.libusb_detach_kernel_driver.argtypes = [_libusb_device_handle, ctypes.c_int]
+_dll.libusb_detach_kernel_driver.argtypes = [_libusb_device_handle, c_int]
 
 # int libusb_attach_kernel_driver (libusb_device_handle *dev, int interface)
-_dll.libusb_attach_kernel_driver.argtypes = [_libusb_device_handle, ctypes.c_int]
+_dll.libusb_attach_kernel_driver.argtypes = [_libusb_device_handle, c_int]
 
 # int libusb_get_device_descriptor (libusb_device *dev, struct libusb_device_descriptor *desc)
-_dll.libusb_get_device_descriptor.argtypes = [ctypes.c_void_p, ctypes.POINTER(_libusb_device_descriptor)]
+_dll.libusb_get_device_descriptor.argtypes = [c_void_p, POINTER(_libusb_device_descriptor)]
 
 # int libusb_get_config_descriptor (libusb_device *dev, uint8_t config_index,
 #                                struct libusb_config_descriptor **config)
-_dll.libusb_get_config_descriptor.argtypes = [ctypes.c_void_p, ctypes.c_uint8,
-        ctypes.POINTER(ctypes.POINTER(_libusb_config_descriptor))]
+_dll.libusb_get_config_descriptor.argtypes = [c_void_p, c_uint8,
+        POINTER(POINTER(_libusb_config_descriptor))]
 
 # void  libusb_free_config_descriptor (struct libusb_config_descriptor *config)
-_dll.libusb_free_config_descriptor.argtypes = [ctypes.POINTER(_libusb_config_descriptor)]
+_dll.libusb_free_config_descriptor.argtypes = [POINTER(_libusb_config_descriptor)]
 
 # int libusb_get_string_descriptor_ascii (libusb_device_handle *dev,
 #                uint8_t desc_index, unsigned char *data, int length)
-_dll.libusb_get_string_descriptor_ascii.argtypes = [_libusb_device_handle, ctypes.c_uint8,
-                                    ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+_dll.libusb_get_string_descriptor_ascii.argtypes = [_libusb_device_handle, c_uint8,
+                                    POINTER(c_ubyte), c_int]
 
 # int   libusb_control_transfer (libusb_device_handle *dev_handle, uint8_t bmRequestType,
 #                               uint8_t bRequest, uint16_t wValue, uint16_t wIndex,
 #                               unsigned char *data, uint16_t wLength, unsigned int timeout)
-_dll.libusb_control_transfer.argtypes = [_libusb_device_handle, ctypes.c_uint8, ctypes.c_uint8, 
-                                        ctypes.c_uint16, ctypes.c_uint16, ctypes.POINTER(ctypes.c_ubyte),
-                                        ctypes.c_uint16, ctypes.c_uint]
+_dll.libusb_control_transfer.argtypes = [_libusb_device_handle, c_uint8, c_uint8, 
+                                        c_uint16, c_uint16, POINTER(c_ubyte),
+                                        c_uint16, c_uint]
 
 #int libusb_bulk_transfer (struct libusb_device_handle *dev_handle, unsigned char endpoint,
 #                           unsigned char *data, int length, int *transferred, unsigned int timeout)
-_dll.libusb_bulk_transfer.argtypes = [_libusb_device_handle, ctypes.c_ubyte, ctypes.POINTER(ctypes.c_ubyte),
-                                        ctypes.c_int, ctypes.POINTER(ctypes.c_int), ctypes.c_uint]
+_dll.libusb_bulk_transfer.argtypes = [_libusb_device_handle, c_ubyte, POINTER(c_ubyte),
+                                        c_int, POINTER(c_int), c_uint]
 
 # int libusb_interrupt_transfer(libusb_device_handle *dev_handle,
 #	unsigned char endpoint, unsigned char *data, int length,
 #	int *actual_length, unsigned int timeout);
-_dll.libusb_interrupt_transfer.argtypes = [_libusb_device_handle, ctypes.c_ubyte, ctypes.POINTER(ctypes.c_ubyte),
-                                            ctypes.c_int, ctypes.POINTER(ctypes.c_int), ctypes.c_uint]
+_dll.libusb_interrupt_transfer.argtypes = [_libusb_device_handle, c_ubyte, POINTER(c_ubyte),
+                                            c_int, POINTER(c_int), c_uint]
 
+# check a libusb function call
 def _check(retval):
-    r = int(retval)
-    if r != _LIBUSB_SUCCESS:
+    if retvalue.value != _LIBUSB_SUCCESS:
         from usb.core import USBError
-        raise USBError(_str_error[int(r)])
-    return r
+        raise USBError(_str_error[retval.value])
+    return retval
 
+# wrap a device
 class _Device(object):
     def __init__(self, devid):
         self.devid = _dll.libusb_ref_device(devid)
     def __del__(self):
         _dll.libusb_unref_device(self.devid)
 
+# wrap a configuration descriptor
 class _ConfigDescriptor(object):
     def __init__(self, desc):
         self.desc = desc
@@ -202,6 +212,7 @@ class _ConfigDescriptor(object):
     def __getattr__(self, name):
         return getattr(self.desc.contents, name)
 
+# initialize and finalize the library
 class _Initializer(object):
     def __init__(self):
         _check(_dll.libusb_init(None))
@@ -210,25 +221,30 @@ class _Initializer(object):
 
 _init = _Initializer()
 
+# iterator for libusb devices
+class _DevIterator(object):
+    def __init__(self):
+        self.devlist = POINTER(c_void_p)()
+        self.num_devs = _check(_dll.libusb_get_device_list(None, byref(dev_list))).value
+    def __init__(self):
+        for i in range(self.num_devs):
+            yield _Device(self.devlist[i])
+    def __del__(self):
+        _dll.libusb_free_device_list(self.devlist, 1)
+
 # implementation of libusb 1.0 backend
 class LibUSB(usb.backend.IBackend):
     def enumerate_devices(self):
-        dev_list = ctypes.POINTER(ctypes.c_void_p)()
-        num_devs = _check(_dll.libusb_get_device_list(None, ctypes.byref(dev_list)))
-
-        for i in range(num_devs):
-            yield _Device(dev_list[i])
-
-        _dll.libusb_free_device_list(dev_list, 1)
+        return _DevIterator()
 
     def get_device_descriptor(self, dev):
         dev_desc = _libusb_device_descriptor()
-        _check(_dll.libusb_get_device_list(dev.devid, ctypes.byref(dev_desc)))
+        _check(_dll.libusb_get_device_list(dev.devid, byref(dev_desc)))
         return dev_desc
 
     def get_configuration_descriptor(self, dev, config):
-        cfg = ctypes.POINTER(_libusb_config_descriptor)
-        _check(_dll.get_config_descriptor(dev.devid, config, ctypes.byref(cfg)))
+        cfg = POINTER(_libusb_config_descriptor)
+        _check(_dll.get_config_descriptor(dev.devid, config, byref(cfg)))
         return _ConfigDescriptor(cfg)
 
     def get_interface_descriptor(self, dev, intf, alt, config):
@@ -248,7 +264,7 @@ class LibUSB(usb.backend.IBackend):
 
     def open_device(self, dev):
         handle = _libusb_device_handle()
-        _check(_dll.libusb_open(dev.devid, ctypes.byref(handle)))
+        _check(_dll.libusb_open(dev.devid, byref(handle)))
         return handle
 
     def close_device(self, dev_handle):
@@ -266,18 +282,24 @@ class LibUSB(usb.backend.IBackend):
     def release_interface(self, dev_handle, intf):
         _check(_dll.libusb_release_interface(dev_handle, intf))
 
-    def bulk_transfer(self, dev_handle, ep, intf, data_or_length, timeout):
-        return self.__transfer(_dll.libusb_bulk_transfer, dev_handle, ep, intf,
-                                data_or_length, timeout)
-
-    def interrupt_transfer(self, dev_handle, ep, data_or_length, intf, timeout):
-        return self.__transfer(_dll.libusb_interrupt_transfer, dev_handle, ep, intf,
-                                data_or_length, timeout)
 
 # TODO: implmenet isochronous transfer
 #    def isochronous_transfer(self, dev_handle, ep, data_or_length, intf, timeout):
 
-    def ctrl_transfer(self, dev_handle, bmRequestType, bRequest, wValue, wIndex, data_or_wLength, timeout):
+    def bulk_write(self, dev_handle, ep, intf, data, timeout):
+        return self.__write(_dll.libusb_bulk_transfer, dev_handle, ep, intf, data, timeout)
+
+    def bulk_read(self, dev_handle, ep, intf, size, timeout):
+        return self.__read(_dll.libusb_bulk_transfer, dev_handle, ep, intf, size, timeout)
+
+    def intr_write(self, dev_handle, ep, intf, data, timeout):
+        return self.__write(_dll.libusb_interrupt_transfer, dev_handle, ep, intf, data, timeout)
+
+    def intr_read(self, dev_handle, ep, intf, size, timeout):
+        return self.__read(_dll.libusb_interrupt_transfer, dev_handle, ep, intf, size, timeout)
+
+    def ctrl_transfer(self, dev_handle, bmRequestType, bRequest, wValue,
+                        wIndex, data_or_wLength, timeout):
         if usb.util.ctrl_direction(bmRequestType) == usb.util.CTRL_OUT:
             buff = data_or_length
         else:
@@ -306,21 +328,16 @@ class LibUSB(usb.backend.IBackend):
     def attach_kernel_driver(self, dev_handle, intf):
         _check(_dll.libusb_attach_kernel_driver(dev_handle, intf))
 
-    def __transfer(self, fn, dev_handle, ep, intf, data_or_length, timeout):
-        if usb.util.endpoint_direction(ep) == usb.util.ENDPOINT_OUT:
-            buff = data_or_length
-        else:
-            buff = array.array('B', length * '\x00')
+    def __write(self, fn, dev_handle, ep, intf, data, timeout):
+        address, length = data.buffer_info()
+        transfered = c_int()
+        _check(fn(dev_handle, ep, address, length, byref(transfered), timeout))
+        return int(transfered)
 
-        addr, length = buff.buffer_info()
-        length *= buff.itemsize()
-
-        transfered = ctypes.c_int()
-        ret = _check(fn(dev_handle, ep, addr, length,
-                        ctypes.byref(transferred), timeout))
-
-        if usb.util.endpoint_direction(ep) == usb.util.ENDPOINT_OUT:
-            return ret
-        else:
-            return buff[:ret]
+    def __read(self, fn, dev_handle, ep, intf, size, timeout):
+        buffer = array.array('B', '\x00' * size)
+        address, length = buffer.buffer_info()
+        transfered = c_int()
+        _check(fn(dev_handle, ep, address, length, byref(transfered), timeout))
+        return buffer[:transfered]
 
