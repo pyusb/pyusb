@@ -427,13 +427,13 @@ def find(find_all=False, backend = None, predicate = None, **args):
     """
     import operator
 
-    def device_iter(pred, k, v):
+    def device_iter(k, v):
         for dev in backend.enumerate_devices():
             d = Device(dev, backend)
             if (predicate is None or predicate(dev)) and \
                 reduce(lambda a, b: a and b, map(operator.eq, v,
                                 map(lambda i: getattr(d, i), k)), True):
-                yield dev
+                yield d
 
     if backend is None:
         # TODO: implement automatic backend management
@@ -443,9 +443,9 @@ def find(find_all=False, backend = None, predicate = None, **args):
     k, v = args.keys(), args.values()
     
     if find_all:
-        return (Device(dev, backend) for dev in device_iter(predicate, k, v))
+        return (d for d in device_iter(k, v))
     else:
         try:
-            return Device(device_iter(predicate, k, v).next(), backend)
+            return device_iter(k, v).next()
         except StopIteration:
             return None
