@@ -374,9 +374,11 @@ def find(find_all=False, backend = None, predicate = None, **args):
     idProduct equals to 0x2009.
 
     If there is more than one device which match the criteria,
-    the first one found will be returned. If you want to get all
+    the first one found will be returned. If a matching device cannot
+    be found the function returns None. If you want to get all
     devices, you can set the parameter find_all to True, then find
-    will return an iterator like object which contains the devices. Example:
+    will return an iterator like object which contains the devices. If
+    no matching device is found, it will return an empty iterator. Example:
 
     printers = [p for p in find(find_all=True, bDeviceClass=7)]
 
@@ -427,9 +429,10 @@ def find(find_all=False, backend = None, predicate = None, **args):
 
     def device_iter(pred, k, v):
         for dev in backend.enumerate_devices():
+            d = Device(dev, backend)
             if (predicate is None or predicate(dev)) and \
                 reduce(lambda a, b: a and b, map(operator.eq, v,
-                                map(lambda i: getattr(dev, i), k)), True):
+                                map(lambda i: getattr(d, i), k)), True):
                 yield dev
 
     if backend is None:
@@ -442,4 +445,7 @@ def find(find_all=False, backend = None, predicate = None, **args):
     if find_all:
         return (Device(dev, backend) for dev in device_iter(predicate, k, v))
     else:
-        return Device(device_iter(predicate, k, v).next(), backend)
+        try:
+            return Device(device_iter(predicate, k, v).next(), backend)
+        except StopIteration:
+            return None

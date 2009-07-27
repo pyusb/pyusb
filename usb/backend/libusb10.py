@@ -97,7 +97,7 @@ class _libusb_device_descriptor(Structure):
                 ('iSerialNumber', c_uint8),
                 ('bNumConfigurations', c_uint8)]
 
-_dll = CDLL('libusb.so')
+_dll = CDLL('libusb-1.0.so')
 
 _libusb_device_handle = c_void_p
 
@@ -107,10 +107,10 @@ _libusb_device_handle = c_void_p
 _dll.libusb_set_debug.argtypes = [c_void_p, c_int]
 
 # int libusb_init (libusb_context **context)
-_dll.libusb_init(POINTER(c_void_p))
+_dll.libusb_init.argtypes = [POINTER(c_void_p)]
 
 # void libusb_exit (struct libusb_context *ctx)
-_dll.libusb_exit(c_void_p)
+_dll.libusb_exit.argtypes = [c_void_p]
 
 # ssize_t libusb_get_device_list (libusb_context *ctx, libusb_device ***list)
 _dll.libusb_get_device_list.argtypes = [c_void_p, POINTER(POINTER(c_void_p))]
@@ -132,7 +132,7 @@ _dll.libusb_open.argtypes = [c_void_p, POINTER(_libusb_device_handle)]
 _dll.libusb_close.argtypes = [_libusb_device_handle]
 
 # int libusb_set_configuration (libusb_device_handle *dev, int configuration)
-_dll.liusb_set_configuration(_libusb_device_handle, c_int)
+_dll.libusb_set_configuration.argtypes = [_libusb_device_handle, c_int]
 
 # int libusb_claim_interface (libusb_device_handle *dev, int interface_number)
 _dll.libusb_claim_interface.argtypes = [_libusb_device_handle, c_int]
@@ -191,9 +191,12 @@ _dll.libusb_interrupt_transfer.argtypes = [_libusb_device_handle, c_ubyte, POINT
 
 # check a libusb function call
 def _check(retval):
-    if retvalue.value != _LIBUSB_SUCCESS:
-        from usb.core import USBError
-        raise USBError(_str_error[retval.value])
+    if isinstance(retval, int):
+        retval = c_int(retval)
+    if isinstance(retval, c_int):
+        if retval.value < 0:
+           from usb.core import USBError
+           raise USBError(_str_error[retval.value])
     return retval
 
 # wrap a device
@@ -216,7 +219,7 @@ class _ConfigDescriptor(object):
 class _Initializer(object):
     def __init__(self):
         _check(_dll.libusb_init(None))
-    def __del__():
+    def __del__(self):
         _dll.libusb_exit(None)
 
 _init = _Initializer()
@@ -224,13 +227,13 @@ _init = _Initializer()
 # iterator for libusb devices
 class _DevIterator(object):
     def __init__(self):
-        self.devlist = POINTER(c_void_p)()
-        self.num_devs = _check(_dll.libusb_get_device_list(None, byref(dev_list))).value
-    def __init__(self):
+        self.dev_list = POINTER(c_void_p)()
+        self.num_devs = _check(_dll.libusb_get_device_list(None, byref(self.dev_list))).value
+    def __iter__(self):
         for i in range(self.num_devs):
-            yield _Device(self.devlist[i])
+            yield _Device(self.dev_list[i])
     def __del__(self):
-        _dll.libusb_free_device_list(self.devlist, 1)
+        _dll.libusb_free_device_list(self.dev_list, 1)
 
 # implementation of libusb 1.0 backend
 class LibUSB(usb.backend.IBackend):
@@ -239,12 +242,12 @@ class LibUSB(usb.backend.IBackend):
 
     def get_device_descriptor(self, dev):
         dev_desc = _libusb_device_descriptor()
-        _check(_dll.libusb_get_device_list(dev.devid, byref(dev_desc)))
+        _check(_dll.libusb_get_device_descriptor(dev.devid, byref(dev_desc)))
         return dev_desc
 
     def get_configuration_descriptor(self, dev, config):
-        cfg = POINTER(_libusb_config_descriptor)
-        _check(_dll.get_config_descriptor(dev.devid, config, byref(cfg)))
+        cfg = POINTER(_libusb_config_descriptor)()
+        _check(_dll.libusb_get_config_descriptor(dev.devid, config, byref(cfg)))
         return _ConfigDescriptor(cfg)
 
     def get_interface_descriptor(self, dev, intf, alt, config):
