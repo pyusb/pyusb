@@ -60,6 +60,7 @@ class _libusb_interface_descriptor(Structure):
                 ('bInterfaceClass', c_uint8),
                 ('bInterfaceSubClass', c_uint8),
                 ('bInterfaceProtocol', c_uint8),
+                ('iInterface', c_uint8),
                 ('endpoint', POINTER(_libusb_endpoint_descriptor)),
                 ('extra', POINTER(c_ubyte)),
                 ('extra_length', c_int)]
@@ -206,6 +207,14 @@ class _Device(object):
     def __del__(self):
         _dll.libusb_unref_device(self.devid)
 
+# wrap a descriptor and keep a reference to another object
+class _WrapDescriptor(object):
+    def __init__(self, desc, obj = None):
+        self.obj = obj
+        self.desc = desc
+    def __getattr__(self, name):
+        return getattr(self.desc, name)
+
 # wrap a configuration descriptor
 class _ConfigDescriptor(object):
     def __init__(self, desc):
@@ -252,18 +261,18 @@ class LibUSB(usb.backend.IBackend):
 
     def get_interface_descriptor(self, dev, intf, alt, config):
         cfg = self.get_configuration_descriptor(dev, config)
-        if intf > cfg.bNumInterfaces:
+        if intf >= cfg.bNumInterfaces:
             raise IndexError('Invalid interface index %d' % (intf))
         i = cfg.interface[intf]
-        if alt > i.num_altsetting:
+        if alt >= i.num_altsetting:
             raise IndexError('Invalid alternate setting index %d' % (alt))
-        return i.altsetting[alt]
+        return _WrapDescriptor(i.altsetting[alt], cfg)
 
     def get_endpoint_descriptor(self, dev, ep, intf, alt, config):
         i = self.get_interface_descriptor(dev, intf, alt, config)
         if ep > i.bNumEndpoints:
             raise IndexError('Invalid endpoint index %d' % (ep))
-        return i.endpoint[i]
+        return _WrapDescriptor(i.endpoint[ep], i)
 
     def open_device(self, dev):
         handle = _libusb_device_handle()
@@ -286,7 +295,7 @@ class LibUSB(usb.backend.IBackend):
         _check(_dll.libusb_release_interface(dev_handle, intf))
 
 
-# TODO: implmenet isochronous transfer
+# TODO: implement isochronous transfer
 #    def isochronous_transfer(self, dev_handle, ep, data_or_length, intf, timeout):
 
     def bulk_write(self, dev_handle, ep, intf, data, timeout):
