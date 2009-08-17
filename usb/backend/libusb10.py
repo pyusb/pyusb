@@ -283,7 +283,7 @@ class LibUSB(usb.backend.IBackend):
         _dll.libusb_close(dev_handle)
 
     def set_configuration(self, dev_handle, config_value):
-        _check(_dll.set_configuration(dev_handle, config_value))
+        _check(_dll.libusb_set_configuration(dev_handle, config_value))
 
     def set_interface_altsetting(self, dev_handle, intf, altsetting):
         _check(_dll.libusb_set_interface_alt_setting(dev_handle, intf, altsetting))
@@ -313,12 +313,12 @@ class LibUSB(usb.backend.IBackend):
     def ctrl_transfer(self, dev_handle, bmRequestType, bRequest, wValue,
                         wIndex, data_or_wLength, timeout):
         if usb.util.ctrl_direction(bmRequestType) == usb.util.CTRL_OUT:
-            buff = data_or_length
+            buff = data_or_wLength
         else:
-            buff = array.array('B', length * '\x00')
+            buff = array.array('B', data_or_wLength * '\x00')
 
         addr, length = buff.buffer_info()
-        length *= buff.itemsize()
+        length *= buff.itemsize
 
         ret = _check(_dll.libusb_control_transfer(dev_handle, bmRequestType,
                         bRequest, wValue, wIndex, addr, length, timeout))
@@ -332,7 +332,7 @@ class LibUSB(usb.backend.IBackend):
         _check(_dll.libusb_reset_device(dev_handle))
 
     def is_kernel_driver_active(self, dev_handle, intf):
-        return _check(_dll.libusb_kernel_driver_active(dev_handle, intf))
+        return bool(_check(_dll.libusb_kernel_driver_active(dev_handle, intf)))
 
     def detach_kernel_driver(self, dev_handle, intf):
         _check(_dll.libusb_detach_kernel_driver(dev_handle, intf))
@@ -342,14 +342,14 @@ class LibUSB(usb.backend.IBackend):
 
     def __write(self, fn, dev_handle, ep, intf, data, timeout):
         address, length = data.buffer_info()
-        transfered = c_int()
-        _check(fn(dev_handle, ep, address, length, byref(transfered), timeout))
-        return int(transfered)
+        transferred = c_int()
+        _check(fn(dev_handle, ep, address, length, byref(transferred), timeout))
+        return transferred.value
 
     def __read(self, fn, dev_handle, ep, intf, size, timeout):
         buffer = array.array('B', '\x00' * size)
         address, length = buffer.buffer_info()
-        transfered = c_int()
-        _check(fn(dev_handle, ep, address, length, byref(transfered), timeout))
-        return buffer[:transfered]
+        transferred = c_int()
+        _check(fn(dev_handle, ep, address, length, byref(transferred), timeout))
+        return buffer[:transferred.value]
 

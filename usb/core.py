@@ -32,6 +32,7 @@ class _DeviceManager(object):
     def close(self):
         if self.handle is not None:
             self.backend.close_device(self.handle)
+            self.handle = None
     def __del__(self):
         self.close()
 
@@ -56,7 +57,7 @@ class _InterfaceClaimPolicy(object):
             # Although would be faster just associate an
             # empty list after the for loop, but removing
             # the interfaces from the list as they are
-            # released is safer from exception pointer of view.
+            # released is safer from exception point of view.
             self.interfaces_claimed.remove(intf)
     def __del__(self):
         self.release_interfaces()
@@ -85,10 +86,10 @@ class _EndpointTypeMapper(object):
         try:
             return self.ep_map[ep]
         except KeyError:
-            l = filter(lambda e: ep == e.bEndpointAddress, (e for e in Interface(dev, intf, alt, cfg)))
+            l = filter(lambda e: ep == e.bEndpointAddress, (e for e in Interface(self.dev, intf, alt, cfg)))
             if len(l) == 0:
                 raise USBError('Invalid endpoint address %02X' % (ep))
-            type = util.endpoint__type(l[0].bmAttributes)
+            type = util.endpoint_type(l[0].bmAttributes)
             self.ep_map[ep] = type
             return type
 
@@ -202,7 +203,7 @@ class Configuration(object):
         self.device.set_configuration(self.bConfigurationValue)
 
     def __iter__(self):
-        r"""Iterate on the all interfaces of the configuration"""
+        r"""Iterate on all interfaces of the configuration"""
         for i in range(self.bNumInterfaces):
             alt = 0
             try:
@@ -261,7 +262,7 @@ class Device(object):
             alternate_setting - the bAlternateSetting field of the interface.
         """
         self.intf_claimed.claim(interface)
-        self.devmgr.backend.set_interface_altsetting(interface, alternate_setting)
+        self.devmgr.backend.set_interface_altsetting(self.devmgr.handle, interface, alternate_setting)
         self.alt_map[interface] = alternate_setting
 
     def reset(self):
@@ -310,7 +311,7 @@ class Device(object):
         return get_read_fn()(self.devmgr.handle, endpoint, interface, size, timeout)
 
 
-    def ctrl_transfer(bmRequestType, bRequest, wValue, wIndex,
+    def ctrl_transfer(self, bmRequestType, bRequest, wValue, wIndex,
             data_or_wLength = None, timeout = _DEFAULT_TIMEOUT):
         r"""Do a control transfer on endpoint 0.
 
@@ -327,7 +328,7 @@ class Device(object):
         Return the number of bytes written (for out transfers) or the data
         read (for in transfers).
         """
-        if util.endpoint_address(endpoint) == util.ENDPOINT_OUT:
+        if util.ctrl_direction(bmRequestType) == util.CTRL_IN:
             a = array.array('B', data_or_wLength)
         else:
             a = (data_or_wLength is None) and 0 or data_or_wLength
@@ -336,7 +337,7 @@ class Device(object):
 
         return self.devmgr.backend.ctrl_transfer(
                     self.devmgr.handle,
-                    bmRequest,
+                    bmRequestType,
                     bRequest,
                     wValue,
                     wIndex,
@@ -345,14 +346,17 @@ class Device(object):
 
     def is_kernel_driver_active(self, interface):
         r"""Determine if there is kernel driver associated with the interface."""
+        self.devmgr.open()
         return self.devmgr.backend.is_kernel_driver_active(self.devmgr.handle, interface)
-    
+
     def detach_kernel_driver(self, interface):
         r"""Detach a kernel driver."""
+        self.devmgr.open()
         self.devmgr.backend.detach_kernel_driver(self.devmgr.handle, interface)
 
     def attach_kernel_driver(self, interface):
         r"""Attach a kernel driver."""
+        self.devmgr.open()
         self.devmgr.backend.attach_kernel_driver(self.devmgr.handle, interface)
 
     def __iter__(self):

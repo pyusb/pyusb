@@ -18,9 +18,9 @@ CTRL_OUT = 0x00
 CTRL_IN = 0x80
 
 _ENDPOINT_ADDR_MASK = 0x0f
-_ENDPOINT_DIR_MASK = 0x7f
+_ENDPOINT_DIR_MASK = 0x80
 _ENDPOINT_TRANSFER_TYPE_MASK = 0x03
-_CTRL_DIR_MASK = 0x7f
+_CTRL_DIR_MASK = 0x80
 
 def endpoint_address(address):
     r"""Return the endpoint absolute address."""
