@@ -321,7 +321,7 @@ class LibUSB(usb.backend.IBackend):
         length *= buff.itemsize
 
         ret = _check(_dll.libusb_control_transfer(dev_handle, bmRequestType,
-                        bRequest, wValue, wIndex, addr, length, timeout))
+                        bRequest, wValue, wIndex, cast(addr, POINTER(c_ubyte)), length, timeout))
 
         if usb.util.ctrl_direction(bmRequestType) == usb.util.CTRL_OUT:
             return ret
@@ -343,13 +343,13 @@ class LibUSB(usb.backend.IBackend):
     def __write(self, fn, dev_handle, ep, intf, data, timeout):
         address, length = data.buffer_info()
         transferred = c_int()
-        _check(fn(dev_handle, ep, address, length, byref(transferred), timeout))
+        _check(fn(dev_handle, ep, cast(address, POINTER(c_ubyte)), length, byref(transferred), timeout))
         return transferred.value
 
     def __read(self, fn, dev_handle, ep, intf, size, timeout):
         buffer = array.array('B', '\x00' * size)
         address, length = buffer.buffer_info()
         transferred = c_int()
-        _check(fn(dev_handle, ep, address, length, byref(transferred), timeout))
+        _check(fn(dev_handle, ep, cast(address, POINTER(c_ubyte)), length, byref(transferred), timeout))
         return buffer[:transferred.value]
 

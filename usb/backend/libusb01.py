@@ -283,11 +283,12 @@ class LibUSB(usb.backend.IBackend):
             address, length = data_or_wLength.buffer_info()
             length *= data_or_wLength.itemsize()
             return _check(_dll.usb_control_msg(dev_handle, bmRequestType, bRequest, wValue,
-                                                wIndex, address, length, timeout))
+                                                wIndex, cast(address, c_char_p), length, timeout))
         else:
             buffer = array.array('B', '\x00' * data_or_wLength)
             read = int(_check(_dll.usb_control_msg(dev_handle, bmRequestType, bRequest, wValue,
-                                            wIndex, buffer.buffer_info()[0], data_or_wLength, timeout)))
+                                            wIndex, cast(buffer.buffer_info()[0], c_char_p),
+                                            data_or_wLength, timeout)))
             return buffer[:read]
 
     def reset_device(self, dev_handle):
@@ -298,11 +299,11 @@ class LibUSB(usb.backend.IBackend):
 
     def __write(self, fn, dev_handle, ep, intf, data, timeout):
         address, length = data.buffer_info()
-        return int(_check(fn(dev_handle, ep, address, length, timeout)))
+        return int(_check(fn(dev_handle, ep, cast(address, c_char_p), length, timeout)))
 
     def __read(self, fn, dev_handle, ep, intf, size, timeout):
         buffer = array.array('B', '\x00' * size)
         address, length = buffer.buffer_info()
-        ret = int(_check(fn(dev_handle, ep, address, length, timeout)))
+        ret = int(_check(fn(dev_handle, ep, cast(address, c_char_p), length, timeout)))
         return buffer[:ret]
 

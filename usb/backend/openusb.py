@@ -316,7 +316,8 @@ class OpenUSB(usb.backend.IBackend):
     def intr_write(self, dev_handle, ep, intf, data, timeout):
         request = _openusb_intr_request()
         memset(byref(request), 0, sizeof(request))
-        request.payload, request.length = data.buffer_info()
+        payload, request.length = data.buffer_info()
+        request.payload = cast(payload, POINTER(c_uint8))
         request.timeout = timeout
         _check(_dll.openusb_intr_xfer(dev_handle, intf, ep, byref(request)))
         return request.transfered_bytes.value
@@ -325,7 +326,8 @@ class OpenUSB(usb.backend.IBackend):
         request = _openusb_intr_request()
         buffer = array.array('B', '\x00' * size)
         memset(byref(request), 0, sizeof(request))
-        request.payload, request.length = buffer.buffer_info()
+        payload, request.length = buffer.buffer_info()
+        request.payload = cast(payload, POINTER(c_uint8))
         request.timeout = timeout
         _check(_dll.openusb_intr_xfer(dev_handle, intf, ep, byref(request)))
         return buffer[:request.transfered_bytes.value]
@@ -352,7 +354,8 @@ class OpenUSB(usb.backend.IBackend):
         else:
             buffer = array.array('B', '\x00' * data_or_wLength)
 
-        request.payload, request.length = buffer.buffer_info()
+        payload, request.length = buffer.buffer_info()
+        request.payload = cast(payload, POINTER(c_uint8))
 
         ret = _check(_dll.openusb_ctrl_xfer(dev_handle, 0, 0, byref(request)))
 
