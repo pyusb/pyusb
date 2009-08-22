@@ -245,7 +245,7 @@ class _DevIterator(object):
         _dll.libusb_free_device_list(self.dev_list, 1)
 
 # implementation of libusb 1.0 backend
-class LibUSB(usb.backend.IBackend):
+class _LibUSB(usb.backend.IBackend):
     def enumerate_devices(self):
         return _DevIterator()
 
@@ -324,9 +324,9 @@ class LibUSB(usb.backend.IBackend):
                         bRequest, wValue, wIndex, cast(addr, POINTER(c_ubyte)), length, timeout))
 
         if usb.util.ctrl_direction(bmRequestType) == usb.util.CTRL_OUT:
-            return ret
+            return ret.value
         else:
-            return buff[:ret]
+            return buff[:ret.value]
 
     def reset_device(self, dev_handle):
         _check(_dll.libusb_reset_device(dev_handle))
@@ -353,3 +353,5 @@ class LibUSB(usb.backend.IBackend):
         _check(fn(dev_handle, ep, cast(address, POINTER(c_ubyte)), length, byref(transferred), timeout))
         return buffer[:transferred.value]
 
+def get_backend():
+    return _LibUSB()

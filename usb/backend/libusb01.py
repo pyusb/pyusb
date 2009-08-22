@@ -27,7 +27,7 @@ class _usb_endpoint_descriptor(Structure):
                 ('bDescriptorType', c_uint8),
                 ('bEndpointAddress', c_uint8),
                 ('bmAttributes', c_uint8),
-                ('wMaxPacketSize', c_uint8),
+                ('wMaxPacketSize', c_uint16),
                 ('bInterval', c_uint8),
                 ('bRefresh', c_uint8),
                 ('bSynchAddress', c_uint8),
@@ -211,7 +211,7 @@ def _check(retval):
 _dll.usb_init()
 
 # implementation of libusb 0.1.x backend
-class LibUSB(usb.backend.IBackend):
+class _LibUSB(usb.backend.IBackend):
     def enumerate_devices(self):
         _check(_dll.usb_find_busses())
         _check(_dll.usb_find_devices())
@@ -281,9 +281,9 @@ class LibUSB(usb.backend.IBackend):
     def ctrl_transfer(self, dev_handle, bmRequestType, bRequest, wValue, wIndex, data_or_wLength, timeout):
         if usb.util.ctrl_direction(bmRequestType) == usb.util.CTRL_OUT:
             address, length = data_or_wLength.buffer_info()
-            length *= data_or_wLength.itemsize()
+            length *= data_or_wLength.itemsize
             return _check(_dll.usb_control_msg(dev_handle, bmRequestType, bRequest, wValue,
-                                                wIndex, cast(address, c_char_p), length, timeout))
+                                               wIndex, cast(address, c_char_p), length, timeout))
         else:
             buffer = array.array('B', '\x00' * data_or_wLength)
             read = int(_check(_dll.usb_control_msg(dev_handle, bmRequestType, bRequest, wValue,
@@ -307,3 +307,5 @@ class LibUSB(usb.backend.IBackend):
         ret = int(_check(fn(dev_handle, ep, cast(address, c_char_p), length, timeout)))
         return buffer[:ret]
 
+def get_backend():
+    return _LibUSB()

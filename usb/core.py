@@ -442,7 +442,7 @@ def find(find_all=False, backend = None, predicate = None, **args):
     if backend is None:
         # TODO: implement automatic backend management
         import usb.backend.libusb01
-        backend = usb.backend.libusb01.LibUSB()
+        backend = usb.backend.libusb01.get_backend()
 
     k, v = args.keys(), args.values()
     

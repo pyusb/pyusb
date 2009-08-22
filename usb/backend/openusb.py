@@ -250,7 +250,7 @@ class _DevIterator(object):
     def __del__(self):
         _dll.openusb_free_devid_list(self.devlist)
 
-class OpenUSB(usb.backend.IBackend):
+class _OpenUSB(usb.backend.IBackend):
     def enumerate_devices(self):
         for bus in _BusIterator():
             for devid in _DevIterator(bus):
@@ -364,3 +364,5 @@ class OpenUSB(usb.backend.IBackend):
     def reset_device(self, dev_handle):
         _check(_dll.openusb_reset(dev_handle))
 
+def get_backend():
+    return _OpenUSB()
