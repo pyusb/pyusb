@@ -6,10 +6,12 @@ import unittest
 sys.path.append('..')
 
 import backend_test
+import util_test
 
 backend_suite = backend_test.get_testsuite()
+util_suite = util_test.get_testsuite()
 
-test_suite = unittest.TestSuite([backend_suite])
+test_suite = unittest.TestSuite([util_suite, backend_suite])
 
 runner = unittest.TextTestRunner()
 runner.run(test_suite)

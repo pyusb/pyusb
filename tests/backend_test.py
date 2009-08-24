@@ -8,7 +8,6 @@ class BackendTestCase(unittest.TestCase):
         self.module = __import__(backend_module_name, fromlist=['dummy'])
         self.backend = self.module.get_backend()
 
-    # override to run the tests in the correct order
     def runTest(self):
         self.test_enumerate_devices()
         self.test_get_device_descriptor()
