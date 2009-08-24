@@ -2,7 +2,7 @@ import unittest
 import array
 import device_info as di
 
-class BackendTestCase(unittest.TestCase):
+class BackenTest(unittest.TestCase):
     def __init__(self, backend_module_name):
         unittest.TestCase.__init__(self)
         self.module = __import__(backend_module_name, fromlist=['dummy'])
@@ -231,9 +231,9 @@ class BackendTestCase(unittest.TestCase):
         return array.array('B', reversed(range(10)))
 
 def get_testsuite():
-    libusb10_testcase = BackendTestCase('usb.backend.libusb10')
-    libusb01_testcase = BackendTestCase('usb.backend.libusb01')
-    #openusb_testcase = BackendTestCase('usb.backend.openusb')
+    libusb10_testcase = BackenTest('usb.backend.libusb10')
+    libusb01_testcase = BackenTest('usb.backend.libusb01')
+    #openusb_testcase = BackenTest('usb.backend.openusb')
     suite = unittest.TestSuite()
     suite.addTest(libusb10_testcase)
     suite.addTest(libusb01_testcase)

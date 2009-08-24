@@ -2,7 +2,7 @@ import unittest
 from usb.util import *
 from device_info import *
 
-class UtilTestCase(unittest.TestCase):
+class UtilTest(unittest.TestCase):
     def runTest(self):
         self.test_endpoint_address()
         self.test_endpoint_direction()
@@ -25,5 +25,5 @@ class UtilTestCase(unittest.TestCase):
 
 def get_testsuite():
     suite = unittest.TestSuite()
-    suite.addTest(UtilTestCase())
+    suite.addTest(UtilTest())
     return suite
