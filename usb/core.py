@@ -434,7 +434,7 @@ def find(find_all=False, backend = None, predicate = None, **args):
     def device_iter(k, v):
         for dev in backend.enumerate_devices():
             d = Device(dev, backend)
-            if (predicate is None or predicate(dev)) and \
+            if (predicate is None or predicate(d)) and \
                 reduce(lambda a, b: a and b, map(operator.eq, v,
                                 map(lambda i: getattr(d, i), k)), True):
                 yield d

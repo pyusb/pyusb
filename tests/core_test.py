@@ -14,9 +14,10 @@ class FindTest(unittest.TestCase):
 
 class DeviceTest(unittest.TestCase):
     def __init__(self, backend_name):
+        unittest.TestCase.__init__(self)
         self.backend_module = __import__(backend_name, fromlist=['dummy'])
         self.backend = self.backend_module.get_backend()
-        self.dev = usb.core.find(backend=self.backend, idVendor=di.ID_VENDOR, idProduct=ID_PRODUCT)
+        self.dev = usb.core.find(backend=self.backend, idVendor=di.ID_VENDOR, idProduct=di.ID_PRODUCT)
 
     def runTest(self):
         self.test_attributes()
@@ -62,9 +63,10 @@ class DeviceTest(unittest.TestCase):
 
 class ConfigurationTest(unittest.TestCase):
     def __init__(self, backend_name):
+        unittest.TestCase.__init__(self)
         self.backend_module = __import__(backend_name, fromlist=['dummy'])
         self.backend = self.backend_module.get_backend()
-        self.dev = usb.core.find(backend=self.backend, idVendor=di.ID_VENDOR, idProduct=ID_PRODUCT)
+        self.dev = usb.core.find(backend=self.backend, idVendor=di.ID_VENDOR, idProduct=di.ID_PRODUCT)
         self.cfg = iter(self.dev).next()
     def runTest(self):
         self.test_attributes()
@@ -83,9 +85,10 @@ class ConfigurationTest(unittest.TestCase):
 
 class InterfaceTest(unittest.TestCase):
     def __init__(self, backend_name):
+        unittest.TestCase.__init__(self)
         self.backend_module = __import__(backend_name, fromlist=['dummy'])
         self.backend = self.backend_module.get_backend()
-        self.dev = usb.core.find(backend=self.backend, idVendor=di.ID_VENDOR, idProduct=ID_PRODUCT)
+        self.dev = usb.core.find(backend=self.backend, idVendor=di.ID_VENDOR, idProduct=di.ID_PRODUCT)
         cfg = iter(self.dev).next()
         self.intf = iter(cfg).next()
     def runTest(self):
@@ -106,7 +109,7 @@ class InterfaceTest(unittest.TestCase):
 
 class EndpointTest(unittest.TestCase):
     def __init__(self, backend_name):
-        pass
+        unittest.TestCase.__init__(self)
     def runTest(self):
         pass
     def test_attributes(self):
@@ -114,7 +117,7 @@ class EndpointTest(unittest.TestCase):
     def test_write_read(self):
         pass
 
-def get_testsuite(self):
+def get_testsuite():
     suite = unittest.TestSuite()
     suite.addTest(FindTest())
 
