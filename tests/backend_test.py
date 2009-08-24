@@ -111,47 +111,115 @@ class BackendTestCase(unittest.TestCase):
         intf = self.backend.get_interface_descriptor(self.dev, 0, 0, 0).bInterfaceNumber
 
         data = self.get_data1()
-        self.assertEqual(self.backend.bulk_write(self.handle, di.EP_BULK_OUT, intf, data, 1000),
-                         len(data))
-        self.assertEqual(self.backend.bulk_read(self.handle, di.EP_BULK_IN, intf, len(data), 1000),
-                         data)
+
+        self.assertEqual(self.backend.bulk_write(self.handle,
+                                                 di.EP_BULK_OUT,
+                                                 intf,
+                                                 data,
+                                                 1000),
+                                             len(data))
+
+        self.assertEqual(self.backend.bulk_read(self.handle,
+                                                di.EP_BULK_IN,
+                                                intf,
+                                                len(data),
+                                                1000),
+                                             data)
 
         data = self.get_data2()
-        self.assertEqual(self.backend.bulk_write(self.handle, di.EP_BULK_OUT, intf, data, 1000),
-                         len(data))
-        self.assertEqual(self.backend.bulk_read(self.handle, di.EP_BULK_IN, intf, len(data), 1000),
-                         data)
+
+        self.assertEqual(self.backend.bulk_write(self.handle,
+                                                 di.EP_BULK_OUT,
+                                                 intf,
+                                                 data,
+                                                 1000),
+                                             len(data))
+
+        self.assertEqual(self.backend.bulk_read(self.handle,
+                                                di.EP_BULK_IN,
+                                                intf,
+                                                len(data),
+                                                1000),
+                                             data)
 
     def test_intr_write_read(self):
         intf = self.backend.get_interface_descriptor(self.dev, 0, 0, 0).bInterfaceNumber
 
         data = self.get_data1()
-        self.assertEqual(self.backend.intr_write(self.handle, di.EP_INTR_OUT, intf, data, 1000),
-                         len(data))
-        self.assertEqual(self.backend.intr_read(self.handle, di.EP_INTR_IN, intf, len(data), 1000),
-                         data)
+
+        self.assertEqual(self.backend.intr_write(self.handle,
+                                                 di.EP_INTR_OUT,
+                                                 intf,
+                                                 data,
+                                                 1000),
+                                             len(data))
+
+        self.assertEqual(self.backend.intr_read(self.handle,
+                                                di.EP_INTR_IN,
+                                                intf,
+                                                len(data),
+                                                1000),
+                                             data)
 
         data = self.get_data2()
-        self.assertEqual(self.backend.intr_write(self.handle, di.EP_INTR_OUT, intf, data, 1000),
-                         len(data))
-        self.assertEqual(self.backend.intr_read(self.handle, di.EP_INTR_IN, intf, len(data), 1000),
-                         data)
+
+        self.assertEqual(self.backend.intr_write(self.handle,
+                                                 di.EP_INTR_OUT,
+                                                 intf,
+                                                 data,
+                                                 1000),
+                                             len(data))
+
+        self.assertEqual(self.backend.intr_read(self.handle,
+                                                di.EP_INTR_IN,
+                                                intf,
+                                                len(data),
+                                                1000),
+                                             data)
 
     def test_iso_write_read(self):
         pass
 
     def test_ctrl_transfer(self):
         data = self.get_data1()
-        self.assertEqual(self.backend.ctrl_transfer(self.handle, 0x40, di.CTRL_LOOPBACK_WRITE, 0, 0, data, 1000),
-                         len(data))
-        self.assertEqual(self.backend.ctrl_transfer(self.handle, 0xC0, di.CTRL_LOOPBACK_READ, 0, 0, len(data), 1000),
-                         data)
+
+        self.assertEqual(self.backend.ctrl_transfer(self.handle,
+                                                    0x40,
+                                                    di.CTRL_LOOPBACK_WRITE,
+                                                    0,
+                                                    0,
+                                                    data,
+                                                    1000),
+                                                 len(data))
+
+        self.assertEqual(self.backend.ctrl_transfer(self.handle,
+                                                    0xC0,
+                                                    di.CTRL_LOOPBACK_READ,
+                                                    0,
+                                                    0,
+                                                    len(data),
+                                                    1000),
+                                                 data)
 
         data = self.get_data2()
-        self.assertEqual(self.backend.ctrl_transfer(self.handle, 0x40, di.CTRL_LOOPBACK_WRITE, 0, 0, data, 1000),
-                         len(data))
-        self.assertEqual(self.backend.ctrl_transfer(self.handle, 0xC0, di.CTRL_LOOPBACK_READ, 0, 0, len(data), 1000),
-                         data)
+
+        self.assertEqual(self.backend.ctrl_transfer(self.handle,
+                                                    0x40,
+                                                    di.CTRL_LOOPBACK_WRITE,
+                                                    0,
+                                                    0,
+                                                    data,
+                                                    1000),
+                                                 len(data))
+
+        self.assertEqual(self.backend.ctrl_transfer(self.handle,
+                                                    0xC0,
+                                                    di.CTRL_LOOPBACK_READ,
+                                                    0,
+                                                    0,
+                                                    len(data),
+                                                    1000),
+                                                 data)
 
     def test_reset_device(self):
         self.backend.reset_device(self.handle)
