@@ -1,6 +1,14 @@
 import unittest
 import usb.core
 import device_info as di
+import utils
+
+data_list = (utils.get_array_data1(),
+             utils.get_array_data2(),
+             utils.get_list_data1(),
+             utils.get_list_data2(),
+             utils.get_str_data1(),
+             utils.get_str_data1())
 
 class FindTest(unittest.TestCase):
     def runTest(self):
@@ -56,10 +64,23 @@ class DeviceTest(unittest.TestCase):
         self.dev.reset()
 
     def test_write_read(self):
-        pass
+        ep_list = ((di.EP_BULK_OUT, di.EP_BULK_IN),
+                   (di.EP_INTR_OUT, di.EP_INTR_IN))
+
+        for ep in ep_list:
+            for data in data_list:
+                ret = self.dev.write(ep[0], data)
+                self.assertEqual(ret, len(data), 'Failed to write data: ' + str(data) + ', in EP = ' + str(ep[0]))
+                ret = utils.to_array(self.dev.read(ep[1], len(data)))
+                self.assertEqual(ret, data, 'Failed to read data: ' + str(data) + ', in EP = ' + str(ep[1]))
 
     def test_ctrl_transfer(self):
-        pass
+        for data in data_list:
+            ret = self.dev.write(ep[0], data)
+            ret = self.dev.ctrl_transfer(0x40, di.CTRL_LOOPBACK_WRITE, 0, 0, data)
+            self.assertEqual(ret, len(data), 'Failed to write data: ' + str(data))
+            ret = utils.to_array(self.dev.ctrl_transfer(0xC0, di.CTRL_LOOPBACK_READ, 0, 0, len(data)))
+            self.assertEqual(ret, data, 'Failed to read data: ' + str(data))
 
 class ConfigurationTest(unittest.TestCase):
     def __init__(self, backend_name):
@@ -110,12 +131,28 @@ class InterfaceTest(unittest.TestCase):
 class EndpointTest(unittest.TestCase):
     def __init__(self, backend_name):
         unittest.TestCase.__init__(self)
+        self.backend_module = __import__(backend_name, fromlist=['dummy'])
+        self.backend = self.backend_module.get_backend()
+        self.dev = usb.core.find(backend=self.backend, idVendor=di.ID_VENDOR, idProduct=di.ID_PRODUCT)
+        cfg = iter(self.dev).next()
+        intf = iter(cfg).next()
+        self.ep = iter(intf).next()
     def runTest(self):
-        pass
+        self.test_attributes()
+        self.test_write_read()
     def test_attributes(self):
-        pass
+        self.assertEqual(self.ep.bLength, 7)
+        self.assertEqual(self.ep.bDescriptorType, 0x05)
+        self.assertEqual(self.ep.bEndpointAddress, 0x01)
+        self.assertEqual(self.ep.bmAttributes, 0x02)
+        self.assertEqual(self.ep.wMaxPacketSize, 64)
+        self.assertEqual(self.ep.bInterval, 32)
     def test_write_read(self):
-        pass
+        for data in data_list:
+            ret = self.ep.write(data)
+            self.assertEqual(ret, len(data), 'Failed to write data: ' + str(data))
+            ret = utils.to_array(self.ep.read(len(data)))
+            self.assertEqual(ret, data, 'Failed to read data: ' + str(data))
 
 def get_testsuite():
     suite = unittest.TestSuite()

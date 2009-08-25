@@ -1,6 +1,7 @@
 import unittest
 import array
 import device_info as di
+import utils
 
 class BackenTest(unittest.TestCase):
     def __init__(self, backend_module_name):
@@ -108,127 +109,37 @@ class BackenTest(unittest.TestCase):
         self.backend.release_interface(self.handle, intf.bInterfaceNumber)
 
     def test_bulk_write_read(self):
-        intf = self.backend.get_interface_descriptor(self.dev, 0, 0, 0).bInterfaceNumber
-
-        data = self.get_data1()
-
-        self.assertEqual(self.backend.bulk_write(self.handle,
-                                                 di.EP_BULK_OUT,
-                                                 intf,
-                                                 data,
-                                                 1000),
-                                             len(data))
-
-        self.assertEqual(self.backend.bulk_read(self.handle,
-                                                di.EP_BULK_IN,
-                                                intf,
-                                                len(data),
-                                                1000),
-                                             data)
-
-        data = self.get_data2()
-
-        self.assertEqual(self.backend.bulk_write(self.handle,
-                                                 di.EP_BULK_OUT,
-                                                 intf,
-                                                 data,
-                                                 1000),
-                                             len(data))
-
-        self.assertEqual(self.backend.bulk_read(self.handle,
-                                                di.EP_BULK_IN,
-                                                intf,
-                                                len(data),
-                                                1000),
-                                             data)
+        self.__write_read(self.backend.bulk_write,
+                          self.backend.bulk_read,
+                          di.EP_BULK_OUT,
+                          di.EP_BULK_IN)
 
     def test_intr_write_read(self):
-        intf = self.backend.get_interface_descriptor(self.dev, 0, 0, 0).bInterfaceNumber
-
-        data = self.get_data1()
-
-        self.assertEqual(self.backend.intr_write(self.handle,
-                                                 di.EP_INTR_OUT,
-                                                 intf,
-                                                 data,
-                                                 1000),
-                                             len(data))
-
-        self.assertEqual(self.backend.intr_read(self.handle,
-                                                di.EP_INTR_IN,
-                                                intf,
-                                                len(data),
-                                                1000),
-                                             data)
-
-        data = self.get_data2()
-
-        self.assertEqual(self.backend.intr_write(self.handle,
-                                                 di.EP_INTR_OUT,
-                                                 intf,
-                                                 data,
-                                                 1000),
-                                             len(data))
-
-        self.assertEqual(self.backend.intr_read(self.handle,
-                                                di.EP_INTR_IN,
-                                                intf,
-                                                len(data),
-                                                1000),
-                                             data)
+        self.__write_read(self.backend.intr_write,
+                          self.backend.intr_read,
+                          di.EP_INTR_OUT,
+                          di.EP_INTR_IN)
 
     def test_iso_write_read(self):
         pass
 
     def test_ctrl_transfer(self):
-        data = self.get_data1()
-
-        self.assertEqual(self.backend.ctrl_transfer(self.handle,
-                                                    0x40,
-                                                    di.CTRL_LOOPBACK_WRITE,
-                                                    0,
-                                                    0,
-                                                    data,
-                                                    1000),
-                                                 len(data))
-
-        self.assertEqual(self.backend.ctrl_transfer(self.handle,
-                                                    0xC0,
-                                                    di.CTRL_LOOPBACK_READ,
-                                                    0,
-                                                    0,
-                                                    len(data),
-                                                    1000),
-                                                 data)
-
-        data = self.get_data2()
-
-        self.assertEqual(self.backend.ctrl_transfer(self.handle,
-                                                    0x40,
-                                                    di.CTRL_LOOPBACK_WRITE,
-                                                    0,
-                                                    0,
-                                                    data,
-                                                    1000),
-                                                 len(data))
-
-        self.assertEqual(self.backend.ctrl_transfer(self.handle,
-                                                    0xC0,
-                                                    di.CTRL_LOOPBACK_READ,
-                                                    0,
-                                                    0,
-                                                    len(data),
-                                                    1000),
-                                                 data)
+        for data in (utils.get_array_data1(), utils.get_array_data2()):
+            ret = self.backend.ctrl_transfer(self.handle, 0x40, di.CTRL_LOOPBACK_WRITE, 0, 0, data, 1000)
+            self.assertEqual(ret, len(data), 'Failed to write data: ' + str(data))
+            ret = self.backend.ctrl_transfer(self.handle, 0xC0, di.CTRL_LOOPBACK_READ, 0, 0, len(data), 1000)
+            self.assertEqual(ret, data,  'Failed to read data: ' + str(data))
 
     def test_reset_device(self):
         self.backend.reset_device(self.handle)
 
-    def get_data1(self):
-        return array.array('B', range(10))
-
-    def get_data2(self):
-        return array.array('B', reversed(range(10)))
+    def __write_read(self, write_fn, read_fn, ep_out, ep_in):
+        intf = self.backend.get_interface_descriptor(self.dev, 0, 0, 0).bInterfaceNumber
+        for data in (utils.get_array_data1(), utils.get_array_data2()):
+            ret = write_fn(self.handle, ep_out, intf, data, 1000)
+            self.assertEqual(ret, len(data), 'Failed to write data: ' + str(data) + ', in EP = ' + str(ep_out))
+            ret = read_fn(self.handle, eo_in, intf, len(data), 1000)
+            self.assertEqual(ret, data, 'Failed to read data: ' + str(data) + ', in EP = ' + str(ep_in))
 
 def get_testsuite():
     libusb10_testcase = BackenTest('usb.backend.libusb10')
