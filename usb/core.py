@@ -95,7 +95,10 @@ class _EndpointTypeMapper(object):
 
 
 class USBError(IOError):
-    r"""Exception class for USB errors."""
+    r"""Exception class for USB errors.
+    
+    Backends must raise this exception when USB related errors occur.
+    """
     pass
 
 class Endpoint(object):
@@ -116,6 +119,7 @@ class Endpoint(object):
         self.device = device
         intf = Interface(device, interface, alternate_setting, configuration)
         self.interface = intf.bInterfaceNumber
+        self.index = endpoint
 
         desc = device.devmgr.backend.get_endpoint_descriptor(
                     device.devmgr.dev,
@@ -128,11 +132,11 @@ class Endpoint(object):
             ('bLength', 'bDescriptorType', 'bEndpointAddress', 'bmAttributes',
             'wMaxPacketSize', 'bInterval', 'bRefresh', 'bSynchAddress'))
 
-    def write(self, data, timeout = _DEFAULT_TIMEOUT):
+    def write(self, data, timeout = None):
         r"""Write data to the endpoint."""
         return self.device.write(self.bEndpointAddress, data, self.interface, timeout)
 
-    def read(self, size, timeout = _DEFAULT_TIMEOUT):
+    def read(self, size, timeout = None):
         r"""Read data from the endpoint."""
         return self.device.read(self.bEndpointAddress, size, self.interface, timeout)
 
@@ -215,21 +219,57 @@ class Configuration(object):
 
 
 class Device(object):
-    r"""Represent a device descriptor."""
+    r"""Device object.
+    
+    This class contains all fields of the Device Descriptor according
+    to USB Specification. You may access them as class properties.
+    For example, to access the field bDescriptorType of the Device
+    Descriptor:
+
+    >>> import usb.core
+    >>> dev = usb.core.find()
+    >>> dev.bDescriptorType
+
+    Additionally, the class provides methods to communicate with
+    the hardware. Typically, an application will first call the
+    set_configuration() method to put the device in a known configured
+    state, optionally call the set_interface_altsetting() to select the
+    alternate setting (if there is more than one) of the interface used,
+    and call the write() and read() method to send and receive data.
+
+    When working in a new hardware, one first try would be like this:
+
+    >>> import usb.core
+    >>> dev = usb.core.find(idVendor=myVendorId, idProduct=myProductId)
+    >>> dev.set_configuration()
+    >>> dev.write(1, 'teste')
+
+    This sample finds the device of interest (myVendorId and myProductId should be
+    replaced by the corresponding values of your device), then configures the device
+    (by default, the configuration value is 1, which is a typical value for most
+    devices) and then writes some data to the endpoint 0x01.
+
+    Timeout values for the write, read and ctrl_transfer methods are specified in
+    miliseconds. If the parameter is omitted, Device.default_timeout value will
+    be used instead. This property can be set by the user at anytime.
+    """
 
     def __init__(self, dev, backend):
         r"""Initialize the Device object.
 
-        Parameters:
-            dev - the device representation returned by backend.enumerate_devices()
-            backend - the backend object.
+        Library users should normally get a Device instance through
+        the find function. The dev parameter is the identification
+        of a device to the backend and its meaning is opaque outside
+        of it. The backend parameter is a instance of a backend
+        object.
         """
         self.devmgr = _DeviceManager(dev, backend)
         self.intf_claimed = _InterfaceClaimPolicy(self.devmgr)
         desc = backend.get_device_descriptor(self.devmgr.dev)
-        self.current_configuration = -1
+        self.current_configuration = None
         self.alt_map = _AlternateSettingMapper()
         self.ep_map = _EndpointTypeMapper(self)
+        self.__default_timeout = _DEFAULT_TIMEOUT
 
         _set_attr(desc, self,
             ('bLength', 'bDescriptorType', 'bcdUSB', 'bDeviceClass',
@@ -237,16 +277,24 @@ class Device(object):
              'idVendor', 'idProduct', 'bcdDevice', 'iManufacturer',
              'iProduct', 'iSerialNumber', 'bNumConfigurations'))
 
-    def set_configuration(self, configuration = 1):
-        r"""Set the current active configuration.
+    def set_configuration(self, configuration = None):
+        r"""Set the active configuration.
         
-        Parameters:
-            configuration - the bConfigurationValue field of the desired configuration.
+        The configuration parameter is the bConfigurationValue field of the
+        configuration you want to set as active. If you call this method
+        without parameter, it will use the first configuration found.
+        As a device hardly ever has more than one configuration, calling
+        the method without parameter is enough to get the device ready.
         """
         self.devmgr.open()
+
+        if configuration is None:
+            configuration = Configuration(self).bConfigurationValue
+
         self.devmgr.backend.set_configuration(self.devmgr.handle, configuration)
-        self.current_configuration = 0
+
         # discover the configuration index
+        self.current_configuration = 0
         for c in self:
             if c.bConfigurationValue == configuration:
                 break
@@ -254,13 +302,41 @@ class Device(object):
         else:
             assert not "Configuration not found????"
 
-    def set_interface_altsetting(self, interface = 0, alternate_setting = 0):
+    def set_interface_altsetting(self, interface = None, alternate_setting = None):
         r"""Set the alternate setting for an interface.
-        
-        Parameters:
-            interface - the bInterfaceNumber field of the interface.
-            alternate_setting - the bAlternateSetting field of the interface.
+ 
+        When you want to use an interface and it has more than one alternate setting,
+        you should call this method to select the alternate setting you would like
+        to use. If you call the method without one or the two parameters, it will
+        be selected the first one found in the Device in the same way of set_configuration
+        method.
+
+        Commonly, an interface has only one alternate setting and this call is
+        not necessary. For most of the devices, either it has more than one alternate
+        setting or not, it is not harmful to make a call to this method with no arguments,
+        as devices will silently ignore the request when there is only one alternate
+        setting, though the USB Spec allows devices with no additional alternate setting
+        return an error to the Host in response to a SET_INTERFACE request.
+
+        If you are in doubt, you may want to call it with no arguments wrapped by
+        a try/except clause:
+
+        >>> try:
+        >>>     dev.set_interface_altsetting()
+        >>> except usb.core.USBError:
+        >>>     pass
         """
+        intf = None
+
+        if interface is None:
+            intf = Interface(self)
+            interface = intf.bInterfaceNumber
+
+        if alternate_setting is None:
+            if intf is None:
+                intf = Interface(self)
+            alternate_setting = intf.bAlternateSetting
+
         self.intf_claimed.claim(interface)
         self.devmgr.backend.set_interface_altsetting(self.devmgr.handle, interface, alternate_setting)
         self.alt_map[interface] = alternate_setting
@@ -270,16 +346,22 @@ class Device(object):
         self.devmgr.open()
         self.devmgr.backend.reset_device(self.devmgr.handle)
 
-    def write(self, endpoint, data, interface = 0, timeout = _DEFAULT_TIMEOUT):
+    def write(self, endpoint, data, interface = None, timeout = None):
         r"""Write data to the endpoint.
 
-        Parameters:
-            endpoint - endpoint address.
-            data - data to transfer.
-            interface - bInterfaceNumber.
-            timeout - operation timeout.
+        This method is used to send data to the device. The endpoint parameter
+        corresponds to the bEndpointAddress member whose endpoint you want to
+        communicate with. The interface parameter is the bInterfaceNumber field
+        of the interface descriptor which contains the endpoint. If you do not
+        provide one, the first one found will be used, as explained in the
+        set_interface_altsetting() method.
 
-        Return the number of data written.
+        The data parameter should be a sequence like type convertible to
+        array type (see array module).
+
+        The timeout is specified in miliseconds.
+
+        The method returns the number of bytes written.
         """
         def get_write_fn():
             fn_map = {util.ENDPOINT_TYPE_BULK:self.devmgr.backend.bulk_write,
@@ -287,19 +369,30 @@ class Device(object):
                       util.ENDPOINT_TYPE_ISO:self.devmgr.backend.iso_write}
             alt = self.alt_map[interface]
             return fn_map[self.ep_map.get(endpoint, self.current_configuration, interface, alt)]
-        self.devmgr.backend.claim_interface(self.devmgr.handle, interface)
-        return get_write_fn()(self.devmgr.handle, endpoint, interface, array.array('B', data), timeout)
 
-    def read(self, endpoint, size, interface = 0, timeout = _DEFAULT_TIMEOUT):
+        interface = self.__get_interface(interface)
+        self.devmgr.backend.claim_interface(self.devmgr.handle, interface)
+
+        return get_write_fn()(self.devmgr.handle,
+                              endpoint,
+                              interface,
+                              array.array('B', data),
+                              self.__get_timeout(timeout))
+
+    def read(self, endpoint, size, interface = None, timeout = None):
         r"""Read data from the endpoint.
 
-        Parameters:
-            endpoint - endpoint address.
-            size - number of data to read.
-            interface - bInterfaceNumber.
-            timeout - operation timeout.
+        This method is used to receive data from the device. The endpoint parameter
+        corresponds to the bEndpointAddress member whose endpoint you want to
+        communicate with. The interface parameter is the bInterfaceNumber field
+        of the interface descriptor which contains the endpoint. If you do not
+        provide one, the first one found will be used, as explained in the
+        set_interface_altsetting() method. The size parameters tells how many
+        bytes you want to read.
 
-        Return the data read as a array object.
+        The timeout is specified in miliseconds.
+
+        The method returns an array object with the data read.
         """
         def get_read_fn():
             fn_map = {util.ENDPOINT_TYPE_BULK:self.devmgr.backend.bulk_read,
@@ -307,26 +400,37 @@ class Device(object):
                       util.ENDPOINT_TYPE_ISO:self.devmgr.backend.iso_read}
             alt = self.alt_map[interface]
             return fn_map[self.ep_map.get(endpoint, self.current_configuration, interface, alt)]
+
+        interface = self.__get_interface(interface)
         self.devmgr.backend.claim_interface(self.devmgr.handle, interface)
-        return get_read_fn()(self.devmgr.handle, endpoint, interface, size, timeout)
+
+        return get_read_fn()(self.devmgr.handle,
+                             endpoint,
+                             interface,
+                             size,
+                             self.__get_timeout(timeout))
 
 
     def ctrl_transfer(self, bmRequestType, bRequest, wValue, wIndex,
-            data_or_wLength = None, timeout = _DEFAULT_TIMEOUT):
-        r"""Do a control transfer on endpoint 0.
+            data_or_wLength = None, timeout = None):
+        r"""Do a control transfer on the endpoint 0.
 
-        Parameters:
-            bmRequestType - the request type field for the setup packet.
-            bRequest - the request field for the setup packet.
-            wValue - the value field for the setup packet.
-            wIndex - the index field for the setup packet.
-            data_or_wLength - for an in transfer, it constains the number
-                              of bytes to read. For out transfers, the
-                              data to be written.
-            timeout - timeout of the operation.
+        This method is used to issue a control transfer over the
+        endpoint 0(endpoint 0 is required to always be a control endpoint).
 
-        Return the number of bytes written (for out transfers) or the data
-        read (for in transfers).
+        The parameters bmRequestType, bRequest, wValue and wIndex are the
+        same of the USB Standard Control Request format.
+
+        Control requests may or may not have a data payload to write/read.
+        In cases which it has, the direction bit of the bmRequestType
+        field is used to infere the desired request direction. For
+        host to device requests (OUT), data_or_wLength parameter is
+        the data payload to send, and it must be a sequence type convertible
+        to an array object. In this case, the return value is the number of data
+        payload written. For device to host requests (IN), data_or_wLength
+        is the wLength parameter of the control request specifying the
+        number of bytes to read in data payload. In this case, the return
+        value is the data payload read, as an array object.
         """
         if util.ctrl_direction(bmRequestType) == util.CTRL_IN:
             a = array.array('B', data_or_wLength)
@@ -335,14 +439,13 @@ class Device(object):
 
         self.devmgr.open()
 
-        return self.devmgr.backend.ctrl_transfer(
-                    self.devmgr.handle,
-                    bmRequestType,
-                    bRequest,
-                    wValue,
-                    wIndex,
-                    a,
-                    timeout)
+        return self.devmgr.backend.ctrl_transfer(self.devmgr.handle,
+                                                 bmRequestType,
+                                                 bRequest,
+                                                 wValue,
+                                                 wIndex,
+                                                 a,
+                                                 self.__get_timeout(timeout))
 
     def is_kernel_driver_active(self, interface):
         r"""Determine if there is kernel driver associated with the interface."""
@@ -360,24 +463,44 @@ class Device(object):
         self.devmgr.backend.attach_kernel_driver(self.devmgr.handle, interface)
 
     def __iter__(self):
-        r"""Iterate on the all configurations of the device"""
+        r"""Iterate over all configurations of the device."""
         for i in range(self.bNumConfigurations):
             yield Configuration(self, i)
+
+    def __get_interface(self, interface):
+        if interface is not None:
+            return interface
+        return Interface(configuration = self.current_configuration).bInterfaceNumber
+
+    def __get_timeout(self, timeout):
+        if timeout is not None:
+            return timeout
+        return self.__default_timeout
+
+    def __set_def_tmo(self, tmo):
+        if tmo < 0:
+            raise ValueError('Timeout cannot be a negative value')
+        self.__default_timeout = tmo
+
+    def __get_def_tmo(self):
+        return self.__default_timeout
+
+    default_timeout = property(__get_def_tmo, __set_def_tmo, doc = 'Default timeout for transfers')
 
 def find(find_all=False, backend = None, predicate = None, **args):
     r"""Find an USB device and return it.
 
     find() is the function used to discover USB devices.
-    As arguments, you can pass any combination of the
-    USB Device descriptor fields to match a device. For example:
+    You can pass as arguments any combination of the
+    USB Device Descriptor fields to match a device. For example:
 
     find(idVendor=0x3f4, idProduct=0x2009)
 
-    Will return the Device object for the device with
+    will return the Device object for the device with
     idVendor Device descriptor field equals to 0x3f4 and
     idProduct equals to 0x2009.
 
-    If there is more than one device which match the criteria,
+    If there is more than one device which matchs the criteria,
     the first one found will be returned. If a matching device cannot
     be found the function returns None. If you want to get all
     devices, you can set the parameter find_all to True, then find
@@ -388,11 +511,11 @@ def find(find_all=False, backend = None, predicate = None, **args):
 
     This call will get all the USB printers connected to the system.
     (actually may be not, because some devices put their class
-     information in the Interface).
+     information in the Interface Descriptor).
 
     You can also use a custom predicate as a match criteria:
 
-    dev = find(predicate = lambda d: d.idProduct=0x3f4 and d.idvendor=2009)
+    dev = find(predicate = lambda d: d.idProduct=0x3f4 and d.idvendor=0x2009)
 
     A more accurate printer finder using a custom predicate would be like
     so:
@@ -423,7 +546,7 @@ def find(find_all=False, backend = None, predicate = None, **args):
 
     devices = [dev for dev in find(find_all=True)]
 
-    Finally, you can pass a custom backend to find:
+    Finally, you may pass a custom backend to the find function:
 
     find(backend = MyBackend())
 

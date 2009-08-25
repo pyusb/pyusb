@@ -2,6 +2,7 @@ import unittest
 import usb.core
 import device_info as di
 import utils
+import usb.util
 
 data_list = (utils.get_array_data1(),
              utils.get_array_data2(),
@@ -29,6 +30,7 @@ class DeviceTest(unittest.TestCase):
 
     def runTest(self):
         self.test_attributes()
+        self.test_timeout()
         self.test_set_configuration()
         self.test_set_interface_altsetting()
         self.test_write_read()
@@ -37,7 +39,7 @@ class DeviceTest(unittest.TestCase):
 
     def test_attributes(self):
         self.assertEqual(self.dev.bLength, 18)
-        self.assertEqual(self.dev.bDescriptorType, 0x01)
+        self.assertEqual(self.dev.bDescriptorType, usb.util.DESC_TYPE_DEVICE)
         self.assertEqual(self.dev.bcdUSB, 0x0200)
         self.assertEqual(self.dev.idVendor, di.ID_VENDOR)
         self.assertEqual(self.dev.idProduct, di.ID_PRODUCT)
@@ -51,14 +53,24 @@ class DeviceTest(unittest.TestCase):
         self.assertEqual(self.dev.bDeviceSubClass, 0x00)
         self.assertEqual(self.dev.bDeviceProtocol, 0x00)
 
+    def test_timeout(self):
+        tmo = self.default_timeout
+        self.default_timeout = 1
+        self.assertEqual(self.default_timeout, 1)
+        self.default_timeout = tmo
+        self.assertEqual(self.default_timeout, tmo)
+        self.assertRaises(ValueError, lambda: self.default_timeout = -1)
+        self.assertEqual(self.default_timeout, tmo)
+
     def test_set_configuration(self):
-        cfg = iter(self.dev).next().bConfigurationValue
+        cfg = usb.core.Configuration(self.dev).bConfigurationValue
         self.dev.set_configuration(cfg)
+        self.dev.set_configuration()
 
     def test_set_interface_altsetting(self):
-        cfg = iter(self.dev).next()
-        intf = iter(cfg).next()
+        intf = usb.core.Interface(self.dev)
         self.dev.set_interface_altsetting(intf.bInterfaceNumber, intf.bAlternateSetting)
+        self.dev.set_interface_altsetting()
 
     def test_reset(self):
         self.dev.reset()
@@ -88,13 +100,13 @@ class ConfigurationTest(unittest.TestCase):
         self.backend_module = __import__(backend_name, fromlist=['dummy'])
         self.backend = self.backend_module.get_backend()
         self.dev = usb.core.find(backend=self.backend, idVendor=di.ID_VENDOR, idProduct=di.ID_PRODUCT)
-        self.cfg = iter(self.dev).next()
+        self.cfg = usb.core.Configuration(self.dev)
     def runTest(self):
         self.test_attributes()
         self.test_set()
     def test_attributes(self):
         self.assertEqual(self.cfg.bLength, 9)
-        self.assertEqual(self.cfg.bDescriptorType, 0x02)
+        self.assertEqual(self.cfg.bDescriptorType, usb.util.DESC_TYPE_CONFIG)
         self.assertEqual(self.cfg.wTotalLength, 60)
         self.assertEqual(self.cfg.bNumInterfaces, 0x01)
         self.assertEqual(self.cfg.bConfigurationValue, 0x01)
@@ -110,14 +122,13 @@ class InterfaceTest(unittest.TestCase):
         self.backend_module = __import__(backend_name, fromlist=['dummy'])
         self.backend = self.backend_module.get_backend()
         self.dev = usb.core.find(backend=self.backend, idVendor=di.ID_VENDOR, idProduct=di.ID_PRODUCT)
-        cfg = iter(self.dev).next()
-        self.intf = iter(cfg).next()
+        self.intf = usb.core.Interface(self.dev)
     def runTest(self):
         self.test_attributes()
         self.test_set_altsetting()
     def test_attributes(self):
         self.assertEqual(self.intf.bLength, 9)
-        self.assertEqual(self.intf.bDescriptorType, 0x04)
+        self.assertEqual(self.intf.bDescriptorType, usb.util.DESC_TYPE_INTERFACE)
         self.assertEqual(self.intf.bInterfaceNumber, 0)
         self.assertEqual(self.intf.bAlternateSetting, 0)
         self.assertEqual(self.intf.bNumEndpoints, 6)
@@ -134,15 +145,13 @@ class EndpointTest(unittest.TestCase):
         self.backend_module = __import__(backend_name, fromlist=['dummy'])
         self.backend = self.backend_module.get_backend()
         self.dev = usb.core.find(backend=self.backend, idVendor=di.ID_VENDOR, idProduct=di.ID_PRODUCT)
-        cfg = iter(self.dev).next()
-        intf = iter(cfg).next()
-        self.ep = iter(intf).next()
+        self.ep = usb.core.Endpoint(self.dev)
     def runTest(self):
         self.test_attributes()
         self.test_write_read()
     def test_attributes(self):
         self.assertEqual(self.ep.bLength, 7)
-        self.assertEqual(self.ep.bDescriptorType, 0x05)
+        self.assertEqual(self.ep.bDescriptorType, usb.util.DESC_TYPE_ENDPOINT)
         self.assertEqual(self.ep.bEndpointAddress, 0x01)
         self.assertEqual(self.ep.bmAttributes, 0x02)
         self.assertEqual(self.ep.wMaxPacketSize, 64)
