@@ -1,9 +1,61 @@
+r"""usb.backend - Backend interface.
+
+This module exports:
+
+IBackend - backend interface.
+
+Backends are implemented by modules which provide a get_backend()
+function which returns an IBackend like object, i.e, the object
+returned must obay the IBackend interface. The easiest way to do so
+is inherinting from IBackend.
+
+PyUSB provides by default backends for libusb versions 0.1 and 1.0,
+and OpenUSB library. You can provide your own customized backend if you
+want to. This is a skeleton of a backend implementation module:
+
+import usb.backend
+
+class MyBackend(usb.backend.IBackend):
+    pass
+
+def get_backend():
+    return MyBackend()
+
+You can use your customized backend using the backend parameter of the
+usb.core.find() function. For example:
+
+import custom_backend
+import usb.core
+
+myidVendor = 0xfffe
+myidProduct = 0x0001
+
+mybackend = custom_backend.get_backend()
+
+dev = usb.core.find(backend = mybackend, idProduct=myidProduct, idVendor=myidVendor)
+
+If you do not provide a backend to find(), it will use one of the defaults backend according
+to its internal rules. For details, consult the find() documentation.
+"""
+
 __all__ = []
 
 def _not_implemented(func):
     raise NotImplementedError(func.__name__)
 
 class IBackend(object):
+    r"""Backend interface.
+
+    IBackend is the basic interface for backend implementations. By default,
+    the methods of the interface raise a NotImplementedError exception. A
+    backend implementation should replace the methods to provide the funcionality
+    necessary.
+
+    As Python is a dynamic typed language, you are not obligated to derive from
+    IBackend, everything that bahaves like a IBackend is a IBackend. But you
+    are strongly recommended to do so, inheriting from IBackend provides consistent
+    default behavior.
+    """
     def enumerate_devices(self):
         r"""Return an iterable object which yields a device identifier
             for each USB device present in the system.
