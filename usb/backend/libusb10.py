@@ -2,6 +2,10 @@ from ctypes import *
 import usb.util
 import array
 
+__author__ = 'Wander Lairson Costa'
+
+__all__ = ['get_backend']
+
 # libusb.h
 
 # return codes

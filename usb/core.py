@@ -9,6 +9,10 @@ Endpoint - a class representing an endpoint descriptor.
 find() - a function to find USB devices.
 """
 
+__author__ = 'Wander Lairson Costa'
+
+__all__ = ['Device', 'Configuration', 'Interface', 'Endpoint', 'find']
+
 import array
 import util
 
@@ -102,19 +106,35 @@ class USBError(IOError):
     pass
 
 class Endpoint(object):
-    r"""Represent an endpoint descriptor."""
+    r"""Represent an endpoint object.
+
+    This class contains all fields of the Endpoint Descriptor
+    according to the USB Specification. You may access them as class
+    properties.  For example, to access the field bEndpointAddress
+    of the endpoint descriptor:
+
+    >>> import usb.core
+    >>> dev = usb.core.find()
+    >>> for cfg in dev:
+    >>>     for i in cfg:
+    >>>         for e in i:
+    >>>             print e.bEndpointAddress
+    """
 
     def __init__(self, device, endpoint, interface = 0,
                     alternate_setting = 0, configuration = 0):
-        r""" Initialize the Endpoint object.
+        r"""Initialize the Endpoint object.
 
-        Parameters:
-            device - the device object for which the Endpoint belongs to.
-            endpoint - endpoint logical index.
-            interface - the logical interface index for which the Endpoint belongs to.
-            alternate_setting - the alternate setting (if any) for which the
-                                Endpoint belongs to.
-            configuration - the logical configuration index for which the Endpoint belongs to.
+        The device parameter is the device object returned by the find()
+        function. endpoint is the endpoint logical index (not the endpoint address).
+        The configuration parameter is the logical index of the
+        configuration (not the bConfigurationValue field). The interface
+        parameter is the interface logical index (not the bInterfaceNumber field)
+        and alternate_setting is the alternate setting logical index (not the
+        bAlternateSetting value).  Not every interface has more than one alternate
+        setting.  In this case, the alternate_setting parameter should be zero.
+        By "logical index" we mean the relative order of the configurations returned by the
+        peripheral as a result of GET_DESCRIPTOR request.
         """
         self.device = device
         intf = Interface(device, interface, alternate_setting, configuration)
@@ -133,27 +153,59 @@ class Endpoint(object):
             'wMaxPacketSize', 'bInterval', 'bRefresh', 'bSynchAddress'))
 
     def write(self, data, timeout = None):
-        r"""Write data to the endpoint."""
+        r"""Write data to the endpoint.
+        
+        The parameter data contains the data to be sent to the endpoint and
+        timeout is the time limit of the operation. The transfer type and
+        endpoint address are automatically inferred.
+
+        The method returns the number of bytes written.
+
+        For details, see the Device.write() method.
+        """
         return self.device.write(self.bEndpointAddress, data, self.interface, timeout)
 
     def read(self, size, timeout = None):
-        r"""Read data from the endpoint."""
+        r"""Read data from the endpoint.
+        
+        The parameter size is the number of bytes to read and timeout is the
+        time limit of the operation.The transfer type and endpoint address
+        are automatically inferred.
+
+        The method returns an array.array object with the data read.
+
+        For details, see the Device.read() method.
+        """
         return self.device.read(self.bEndpointAddress, size, self.interface, timeout)
 
 class Interface(object):
-    r"""Represent an interface descriptor."""
+    r"""Represent an interface object.
+
+    This class contains all fields of the Interface Descriptor
+    according to the USB Specification. You may access them as class
+    properties.  For example, to access the field bInterfaceNumber
+    of the interface descriptor:
+
+    >>> import usb.core
+    >>> dev = usb.core.find()
+    >>> for cfg in dev:
+    >>>     for i in cfg:
+    >>>         print i.bInterfaceNumber
+    """
 
     def __init__(self, device, interface = 0,
             alternate_setting = 0, configuration = 0):
         r"""Initialize the interface object.
 
-        Parameters:
-            device - device for which the interface belongs to.
-            interface - the logical index of the interface.
-            alternate_settting - the logical alternate setting index (if any)
-                                 of the interface.
-            configuration - the configuration for which the interface
-                            belongs to.
+        The device parameter is the device object returned by the find()
+        function. The configuration parameter is the logical index of the
+        configuration (not the bConfigurationValue field). The interface
+        parameter is the interface logical index (not the bInterfaceNumber field)
+        and alternate_setting is the alternate setting logical index (not the
+        bAlternateSetting value).  Not every interface has more than one alternate
+        setting.  In this case, the alternate_setting parameter should be zero.
+        By "logical index" we mean the relative order of the configurations returned by the
+        peripheral as a result of GET_DESCRIPTOR request.
         """
         self.device = device
         self.alternate_index = alternate_setting
@@ -177,19 +229,33 @@ class Interface(object):
             self.bInterfaceNumber, self.bAlternateSetting)
 
     def __iter__(self):
+        r"""Iterate over all endpoints of the interface."""
         for i in range(self.bNumEndpoints):
             yield Endpoint(self.device, i, self.index,
                         self.alternate_index, self.configuration)
 
 class Configuration(object):
-    r"""Represent a configuration descriptor."""
+    r"""Represent a configuration object.
+ 
+    This class contains all fields of the Configuration Descriptor
+    according to the USB Specification. You may access them as class
+    properties.  For example, to access the field bConfigurationValue
+    of the configuration descriptor:
+
+    >>> import usb.core
+    >>> dev = usb.core.find()
+    >>> for cfg in dev:
+    >>>     print cfg.bConfigurationValue
+    """
 
     def __init__(self, device, configuration = 0):
         r"""Initialize the configuration object.
-        
-        Parameters:
-            device - The device for which the configuration belongs to.
-            configuration - the configuration logical index.
+
+        The device parameter is the device object returned by the find()
+        function. The configuration parameter is the logical index of the
+        configuration (not the bConfigurationValue field). By "logical index"
+        we mean the relative order of the configurations returned by the
+        peripheral as a result of GET_DESCRIPTOR request.
         """
         self.device = device
         self.index = configuration
@@ -207,7 +273,7 @@ class Configuration(object):
         self.device.set_configuration(self.bConfigurationValue)
 
     def __iter__(self):
-        r"""Iterate on all interfaces of the configuration"""
+        r"""Iterate over all interfaces of the configuration."""
         for i in range(self.bNumInterfaces):
             alt = 0
             try:
@@ -222,9 +288,9 @@ class Device(object):
     r"""Device object.
     
     This class contains all fields of the Device Descriptor according
-    to USB Specification. You may access them as class properties.
-    For example, to access the field bDescriptorType of the Device
-    Descriptor:
+    to the USB Specification. You may access them as class properties.
+    For example, to access the field bDescriptorType of the device
+    descriptor:
 
     >>> import usb.core
     >>> dev = usb.core.find()
@@ -448,17 +514,24 @@ class Device(object):
                                                  self.__get_timeout(timeout))
 
     def is_kernel_driver_active(self, interface):
-        r"""Determine if there is kernel driver associated with the interface."""
+        r"""Determine if there is kernel driver associated with the interface.
+
+        If a kernel driver is active, and the object will be unable to perform I/O.
+        """
         self.devmgr.open()
         return self.devmgr.backend.is_kernel_driver_active(self.devmgr.handle, interface)
 
     def detach_kernel_driver(self, interface):
-        r"""Detach a kernel driver."""
+        r"""Detach a kernel driver.
+
+        If successful, you will then be able to perform I/O.
+        """
         self.devmgr.open()
         self.devmgr.backend.detach_kernel_driver(self.devmgr.handle, interface)
 
     def attach_kernel_driver(self, interface):
-        r"""Attach a kernel driver."""
+        r"""Re-attach an interface's kernel driver, which was previously
+        detached using detach_kernel_driver()."""
         self.devmgr.open()
         self.devmgr.backend.attach_kernel_driver(self.devmgr.handle, interface)
 

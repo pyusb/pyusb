@@ -1,6 +1,10 @@
 from ctypes import *
 import usb.util
 
+__author__ = 'Wander Lairson Costa'
+
+__all__ = ['get_backend']
+
 class _usb_endpoint_desc(Structure):
     _fields_ = [('bLength', c_uint8),
                 ('bDescriptorType', c_uint8),

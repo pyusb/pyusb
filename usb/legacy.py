@@ -3,6 +3,8 @@ import util
 import itertools
 from core import USBError
 
+__author__ = 'Wander Lairson Costa'
+
 CLASS_AUDIO = 1
 CLASS_COMM = 2
 CLASS_DATA = 10
@@ -62,7 +64,7 @@ TYPE_STANDARD = 0
 TYPE_VENDOR = 64
 
 class Endpoint(object):
-    r"""Endpoint descriptor object"""
+    r"""Endpoint descriptor object."""
     def __init__(self, ep):
         self.address = ep.bEndpointAddress
         self.interval = ep.bInterval
@@ -70,7 +72,7 @@ class Endpoint(object):
         self.type = util.endpoint_type(ep.bmAttributes)
 
 class Interface(object):
-    r"""Interface descriptor object"""
+    r"""Interface descriptor object."""
     def __init__(self, intf):
         self.alternateSetting = intf.bAlternateSetting
         self.interfaceNumber = intf.bInterfaceNumber
@@ -81,7 +83,7 @@ class Interface(object):
         self.endpoints = [Endpoint(e) for e in intf]
 
 class Configuration(object):
-    r"""Configuration descriptor object"""
+    r"""Configuration descriptor object."""
     def __init__(self, cfg):
         self.iConfiguration = cfg.iConfiguration
         self.maxPower = cfg.bMaxPower << 2

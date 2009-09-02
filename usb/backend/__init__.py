@@ -40,7 +40,9 @@ defaults backend according to its internal rules. For details, consult the
 find() function documentation.
 """
 
-__all__ = []
+__author__ = 'Wander Lairson Costa'
+
+__all__ = ['libusb01', 'libusb10', 'openusb']
 
 def _not_implemented(func):
     raise NotImplementedError(func.__name__)
@@ -102,7 +104,7 @@ class IBackend(object):
         not required to be equal) to the int type.
 
         The dev parameter is the already described device identification object.
-        The intf parameter is the interface logical index (not the bInterfaceValue field)
+        The intf parameter is the interface logical index (not the bInterfaceNumber field)
         and alt is the alternate setting logical index (not the bAlternateSetting value).
         Not every interface has more than one alternate setting.  In this case, the alt
         parameter should be zero. config is the configuration logical index (not the
@@ -159,7 +161,7 @@ class IBackend(object):
         This method should only be called when the interface has more than
         one alternate setting. The dev_handle is the value returned by the
         open_device() method. intf and altsetting are respectivelly the 
-        bInterfaceValue and bAlternateSetting fields of the related interface.
+        bInterfaceNumber and bAlternateSetting fields of the related interface.
         """
         _not_implemented(self.set_interface_altsetting)
 
@@ -189,7 +191,7 @@ class IBackend(object):
 
         dev_handle is the value returned by the open_device() method.
         The ep parameter is the bEndpointAddress field whose endpoint
-        the data will be sent to. intf is the bInterfaceValue field
+        the data will be sent to. intf is the bInterfaceNumber field
         of the interface containing the endpoint. The data parameter
         is the data to be sent. It must be an instance of the array.array
         class. The timeout parameter specifies a time limit to the operation
@@ -204,7 +206,7 @@ class IBackend(object):
 
         dev_handle is the value returned by the open_device() method.
         The ep parameter is the bEndpointAddress field whose endpoint
-        the data will be received from. intf is the bInterfaceValue field
+        the data will be received from. intf is the bInterfaceNumber field
         of the interface containing the endpoint. The size parameter
         is the number of bytes to be read.  The timeout parameter specifies
         a time limit to the operation in miliseconds.
@@ -218,7 +220,7 @@ class IBackend(object):
 
         dev_handle is the value returned by the open_device() method.
         The ep parameter is the bEndpointAddress field whose endpoint
-        the data will be sent to. intf is the bInterfaceValue field
+        the data will be sent to. intf is the bInterfaceNumber field
         of the interface containing the endpoint. The data parameter
         is the data to be sent. It must be an instance of the array.array
         class. The timeout parameter specifies a time limit to the operation
@@ -233,7 +235,7 @@ class IBackend(object):
 
         dev_handle is the value returned by the open_device() method.
         The ep parameter is the bEndpointAddress field whose endpoint
-        the data will be received from. intf is the bInterfaceValue field
+        the data will be received from. intf is the bInterfaceNumber field
         of the interface containing the endpoint. The size parameter
         is the number of bytes to be read.  The timeout parameter specifies
         a time limit to the operation in miliseconds.
@@ -247,7 +249,7 @@ class IBackend(object):
 
         dev_handle is the value returned by the open_device() method.
         The ep parameter is the bEndpointAddress field whose endpoint
-        the data will be sent to. intf is the bInterfaceValue field
+        the data will be sent to. intf is the bInterfaceNumber field
         of the interface containing the endpoint. The data parameter
         is the data to be sent.It must be an instance of the array.array
         class. The timeout parameter specifies a time limit to the operation
@@ -262,7 +264,7 @@ class IBackend(object):
 
         dev_handle is the value returned by the open_device() method.
         The ep parameter is the bEndpointAddress field whose endpoint
-        the data will be received from. intf is the bInterfaceValue field
+        the data will be received from. intf is the bInterfaceNumber field
         of the interface containing the endpoint. The size parameter
         is the number of bytes to be read. The timeout parameter specifies
         a time limit to the operation in miliseconds.
@@ -313,6 +315,5 @@ class IBackend(object):
 
     def attach_kernel_driver(self, dev_handle, intf):
         r"""Re-attach an interface's kernel driver, which was previously
-        detached using detach_kernel_driver().
-        """
+        detached using detach_kernel_driver()."""
         _not_implemented(self.attach_kernel_driver)

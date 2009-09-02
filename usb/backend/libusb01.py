@@ -4,6 +4,10 @@ import usb.backend
 import usb.util
 import array
 
+__author__ = 'Wander Lairson Costa'
+
+__all__ = ['get_backend']
+
 # usb.h
 
 _PC_PATH_MAX = 4
