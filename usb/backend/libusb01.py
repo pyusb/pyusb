@@ -203,9 +203,12 @@ def _check(retval):
     if isinstance(retval, c_int):
         if retval.value < 0:
             raise USBError(_dll.usb_strerror())
+        return retval.value
     elif retval == None:
         raise USBError(_dll.usb_strerror())
     else:
+        if retval < 0:
+            raise USBError(_dll.usb_strerror())
         return retval
 
 _dll.usb_init()

@@ -8,7 +8,7 @@ def get_array_data2(length = 10):
 def get_list_data1(length = 10):
     return range(length)
 def get_list_data2(length = 10):
-    return reversed(range(length))
+    return [x for x in reversed(range(length))]
 def get_str_data1(length = 10):
     return ''.join([chr(x) for x in range(length)])
 def get_str_data2(length = 10):

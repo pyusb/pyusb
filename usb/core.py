@@ -371,7 +371,7 @@ class Device(object):
             return fn_map[self.ep_map.get(endpoint, self.current_configuration, interface, alt)]
 
         interface = self.__get_interface(interface)
-        self.devmgr.backend.claim_interface(self.devmgr.handle, interface)
+        self.intf_claimed.claim(interface)
 
         return get_write_fn()(self.devmgr.handle,
                               endpoint,
@@ -402,7 +402,7 @@ class Device(object):
             return fn_map[self.ep_map.get(endpoint, self.current_configuration, interface, alt)]
 
         interface = self.__get_interface(interface)
-        self.devmgr.backend.claim_interface(self.devmgr.handle, interface)
+        self.intf_claimed.claim(interface)
 
         return get_read_fn()(self.devmgr.handle,
                              endpoint,
@@ -432,7 +432,7 @@ class Device(object):
         number of bytes to read in data payload. In this case, the return
         value is the data payload read, as an array object.
         """
-        if util.ctrl_direction(bmRequestType) == util.CTRL_IN:
+        if util.ctrl_direction(bmRequestType) == util.CTRL_OUT:
             a = array.array('B', data_or_wLength)
         else:
             a = (data_or_wLength is None) and 0 or data_or_wLength
@@ -470,7 +470,7 @@ class Device(object):
     def __get_interface(self, interface):
         if interface is not None:
             return interface
-        return Interface(configuration = self.current_configuration).bInterfaceNumber
+        return Interface(self, configuration = self.current_configuration).bInterfaceNumber
 
     def __get_timeout(self, timeout):
         if timeout is not None:

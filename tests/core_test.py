@@ -54,13 +54,15 @@ class DeviceTest(unittest.TestCase):
         self.assertEqual(self.dev.bDeviceProtocol, 0x00)
 
     def test_timeout(self):
-        tmo = self.default_timeout
-        self.default_timeout = 1
-        self.assertEqual(self.default_timeout, 1)
-        self.default_timeout = tmo
-        self.assertEqual(self.default_timeout, tmo)
-        self.assertRaises(ValueError, lambda: self.default_timeout = -1)
-        self.assertEqual(self.default_timeout, tmo)
+        def set_invalid_timeout():
+            self.dev.default_timeout = -1
+        tmo = self.dev.default_timeout
+        self.dev.default_timeout = 1
+        self.assertEqual(self.dev.default_timeout, 1)
+        self.dev.default_timeout = tmo
+        self.assertEqual(self.dev.default_timeout, tmo)
+        self.assertRaises(ValueError, set_invalid_timeout)
+        self.assertEqual(self.dev.default_timeout, tmo)
 
     def test_set_configuration(self):
         cfg = usb.core.Configuration(self.dev).bConfigurationValue
@@ -84,15 +86,14 @@ class DeviceTest(unittest.TestCase):
                 ret = self.dev.write(ep[0], data)
                 self.assertEqual(ret, len(data), 'Failed to write data: ' + str(data) + ', in EP = ' + str(ep[0]))
                 ret = utils.to_array(self.dev.read(ep[1], len(data)))
-                self.assertEqual(ret, data, 'Failed to read data: ' + str(data) + ', in EP = ' + str(ep[1]))
+                self.assertEqual(ret, utils.to_array(data), 'Failed to read data: ' + str(data) + ', in EP = ' + str(ep[1]))
 
     def test_ctrl_transfer(self):
         for data in data_list:
-            ret = self.dev.write(ep[0], data)
             ret = self.dev.ctrl_transfer(0x40, di.CTRL_LOOPBACK_WRITE, 0, 0, data)
             self.assertEqual(ret, len(data), 'Failed to write data: ' + str(data))
             ret = utils.to_array(self.dev.ctrl_transfer(0xC0, di.CTRL_LOOPBACK_READ, 0, 0, len(data)))
-            self.assertEqual(ret, data, 'Failed to read data: ' + str(data))
+            self.assertEqual(ret, utils.to_array(data), 'Failed to read data: ' + str(data))
 
 class ConfigurationTest(unittest.TestCase):
     def __init__(self, backend_name):
@@ -145,7 +146,8 @@ class EndpointTest(unittest.TestCase):
         self.backend_module = __import__(backend_name, fromlist=['dummy'])
         self.backend = self.backend_module.get_backend()
         self.dev = usb.core.find(backend=self.backend, idVendor=di.ID_VENDOR, idProduct=di.ID_PRODUCT)
-        self.ep = usb.core.Endpoint(self.dev)
+        self.dev.set_configuration()
+        self.ep = usb.core.Endpoint(self.dev, 0)
     def runTest(self):
         self.test_attributes()
         self.test_write_read()
@@ -161,7 +163,7 @@ class EndpointTest(unittest.TestCase):
             ret = self.ep.write(data)
             self.assertEqual(ret, len(data), 'Failed to write data: ' + str(data))
             ret = utils.to_array(self.ep.read(len(data)))
-            self.assertEqual(ret, data, 'Failed to read data: ' + str(data))
+            self.assertEqual(ret, utils.to_array(data), 'Failed to read data: ' + str(data))
 
 def get_testsuite():
     suite = unittest.TestSuite()

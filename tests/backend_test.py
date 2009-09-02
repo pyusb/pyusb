@@ -139,7 +139,7 @@ class BackenTest(unittest.TestCase):
         for data in (utils.get_array_data1(), utils.get_array_data2()):
             ret = write_fn(self.handle, ep_out, intf, data, 1000)
             self.assertEqual(ret, len(data), 'Failed to write data: ' + str(data) + ', in EP = ' + str(ep_out))
-            ret = read_fn(self.handle, eo_in, intf, len(data), 1000)
+            ret = read_fn(self.handle, ep_in, intf, len(data), 1000)
             self.assertEqual(ret, data, 'Failed to read data: ' + str(data) + ', in EP = ' + str(ep_in))
 
 def get_testsuite():
