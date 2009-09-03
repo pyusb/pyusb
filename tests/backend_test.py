@@ -4,12 +4,14 @@ import device_info as di
 import utils
 import usb.util
 import sys
+import usb.backend.libusb01 as libusb01
+import usb.backend.libusb10 as libusb10
+import usb.backend.openusb as openusb
 
-class BackenTest(unittest.TestCase):
-    def __init__(self, backend_module_name):
+class BackendTest(unittest.TestCase):
+    def __init__(self, backend):
         unittest.TestCase.__init__(self)
-        self.module = __import__(backend_module_name, fromlist=['dummy'])
-        self.backend = self.module.get_backend()
+        self.backend = backend
 
     def runTest(self):
         self.test_enumerate_devices()
@@ -145,11 +147,9 @@ class BackenTest(unittest.TestCase):
 
 def get_testsuite():
     suite = unittest.TestSuite()
-    if sys.platform not in ('win32', 'cygwin'):
-        libusb10_testcase = BackenTest('usb.backend.libusb10')
-        suite.addTest(libusb10_testcase)
-        #openusb_testcase = BackenTest('usb.backend.openusb')
-        #suite.addTest(openusb_testcase)
-    libusb01_testcase = BackenTest('usb.backend.libusb01')
-    suite.addTest(libusb01_testcase)
+    for m in (libusb10, libusb01, openusb):
+        b = m.get_backend()
+        if b is not None:
+            sys.stdout.write('Adding %s(%s) to test suite...\n' % (BackendTest.__name__, m.__name__))
+            suite.addTest(BackendTest(b))
     return suite

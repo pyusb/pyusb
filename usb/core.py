@@ -560,7 +560,7 @@ class Device(object):
 
     default_timeout = property(__get_def_tmo, __set_def_tmo, doc = 'Default timeout for transfers')
 
-def find(find_all=False, backend = None, predicate = None, **args):
+def find(find_all=False, backend = None, custom_match = None, **args):
     r"""Find an USB device and return it.
 
     find() is the function used to discover USB devices.
@@ -586,11 +586,11 @@ def find(find_all=False, backend = None, predicate = None, **args):
     (actually may be not, because some devices put their class
      information in the Interface Descriptor).
 
-    You can also use a custom predicate as a match criteria:
+    You can also use a customized match criteria:
 
-    dev = find(predicate = lambda d: d.idProduct=0x3f4 and d.idvendor=0x2009)
+    dev = find(custom_match = lambda d: d.idProduct=0x3f4 and d.idvendor=0x2009)
 
-    A more accurate printer finder using a custom predicate would be like
+    A more accurate printer finder using a customized match would be like
     so:
 
     def is_printer(dev):
@@ -602,17 +602,17 @@ def find(find_all=False, backend = None, predicate = None, **args):
                 if intf.bInterfaceClass == 7:
                     return True
 
-    printers = [p for p in find(find_all=True, predicate = is_printer)]
+    printers = [p for p in find(find_all=True, custom_match = is_printer)]
 
     Now even if the device class code is in the interface descriptor the
     printer will be found.
 
-    You can combine a custom predicate with device descriptor fields. In this
-    case, the fields must match and the predicate must return True. In the our
+    You can combine a customized match with device descriptor fields. In this
+    case, the fields must match and the custom_match must return True. In the our
     previous example, if we would like to get all printers belonging to the
     manufacturer 0x3f4, the code would be like so:
 
-    printers = [p for p in find(find_all=True, idVendor=0x3f4, predicate=is_printer)]
+    printers = [p for p in find(find_all=True, idVendor=0x3f4, custom_match=is_printer)]
 
     If you want to use find as a 'list all devices' function, just call
     it with find_all = True:
@@ -623,6 +623,10 @@ def find(find_all=False, backend = None, predicate = None, **args):
 
     find(backend = MyBackend())
 
+    PyUSB has predefined backends for libusb 0.1, libusb 1.0 and OpenUSB.
+    If you do not supply a backend explicitly, find() function will select
+    one of the predefineds backends according to system availability.
+
     Backends are explained in the usb.backend module.
     """
     import operator
@@ -630,15 +634,22 @@ def find(find_all=False, backend = None, predicate = None, **args):
     def device_iter(k, v):
         for dev in backend.enumerate_devices():
             d = Device(dev, backend)
-            if (predicate is None or predicate(d)) and \
+            if (custom_match is None or custom_match(d)) and \
                 reduce(lambda a, b: a and b, map(operator.eq, v,
                                 map(lambda i: getattr(d, i), k)), True):
                 yield d
 
     if backend is None:
-        # TODO: implement automatic backend management
-        import usb.backend.libusb01
-        backend = usb.backend.libusb01.get_backend()
+        import backend.libusb10 as libusb10
+        import backend.libusb01 as libusb01
+        import backend.openusb as openusb
+
+        for m in (libusb10, openusb, libusb01):
+            backend = m.get_backend()
+            if backend is not None:
+                break
+        else:
+            raise ValueError('No backend is available in the system')
 
     k, v = args.keys(), args.values()
     

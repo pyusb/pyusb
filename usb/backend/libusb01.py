@@ -118,121 +118,124 @@ _usb_bus._fields_ = [('next', POINTER(_usb_bus)),
 
 _usb_dev_handle = c_void_p
 
-if sys.platform == 'win32':
-    _dll = CDLL(ctypes.util.find_library('libusb0'))
-else:
-    _dll = CDLL(ctypes.util.find_library('libusb'))
+_lib = None
 
-# Function prototypes
+def _load_library():
+    if sys.platform == 'win32':
+        libname = ctypes.util.find_library('usb0')
+    else:
+        libname = ctypes.util.find_library('usb')
+    if libname is None:
+        raise OSError('USB library could not be found')
+    return CDLL(libname)
 
-# usb_dev_handle *usb_open(struct usb_device *dev);
-_dll.usb_open.argtypes = [POINTER(_usb_device)]
-_dll.usb_open.restype = _usb_dev_handle
+def _setup_prototypes(lib):
+    # usb_dev_handle *usb_open(struct usb_device *dev);
+    lib.usb_open.argtypes = [POINTER(_usb_device)]
+    lib.usb_open.restype = _usb_dev_handle
 
-# int usb_close(usb_dev_handle *dev);
-_dll.usb_close.argtypes = [_usb_dev_handle]
+    # int usb_close(usb_dev_handle *dev);
+    lib.usb_close.argtypes = [_usb_dev_handle]
 
-# int usb_get_string(usb_dev_handle *dev, int index, int langid, char *buf,size_t buflen);
-_dll.usb_get_string.argtypes = [_usb_dev_handle, c_int, c_int, c_char_p, c_size_t]
-
-
-# int usb_get_string_simple(usb_dev_handle *dev, int index, char *buf, size_t buflen);
-_dll.usb_get_string_simple.argtypes = [_usb_dev_handle, c_int, c_char_p, c_size_t]
-
-
-# int usb_get_descriptor_by_endpoint(usb_dev_handle *udev, int ep,
-#	unsigned char type, unsigned char index, void *buf, int size);
-_dll.usb_get_descriptor_by_endpoint.argtypes = [_usb_dev_handle, c_int, c_ubyte,
-                                                c_ubyte, c_void_p, c_int]
+    # int usb_get_string(usb_dev_handle *dev, int index, int langid, char *buf,size_t buflen);
+    lib.usb_get_string.argtypes = [_usb_dev_handle, c_int, c_int, c_char_p, c_size_t]
 
 
-# int usb_get_descriptor(usb_dev_handle *udev, unsigned char type,
-#	unsigned char index, void *buf, int size);
-_dll.usb_get_descriptor.argtypes = [_usb_dev_handle, c_ubyte, c_ubyte,
-                                    c_void_p, c_int]
+    # int usb_get_string_simple(usb_dev_handle *dev, int index, char *buf, size_t buflen);
+    lib.usb_get_string_simple.argtypes = [_usb_dev_handle, c_int, c_char_p, c_size_t]
 
 
-# int usb_bulk_write(usb_dev_handle *dev, int ep, const char *bytes, int size,
-#	int timeout);
-_dll.usb_bulk_write.argtypes = [_usb_dev_handle, c_int, c_char_p, c_int, c_int]
+    # int usb_get_descriptor_by_endpoint(usb_dev_handle *udev, int ep,
+    #	unsigned char type, unsigned char index, void *buf, int size);
+    lib.usb_get_descriptor_by_endpoint.argtypes = [_usb_dev_handle, c_int, c_ubyte,
+                                                    c_ubyte, c_void_p, c_int]
 
 
-# int usb_bulk_read(usb_dev_handle *dev, int ep, char *bytes, int size,
-#	int timeout);
-_dll.usb_bulk_read.argtypes = [_usb_dev_handle, c_int, c_char_p, c_int, c_int]
+    # int usb_get_descriptor(usb_dev_handle *udev, unsigned char type,
+    #	unsigned char index, void *buf, int size);
+    lib.usb_get_descriptor.argtypes = [_usb_dev_handle, c_ubyte, c_ubyte,
+                                        c_void_p, c_int]
 
-# int usb_interrupt_write(usb_dev_handle *dev, int ep, const char *bytes, int size,
-#         int timeout);
-_dll.usb_interrupt_write.argtypes = [_usb_dev_handle, c_int, c_char_p,
-                                    c_int, c_int]
 
-# int usb_interrupt_read(usb_dev_handle *dev, int ep, char *bytes, int size,
-#         int timeout);
-_dll.usb_interrupt_read.argtypes = [_usb_dev_handle, c_int, c_char_p,
-                                    c_int, c_int]
+    # int usb_bulk_write(usb_dev_handle *dev, int ep, const char *bytes, int size,
+    #	int timeout);
+    lib.usb_bulk_write.argtypes = [_usb_dev_handle, c_int, c_char_p, c_int, c_int]
 
-# int usb_control_msg(usb_dev_handle *dev, int requesttype, int request,
-# 	int value, int index, char *bytes, int size, int timeout);
-_dll.usb_control_msg.argtypes = [_usb_dev_handle, c_int, c_int, c_int,
-                                c_int, c_char_p, c_int, c_int]
 
-# int usb_set_configuration(usb_dev_handle *dev, int configuration);
-_dll.usb_set_configuration.argtypes = [_usb_dev_handle, c_int]
+    # int usb_bulk_read(usb_dev_handle *dev, int ep, char *bytes, int size,
+    #	int timeout);
+    lib.usb_bulk_read.argtypes = [_usb_dev_handle, c_int, c_char_p, c_int, c_int]
 
-# int usb_claim_interface(usb_dev_handle *dev, int interface);
-_dll.usb_claim_interface.argtypes = [_usb_dev_handle, c_int]
+    # int usb_interrupt_write(usb_dev_handle *dev, int ep, const char *bytes, int size,
+    #         int timeout);
+    lib.usb_interrupt_write.argtypes = [_usb_dev_handle, c_int, c_char_p,
+                                        c_int, c_int]
 
-# int usb_release_interface(usb_dev_handle *dev, int interface);
-_dll.usb_release_interface.argtypes = [_usb_dev_handle, c_int]
+    # int usb_interrupt_read(usb_dev_handle *dev, int ep, char *bytes, int size,
+    #         int timeout);
+    lib.usb_interrupt_read.argtypes = [_usb_dev_handle, c_int, c_char_p,
+                                        c_int, c_int]
 
-# int usb_set_altinterface(usb_dev_handle *dev, int alternate);
-_dll.usb_set_altinterface.argtypes = [_usb_dev_handle, c_int]
+    # int usb_control_msg(usb_dev_handle *dev, int requesttype, int request,
+    # 	int value, int index, char *bytes, int size, int timeout);
+    lib.usb_control_msg.argtypes = [_usb_dev_handle, c_int, c_int, c_int,
+                                    c_int, c_char_p, c_int, c_int]
 
-# int usb_resetep(usb_dev_handle *dev, unsigned int ep);
-_dll.usb_resetep.argtypes = [_usb_dev_handle, c_int]
+    # int usb_set_configuration(usb_dev_handle *dev, int configuration);
+    lib.usb_set_configuration.argtypes = [_usb_dev_handle, c_int]
 
-# int usb_clear_halt(usb_dev_handle *dev, unsigned int ep);
-_dll.usb_clear_halt.argtypes = [_usb_dev_handle, c_int]
+    # int usb_claim_interface(usb_dev_handle *dev, int interface);
+    lib.usb_claim_interface.argtypes = [_usb_dev_handle, c_int]
 
-# int usb_reset(usb_dev_handle *dev);
-_dll.usb_reset.argtypes = [_usb_dev_handle]
+    # int usb_release_interface(usb_dev_handle *dev, int interface);
+    lib.usb_release_interface.argtypes = [_usb_dev_handle, c_int]
 
-# char *usb_strerror(void);
-_dll.usb_strerror.argtypes = []
-_dll.usb_strerror.restype = c_char_p
+    # int usb_set_altinterface(usb_dev_handle *dev, int alternate);
+    lib.usb_set_altinterface.argtypes = [_usb_dev_handle, c_int]
 
-# void usb_set_debug(int level);
-_dll.usb_set_debug.argtypes = [c_int]
+    # int usb_resetep(usb_dev_handle *dev, unsigned int ep);
+    lib.usb_resetep.argtypes = [_usb_dev_handle, c_int]
 
-# struct usb_device *usb_device(usb_dev_handle *dev);
-_dll.usb_device.argtypes = [_usb_dev_handle]
-_dll.usb_device.restype = POINTER(_usb_device)
+    # int usb_clear_halt(usb_dev_handle *dev, unsigned int ep);
+    lib.usb_clear_halt.argtypes = [_usb_dev_handle, c_int]
 
-# struct usb_bus *usb_get_busses(void);
-_dll.usb_get_busses.restype = POINTER(_usb_bus)
+    # int usb_reset(usb_dev_handle *dev);
+    lib.usb_reset.argtypes = [_usb_dev_handle]
+
+    # char *usb_strerror(void);
+    lib.usb_strerror.argtypes = []
+    lib.usb_strerror.restype = c_char_p
+
+    # void usb_set_debug(int level);
+    lib.usb_set_debug.argtypes = [c_int]
+
+    # struct usb_device *usb_device(usb_dev_handle *dev);
+    lib.usb_device.argtypes = [_usb_dev_handle]
+    lib.usb_device.restype = POINTER(_usb_device)
+
+    # struct usb_bus *usb_get_busses(void);
+    lib.usb_get_busses.restype = POINTER(_usb_bus)
 
 def _check(retval):
     from usb.core import USBError
     if isinstance(retval, c_int):
         if retval.value < 0:
-            raise USBError(_dll.usb_strerror())
+            raise USBError(_lib.usb_strerror())
         return retval.value
     elif retval == None:
-        raise USBError(_dll.usb_strerror())
+        raise USBError(_lib.usb_strerror())
     else:
         if retval < 0:
-            raise USBError(_dll.usb_strerror())
+            raise USBError(_lib.usb_strerror())
         return retval
-
-_dll.usb_init()
 
 # implementation of libusb 0.1.x backend
 class _LibUSB(usb.backend.IBackend):
     def enumerate_devices(self):
-        _check(_dll.usb_find_busses())
-        _check(_dll.usb_find_devices())
+        _check(_lib.usb_find_busses())
+        _check(_lib.usb_find_devices())
 
-        bus = _dll.usb_get_busses()
+        bus = _lib.usb_get_busses()
 
         while bool(bus):
             dev = bus[0].devices
@@ -265,53 +268,53 @@ class _LibUSB(usb.backend.IBackend):
         return interface.endpoint[ep]
 
     def open_device(self, dev):
-        return _check(_dll.usb_open(dev))
+        return _check(_lib.usb_open(dev))
 
     def close_device(self, dev_handle):
-        _check(_dll.usb_close(dev_handle))
+        _check(_lib.usb_close(dev_handle))
 
     def set_configuration(self, dev_handle, config_value):
-        _check(_dll.usb_set_configuration(dev_handle, config_value))
+        _check(_lib.usb_set_configuration(dev_handle, config_value))
 
     def set_interface_altsetting(self, dev_handle, intf, altsetting):
-        _check(_dll.usb_set_altinterface(dev_handle, altsetting))
+        _check(_lib.usb_set_altinterface(dev_handle, altsetting))
 
     def claim_interface(self, dev_handle, intf):
-        _check(_dll.usb_claim_interface(dev_handle, intf))
+        _check(_lib.usb_claim_interface(dev_handle, intf))
 
     def release_interface(self, dev_handle, intf):
-        _check(_dll.usb_release_interface(dev_handle, intf))
+        _check(_lib.usb_release_interface(dev_handle, intf))
 
     def bulk_write(self, dev_handle, ep, intf, data, timeout):
-        return self.__write(_dll.usb_bulk_write, dev_handle, ep, intf, data, timeout)
+        return self.__write(_lib.usb_bulk_write, dev_handle, ep, intf, data, timeout)
 
     def bulk_read(self, dev_handle, ep, intf, size, timeout):
-        return self.__read(_dll.usb_bulk_read, dev_handle, ep, intf, size, timeout)
+        return self.__read(_lib.usb_bulk_read, dev_handle, ep, intf, size, timeout)
 
     def intr_write(self, dev_handle, ep, intf, data, timeout):
-        return self.__write(_dll.usb_interrupt_write, dev_handle, ep, intf, data, timeout)
+        return self.__write(_lib.usb_interrupt_write, dev_handle, ep, intf, data, timeout)
 
     def intr_read(self, dev_handle, ep, intf, size, timeout):
-        return self.__read(_dll.usb_interrupt_read, dev_handle, ep, intf, size, timeout)
+        return self.__read(_lib.usb_interrupt_read, dev_handle, ep, intf, size, timeout)
 
     def ctrl_transfer(self, dev_handle, bmRequestType, bRequest, wValue, wIndex, data_or_wLength, timeout):
         if usb.util.ctrl_direction(bmRequestType) == usb.util.CTRL_OUT:
             address, length = data_or_wLength.buffer_info()
             length *= data_or_wLength.itemsize
-            return _check(_dll.usb_control_msg(dev_handle, bmRequestType, bRequest, wValue,
+            return _check(_lib.usb_control_msg(dev_handle, bmRequestType, bRequest, wValue,
                                                wIndex, cast(address, c_char_p), length, timeout))
         else:
             buffer = array.array('B', '\x00' * data_or_wLength)
-            read = int(_check(_dll.usb_control_msg(dev_handle, bmRequestType, bRequest, wValue,
+            read = int(_check(_lib.usb_control_msg(dev_handle, bmRequestType, bRequest, wValue,
                                             wIndex, cast(buffer.buffer_info()[0], c_char_p),
                                             data_or_wLength, timeout)))
             return buffer[:read]
 
     def reset_device(self, dev_handle):
-        _check(_dll.usb_reset(dev_handle))
+        _check(_lib.usb_reset(dev_handle))
 
     def detach_kernel_driver(self, dev_handle, intf):
-        _check(_dll.usb_detach_kernel_driver_np(dev_handle, intf))
+        _check(_lib.usb_detach_kernel_driver_np(dev_handle, intf))
 
     def __write(self, fn, dev_handle, ep, intf, data, timeout):
         address, length = data.buffer_info()
@@ -324,4 +327,12 @@ class _LibUSB(usb.backend.IBackend):
         return buffer[:ret]
 
 def get_backend():
-    return _LibUSB()
+    global _lib
+    try:
+        if _lib is None:
+            _lib = _load_library()
+            _setup_prototypes(_lib)
+            _lib.usb_init()
+        return _LibUSB()
+    except OSError:
+        return None

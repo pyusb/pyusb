@@ -4,13 +4,13 @@ This module exports:
 
 IBackend - backend interface.
 
-Backends are implemented by modules which provide a get_backend()
-function which returns an IBackend like object, i.e, the object
-returned must obay the IBackend interface. The easiest way to do so
-is inherinting from IBackend.
+Backends are Python objects which implement the IBackend interface.
+The easiest way to do so is inherinting from IBackend. 
 
-By default, PyUSB provides backends for libusb versions 0.1 and 1.0,
-and OpenUSB library. You can provide your own customized backend if you
+PyUSB already provides backends for libusb versions 0.1 and 1.0,
+and OpenUSB library. Backends modules included with PyUSB are required to
+export the get_backend() function, which returns an instance of a backend
+object. You can provide your own customized backend if you
 want to. Bellow you find a skeleton of a backend implementation module:
 
 import usb.backend
@@ -34,6 +34,9 @@ mybackend = custom_backend.get_backend()
 
 dev = usb.core.find(backend = mybackend, idProduct=myidProduct,
                     idVendor=myidVendor)
+
+For custom backends, you are not required to supply the get_backend() function,
+since the application code will instantiate the backend.
 
 If you do not provide a backend to the find() function, it will use one of the
 defaults backend according to its internal rules. For details, consult the

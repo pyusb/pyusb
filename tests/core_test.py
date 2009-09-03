@@ -4,6 +4,9 @@ import device_info as di
 import utils
 import usb.util
 import sys
+import usb.backend.libusb01 as libusb01
+import usb.backend.libusb10 as libusb10
+import usb.backend.openusb as openusb
 
 data_list = (utils.get_array_data1(),
              utils.get_array_data2(),
@@ -23,11 +26,9 @@ class FindTest(unittest.TestCase):
         self.assertNotEqual(usb.core.find(predicate = lambda d: d.idVendor==di.ID_VENDOR and d.idProduct==di.ID_PRODUCT), None)
 
 class DeviceTest(unittest.TestCase):
-    def __init__(self, backend_name):
+    def __init__(self, backend):
         unittest.TestCase.__init__(self)
-        self.backend_module = __import__(backend_name, fromlist=['dummy'])
-        self.backend = self.backend_module.get_backend()
-        self.dev = usb.core.find(backend=self.backend, idVendor=di.ID_VENDOR, idProduct=di.ID_PRODUCT)
+        self.dev = usb.core.find(backend=backend, idVendor=di.ID_VENDOR, idProduct=di.ID_PRODUCT)
 
     def runTest(self):
         self.test_attributes()
@@ -97,11 +98,9 @@ class DeviceTest(unittest.TestCase):
             self.assertEqual(ret, utils.to_array(data), 'Failed to read data: ' + str(data))
 
 class ConfigurationTest(unittest.TestCase):
-    def __init__(self, backend_name):
+    def __init__(self, backend):
         unittest.TestCase.__init__(self)
-        self.backend_module = __import__(backend_name, fromlist=['dummy'])
-        self.backend = self.backend_module.get_backend()
-        self.dev = usb.core.find(backend=self.backend, idVendor=di.ID_VENDOR, idProduct=di.ID_PRODUCT)
+        self.dev = usb.core.find(backend=backend, idVendor=di.ID_VENDOR, idProduct=di.ID_PRODUCT)
         self.cfg = usb.core.Configuration(self.dev)
     def runTest(self):
         self.test_attributes()
@@ -119,11 +118,9 @@ class ConfigurationTest(unittest.TestCase):
         self.cfg.set()
 
 class InterfaceTest(unittest.TestCase):
-    def __init__(self, backend_name):
+    def __init__(self, backend):
         unittest.TestCase.__init__(self)
-        self.backend_module = __import__(backend_name, fromlist=['dummy'])
-        self.backend = self.backend_module.get_backend()
-        self.dev = usb.core.find(backend=self.backend, idVendor=di.ID_VENDOR, idProduct=di.ID_PRODUCT)
+        self.dev = usb.core.find(backend=backend, idVendor=di.ID_VENDOR, idProduct=di.ID_PRODUCT)
         self.intf = usb.core.Interface(self.dev)
     def runTest(self):
         self.test_attributes()
@@ -142,11 +139,9 @@ class InterfaceTest(unittest.TestCase):
         self.intf.set_altsetting()
 
 class EndpointTest(unittest.TestCase):
-    def __init__(self, backend_name):
+    def __init__(self, backend):
         unittest.TestCase.__init__(self)
-        self.backend_module = __import__(backend_name, fromlist=['dummy'])
-        self.backend = self.backend_module.get_backend()
-        self.dev = usb.core.find(backend=self.backend, idVendor=di.ID_VENDOR, idProduct=di.ID_PRODUCT)
+        self.dev = usb.core.find(backend=backend, idVendor=di.ID_VENDOR, idProduct=di.ID_PRODUCT)
         self.dev.set_configuration()
         self.ep = usb.core.Endpoint(self.dev, 0)
     def runTest(self):
@@ -169,14 +164,10 @@ class EndpointTest(unittest.TestCase):
 def get_testsuite():
     suite = unittest.TestSuite()
     suite.addTest(FindTest())
-
-    for c in [DeviceTest, ConfigurationTest, InterfaceTest, EndpointTest]:
-        if sys.platform not in ('win32', 'cygwin'):
-            libusb10 = c('usb.backend.libusb10')
-            suite.addTest(libusb10)
-            #openusb = c('usb.backend.openusb')
-            #suite.addTest(openusb)
-        libusb01 = c('usb.backend.libusb01')
-        suite.addTest(libusb01)
-
+    for m in (libusb10, libusb01, openusb):
+        b = m.get_backend()
+        if b is not None:
+            for ObjectTestCase in (DeviceTest, ConfigurationTest, InterfaceTest, EndpointTest):
+                sys.stdout.write('Adding %s(%s) to test suite...\n' % (ObjectTestCase.__name__, m.__name__))
+                suite.addTest(ObjectTestCase(b))
     return suite
