@@ -1,8 +1,10 @@
 from ctypes import *
+import ctypes.util
 import os
 import usb.backend
 import usb.util
 import array
+import sys
 
 __author__ = 'Wander Lairson Costa'
 
@@ -11,7 +13,11 @@ __all__ = ['get_backend']
 # usb.h
 
 _PC_PATH_MAX = 4
-_PATH_MAX = os.pathconf('.', _PC_PATH_MAX)
+
+if sys.platform != 'win32':
+    _PATH_MAX = os.pathconf('.', _PC_PATH_MAX)
+else:
+    _PATH_MAX = 512
 
 # Data structures
 
@@ -112,7 +118,10 @@ _usb_bus._fields_ = [('next', POINTER(_usb_bus)),
 
 _usb_dev_handle = c_void_p
 
-_dll = CDLL('libusb.so')
+if sys.platform == 'win32':
+    _dll = CDLL(ctypes.util.find_library('libusb0'))
+else:
+    _dll = CDLL(ctypes.util.find_library('libusb'))
 
 # Function prototypes
 

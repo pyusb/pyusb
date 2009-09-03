@@ -1,4 +1,5 @@
 from ctypes import *
+import ctypes.util
 import usb.util
 
 __author__ = 'Wander Lairson Costa'
@@ -102,7 +103,7 @@ class _openusb_isoc_request(Structure):
                 ('next', c_void_p)]
 
 
-_dll = CDLL('libopenusb.so')
+_dll = CDLL(ctypes.util.find_library('libopenusb'))
 
 _openusb_devid = c_uint64
 _openusb_busid = c_uint64

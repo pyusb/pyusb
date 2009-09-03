@@ -3,6 +3,7 @@ import array
 import device_info as di
 import utils
 import usb.util
+import sys
 
 class BackenTest(unittest.TestCase):
     def __init__(self, backend_module_name):
@@ -143,11 +144,12 @@ class BackenTest(unittest.TestCase):
             self.assertEqual(ret, data, 'Failed to read data: ' + str(data) + ', in EP = ' + str(ep_in))
 
 def get_testsuite():
-    libusb10_testcase = BackenTest('usb.backend.libusb10')
-    libusb01_testcase = BackenTest('usb.backend.libusb01')
-    #openusb_testcase = BackenTest('usb.backend.openusb')
     suite = unittest.TestSuite()
-    suite.addTest(libusb10_testcase)
+    if sys.platform not in ('win32', 'cygwin'):
+        libusb10_testcase = BackenTest('usb.backend.libusb10')
+        suite.addTest(libusb10_testcase)
+        #openusb_testcase = BackenTest('usb.backend.openusb')
+        #suite.addTest(openusb_testcase)
+    libusb01_testcase = BackenTest('usb.backend.libusb01')
     suite.addTest(libusb01_testcase)
-    #suite.addTest(openusb_testcase)
     return suite

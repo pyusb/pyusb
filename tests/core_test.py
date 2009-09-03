@@ -3,6 +3,7 @@ import usb.core
 import device_info as di
 import utils
 import usb.util
+import sys
 
 data_list = (utils.get_array_data1(),
              utils.get_array_data2(),
@@ -170,11 +171,12 @@ def get_testsuite():
     suite.addTest(FindTest())
 
     for c in [DeviceTest, ConfigurationTest, InterfaceTest, EndpointTest]:
+        if sys.platform not in ('win32', 'cygwin'):
+            libusb10 = c('usb.backend.libusb10')
+            suite.addTest(libusb10)
+            #openusb = c('usb.backend.openusb')
+            #suite.addTest(openusb)
         libusb01 = c('usb.backend.libusb01')
-        libusb10 = c('usb.backend.libusb10')
-        #openusb = c('usb.backend.openusb')
         suite.addTest(libusb01)
-        suite.addTest(libusb10)
-        #suite.addTest(openusb)
 
     return suite

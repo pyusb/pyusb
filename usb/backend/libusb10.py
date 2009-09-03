@@ -1,4 +1,5 @@
 from ctypes import *
+import ctypes.util
 import usb.util
 import array
 
@@ -102,7 +103,7 @@ class _libusb_device_descriptor(Structure):
                 ('iSerialNumber', c_uint8),
                 ('bNumConfigurations', c_uint8)]
 
-_dll = CDLL('libusb-1.0.so')
+_dll = CDLL(ctypes.util.find_library('libusb-1.0'))
 
 _libusb_device_handle = c_void_p
 
