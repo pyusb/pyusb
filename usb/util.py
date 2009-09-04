@@ -151,7 +151,7 @@ def release_interface(device, interface):
     """
     device._ctx.managed_release_interface(interface)
 
-def release_resources(device):
+def dispose_resources(device):
     r"""Release internal resources allocated by the object.
 
     Sometimes you need to provide deterministic resources
