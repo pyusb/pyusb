@@ -5,15 +5,23 @@ import unittest
 
 sys.path.append('..')
 
-import backend_test
-import util_test
-import core_test
+import backendtest
+import fakebackendtest
+import utiltest
+import inttest
 
-backend_suite = backend_test.get_testsuite()
-util_suite = util_test.get_testsuite()
-core_suite = core_test.get_testsuite()
+backend_suite = backendtest.get_testsuite()
+fakebackend_suite = fakebackendtest.get_testsuite()
+util_suite = utiltest.get_testsuite()
+int_suite = inttest.get_testsuite()
 
-test_suite = unittest.TestSuite([util_suite, backend_suite, core_suite])
+suite_list = (
+    fakebackend_suite,
+    util_suite,
+    backend_suite,
+    int_suite
+)
 
+test_suite = unittest.TestSuite(suite_list)
 runner = unittest.TextTestRunner()
 runner.run(test_suite)

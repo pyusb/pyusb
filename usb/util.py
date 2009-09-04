@@ -91,3 +91,78 @@ def build_request_type(direction, type, recipient):
     Return the bmRequestType value.
     """
     return recipient | (type << 5) | direction
+
+def find_descriptor(desc, find_all=False, custom_match=None, **args):
+    r"""Find an inner descriptor.
+
+    find_descriptor works in the same way the core.find() function does,
+    but it acts on general descriptor objects. For example, suppose you
+    have a Device object called dev and want a Configuration of this
+    object with its bConfigurationValue equals to 1, the code would
+    be like so:
+
+    >>> cfg = util.find_descriptor(dev, bConfigurationValue=1)
+
+    You can use any field of the Descriptor as a match criteria, and you
+    can supply a customized match just like core.find() does. The
+    find_descriptor function also accepts the find_all parameter to get
+    a list of descriptor instead of just one.
+    """
+    def desc_iter(k, v):
+        for d in desc:
+            if (custom_match is None or custom_match(d)) and \
+                reduce(lambda a, b: a and b,
+                       map(operator.eq, v, map(lambda i: getattr(d, i), k)),
+                       True):
+                yield d
+
+    k, v = args.keys(), args.values()
+
+    if find_all:
+        return [d for d in desc_iter(k, v)]
+    else:
+        try:
+            return desc_iter(k, v).next()
+        except StopIteration:
+            return None
+
+def claim_interface(device, interface):
+    r"""Explicitly claim an interface.
+
+    PyUSB users normally do not have to worry about interface claiming,
+    as the library takes care of it automatically. But there are situations
+    where you need deterministic interface claiming. For these uncommon
+    cases, you can use claim_interface.
+
+    If the interface is already claimed, either through a previously call
+    to claim_interface or internally by the device object, nothing happens.
+    """
+    device._ctx.managed_claim_interface(interface)
+
+def release_interface(device, interface):
+    r"""Explicitly release an interface.
+
+    This function is used to release an interface previously claimed,
+    either through a call to claim_interface or internally by the
+    device object.
+
+    Normally, you do not need to worry about claiming policies, as
+    the device object takes care of it automatically.
+    """
+    device._ctx.managed_release_interface(interface)
+
+def release_resources(device):
+    r"""Release internal resources allocated by the object.
+
+    Sometimes you need to provide deterministic resources
+    freeing, for example to allow another application to
+    talk to the device. As Python does not provide deterministic
+    destruction, this function releases all internal resources
+    allocated by the device, like device handle and interface
+    policy.
+
+    After calling this function, you can continue using the device
+    object normally. If the resources will be necessary again, it
+    will allocate them automatically.
+    """
+    device._ctx.dispose()

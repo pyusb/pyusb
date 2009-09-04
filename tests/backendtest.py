@@ -1,6 +1,6 @@
 import unittest
 import array
-import device_info as di
+import devinfo
 import utils
 import usb.util
 import sys
@@ -34,7 +34,7 @@ class BackendTest(unittest.TestCase):
     def test_enumerate_devices(self):
         for d in self.backend.enumerate_devices():
             desc = self.backend.get_device_descriptor(d)
-            if desc.idVendor == di.ID_VENDOR and desc.idProduct == di.ID_PRODUCT:
+            if desc.idVendor == devinfo.ID_VENDOR and desc.idProduct == devinfo.ID_PRODUCT:
                 self.dev = d
                 return
         self.fail('PyUSB test device not found')
@@ -44,8 +44,8 @@ class BackendTest(unittest.TestCase):
         self.assertEqual(dsc.bLength, 18)
         self.assertEqual(dsc.bDescriptorType, usb.util.DESC_TYPE_DEVICE)
         self.assertEqual(dsc.bcdUSB, 0x0200)
-        self.assertEqual(dsc.idVendor, di.ID_VENDOR)
-        self.assertEqual(dsc.idProduct, di.ID_PRODUCT)
+        self.assertEqual(dsc.idVendor, devinfo.ID_VENDOR)
+        self.assertEqual(dsc.idProduct, devinfo.ID_PRODUCT)
         self.assertEqual(dsc.bcdDevice, 0x0001)
         self.assertEqual(dsc.iManufacturer, 0x01)
         self.assertEqual(dsc.iProduct, 0x02)
@@ -115,23 +115,23 @@ class BackendTest(unittest.TestCase):
     def test_bulk_write_read(self):
         self.__write_read(self.backend.bulk_write,
                           self.backend.bulk_read,
-                          di.EP_BULK_OUT,
-                          di.EP_BULK_IN)
+                          devinfo.EP_BULK_OUT,
+                          devinfo.EP_BULK_IN)
 
     def test_intr_write_read(self):
         self.__write_read(self.backend.intr_write,
                           self.backend.intr_read,
-                          di.EP_INTR_OUT,
-                          di.EP_INTR_IN)
+                          devinfo.EP_INTR_OUT,
+                          devinfo.EP_INTR_IN)
 
     def test_iso_write_read(self):
         pass
 
     def test_ctrl_transfer(self):
         for data in (utils.get_array_data1(), utils.get_array_data2()):
-            ret = self.backend.ctrl_transfer(self.handle, 0x40, di.CTRL_LOOPBACK_WRITE, 0, 0, data, 1000)
+            ret = self.backend.ctrl_transfer(self.handle, 0x40, devinfo.CTRL_LOOPBACK_WRITE, 0, 0, data, 1000)
             self.assertEqual(ret, len(data), 'Failed to write data: ' + str(data))
-            ret = self.backend.ctrl_transfer(self.handle, 0xC0, di.CTRL_LOOPBACK_READ, 0, 0, len(data), 1000)
+            ret = self.backend.ctrl_transfer(self.handle, 0xC0, devinfo.CTRL_LOOPBACK_READ, 0, 0, len(data), 1000)
             self.assertEqual(ret, data,  'Failed to read data: ' + str(data))
 
     def test_reset_device(self):
@@ -147,9 +147,10 @@ class BackendTest(unittest.TestCase):
 
 def get_testsuite():
     suite = unittest.TestSuite()
-    for m in (libusb10, libusb01, openusb):
-        b = m.get_backend()
-        if b is not None:
-            sys.stdout.write('Adding %s(%s) to test suite...\n' % (BackendTest.__name__, m.__name__))
-            suite.addTest(BackendTest(b))
+    if utils.is_test_hw_present():
+        for m in (libusb10, libusb01, openusb):
+            b = m.get_backend()
+            if b is not None:
+                sys.stdout.write('Adding %s(%s) to test suite...\n' % (BackendTest.__name__, m.__name__))
+                suite.addTest(BackendTest(b))
     return suite

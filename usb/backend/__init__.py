@@ -45,7 +45,7 @@ find() function documentation.
 
 __author__ = 'Wander Lairson Costa'
 
-__all__ = ['libusb01', 'libusb10', 'openusb']
+__all__ = ['IBackend', 'libusb01', 'libusb10', 'openusb']
 
 def _not_implemented(func):
     raise NotImplementedError(func.__name__)

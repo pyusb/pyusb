@@ -1,6 +1,6 @@
 import unittest
 from usb.util import *
-from device_info import *
+from devinfo import *
 
 class UtilTest(unittest.TestCase):
     def runTest(self):

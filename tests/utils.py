@@ -1,4 +1,6 @@
 import array
+import usb.core
+import devinfo
 
 # data generation functions
 def get_array_data1(length = 10):
@@ -15,3 +17,7 @@ def get_str_data2(length = 10):
     return ''.join([chr(x) for x in reversed(range(length))])
 def to_array(data):
     return array.array('B', data)
+
+# check if our test hardware is present
+def is_test_hw_present():
+    return usb.core.find(idVendor=devinfo.ID_VENDOR, idProduct=devinfo.ID_PRODUCT) is not None

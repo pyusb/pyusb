@@ -15,6 +15,7 @@ __all__ = ['Device', 'Configuration', 'Interface', 'Endpoint', 'find']
 
 import array
 import util
+import weakref
 
 _DEFAULT_TIMEOUT = 1000
 
@@ -22,81 +23,96 @@ def _set_attr(input, output, fields):
     for f in fields:
         setattr(output, f, int(getattr(input, f)))
 
-# This class is responsible for managing device opens
-# automatically. We don't want to bother the user with
-# such low level details
-class _DeviceManager(object):
+class _ResourceManager(object):
     def __init__(self, dev, backend):
-        self.handle = None
-        self.dev = dev
         self.backend = backend
-    def open(self):
+        self.dev = dev
+        self.handle = None
+        self._claimed_intf = set()
+        self._alt_set = {}
+        self._ep_type_map = {}
+    def managed_open(self):
         if self.handle is None:
             self.handle = self.backend.open_device(self.dev)
-    def close(self):
+        return self.handle
+    def managed_close(self):
         if self.handle is not None:
             self.backend.close_device(self.handle)
             self.handle = None
-    def __del__(self):
-        self.close()
-
-# Interface claiming is something which does not exist in
-# USB spec, but an implementation detail. This manages
-# the interface claiming stuff
-class _InterfaceClaimPolicy(object):
-    def __init__(self, device_manager):
-        self.interfaces_claimed = []
-        self.device_manager = device_manager
-    def claim(self, intf):
-        self.device_manager.open()
-        self.device_manager.backend.claim_interface(
-            self.device_manager.handle, intf)
-        if intf not in self.interfaces_claimed:
-            self.interfaces_claimed.append(intf)
-    def release_interfaces(self):
-        self.device_manager.open()
-        for intf in self.interfaces_claimed:
-            self.device_manager.backend.release_interface(
-                self.device_manager.handle, intf)
-            # Although would be faster just associate an
-            # empty list after the for loop, but removing
-            # the interfaces from the list as they are
-            # released is safer from exception point of view.
-            self.interfaces_claimed.remove(intf)
-    def __del__(self):
-        self.release_interfaces()
-
-# Map the bInterfaceNumber field with
-# the active alternate setting
-class _AlternateSettingMapper(object):
-    def __init__(self):
-        self.alt_map = {}
-    def __setitem__(self, intf, alt):
-        self.alt_map[intf] = alt
-    def __getitem__(self, intf):
+    def managed_set_configuration(self, config):
+        cfg = isinstance(config, Configuration) and config.bConfigurationValue or config
+        self.managed_open()
+        self.backend.set_configuration(self.handle, cfg)
+        # cache the index instead of the object to avoid cyclic references
+        # of the device and Configuration (Device tracks the _ResourceManager,
+        # which tracks the Configuration, whihc tracks the Device)
+        self._active_cfg_index = util.find_descriptor(bConfigurationValue=cfg).index
+        # after changing configuration, out alternate setting and endpoint type caches
+        # are not valid anymore
+        self._ep_type_map.clear()
+        self._alt_set.clear()
+    def managed_claim_interface(self, intf):
+        self.managed_open()
+        i = isinstance(intf, Interface) and intf.bInterfaceNumber or intf
+        if i not in self._claimed_intf:
+            self.backend.claim_interface(self.handle, i)
+            self._claimed_intf.add(i)
+    def managed_release_interface(self, intf):
+        i = isinstance(intf, Interface) and intf.bInterfaceNumber or intf
+        if i in self._claimed_intf:
+            self.backend.release_interface(self.handle, i)
+            self._claimed_intf.remove(i)
+    def managed_set_interface(self, intf, alt):
+        i = isinstance(intf, Interface) and intf.bInterfaceNumber or intf
+        self.managed_claim_interface(i)
+        self.backend.set_interface_altsetting(self.handle, i, alt)
+        self._alt_set[i] = alt
+    def get_interface(self, device, intf):
+        # TODO: check the viability of issuing a GET_INTERFACE
+        # request when we don't have a alternate setting cached
+        if intf is not None:
+            if isinstance(intf, Interface):
+                return intf
+            else:
+                cfg = self._get_active_configuration(device)
+                if intf in self._alt_set:
+                    return util.find_descriptor(cfg, bInterfaceNumber=intf,
+                                                bAlternateSetting=self._alt_set[intf])
+                else:
+                    return util.find_descriptor(cfg, bInterfaceNumber=intf)
+        else:
+            cfg = self.get_active_configuration(device)
+            return util.find_descriptor(cfg)
+    def get_active_configuration(self, device):
+        # TODO: when we haven't called managed_set_configuration,
+        # issue a get_configuration request to discover the current configuration
+        # See patch #283765.
+        # Meanwhile, we just return # the first configuration found
+        if self._active_cfg_index is None:
+            cfg = util.find_descriptor(device)
+            self._active_cfg_index = cfg.index
+            return cfg
+        return Configuration(device=device, configuration=self._active_cfg_index)
+    def get_endpoint_type(self, device, address, intf):
+        intf = self.get_interface(intf)
+        key = (address, intf.bInterfaceNumber, intf.bAlternateSetting)
         try:
-            return self.alt_map[intf]
+            return self._ep_type_map[key]
         except KeyError:
-            self.alt_map[intf] = 0
-            return 0
-
-# Map the endpoint address and the
-# endpoint type
-class _EndpointTypeMapper(object):
-    def __init__(self, dev):
-        self.dev = dev
-        self.ep_map = {}
-    def get(self, ep, cfg, intf, alt):
-        try:
-            return self.ep_map[ep]
-        except KeyError:
-            l = filter(lambda e: ep == e.bEndpointAddress, (e for e in Interface(self.dev, intf, alt, cfg)))
-            if len(l) == 0:
-                raise USBError('Invalid endpoint address %02X' % (ep))
-            type = util.endpoint_type(l[0].bmAttributes)
-            self.ep_map[ep] = type
+            e = util.find_descriptor(intf, bEndpointAddress=address)
+            type = util.get_endpoint_type(e.bmAttributes)
+            self._ep_type_map[key] = type
             return type
-
+    def release_all_interfaces(self):
+        for i in self._claimed_intf:
+            self.managed_release_interface(i)
+    def dispose(self):
+        self.release_all_interfaces()
+        self.managed_close()
+        self._ep_type_map.clear()
+        self._alt_set.clear()
+    def __del__(self):
+        self.dispose()
 
 class USBError(IOError):
     r"""Exception class for USB errors.
@@ -141,8 +157,8 @@ class Endpoint(object):
         self.interface = intf.bInterfaceNumber
         self.index = endpoint
 
-        desc = device.devmgr.backend.get_endpoint_descriptor(
-                    device.devmgr.dev,
+        desc = device.backend.get_endpoint_descriptor(
+                    device.dev,
                     endpoint,
                     interface,
                     alternate_setting,
@@ -212,8 +228,8 @@ class Interface(object):
         self.index = interface
         self.configuration = configuration
 
-        desc = device.devmgr.backend.get_interface_descriptor(
-                    self.device.devmgr.dev,
+        desc = device.backend.get_interface_descriptor(
+                    self.device.dev,
                     interface,
                     alternate_setting,
                     configuration)
@@ -232,6 +248,10 @@ class Interface(object):
         r"""Iterate over all endpoints of the interface."""
         for i in range(self.bNumEndpoints):
             yield Endpoint(self.device, i, self.index,
+                           self.alternate_index, self.configuration)
+    def __getitem__(self, index):
+        r"""Return the Endpoint object in the given position."""
+        return Endpoint(self.device, index, self.index,
                         self.alternate_index, self.configuration)
 
 class Configuration(object):
@@ -260,8 +280,8 @@ class Configuration(object):
         self.device = device
         self.index = configuration
 
-        desc = device.devmgr.backend.get_configuration_descriptor(
-                self.device.devmgr.dev,
+        desc = device.backend.get_configuration_descriptor(
+                self.device.dev,
                 configuration)
 
         _set_attr(desc, self,
@@ -282,6 +302,15 @@ class Configuration(object):
                     alt += 1
             except (USBError, IndexError):
                 pass
+    def __getitem__(self, index):
+        r"""Return the Interface object in the given position.
+
+        index is a tuple of two values with interface index and
+        alternate setting index, respectivally. Example:
+
+        >>> interface = config[(0, 0)]
+        """
+        return Interface(self.device, index[0], index[1], self.index)
 
 
 class Device(object):
@@ -329,13 +358,14 @@ class Device(object):
         of it. The backend parameter is a instance of a backend
         object.
         """
-        self.devmgr = _DeviceManager(dev, backend)
-        self.intf_claimed = _InterfaceClaimPolicy(self.devmgr)
-        desc = backend.get_device_descriptor(self.devmgr.dev)
-        self.current_configuration = None
-        self.alt_map = _AlternateSettingMapper()
-        self.ep_map = _EndpointTypeMapper(self)
+        self._ctx = _ResourceManager(dev, backend)
         self.__default_timeout = _DEFAULT_TIMEOUT
+
+        # just a convenience
+        self.backend = weakref.ref(self._ctx.backend)
+        self.dev = weakref.ref(self._ctx.dev)
+
+        desc = backend.get_device_descriptor(dev)
 
         _set_attr(desc, self,
             ('bLength', 'bDescriptorType', 'bcdUSB', 'bDeviceClass',
@@ -352,21 +382,7 @@ class Device(object):
         As a device hardly ever has more than one configuration, calling
         the method without parameter is enough to get the device ready.
         """
-        self.devmgr.open()
-
-        if configuration is None:
-            configuration = Configuration(self).bConfigurationValue
-
-        self.devmgr.backend.set_configuration(self.devmgr.handle, configuration)
-
-        # discover the configuration index
-        self.current_configuration = 0
-        for c in self:
-            if c.bConfigurationValue == configuration:
-                break
-            self.current_configuration += 1
-        else:
-            assert not "Configuration not found????"
+        self._ctx.managed_set_configuration(configuration)
 
     def set_interface_altsetting(self, interface = None, alternate_setting = None):
         r"""Set the alternate setting for an interface.
@@ -392,25 +408,12 @@ class Device(object):
         >>> except usb.core.USBError:
         >>>     pass
         """
-        intf = None
-
-        if interface is None:
-            intf = Interface(self)
-            interface = intf.bInterfaceNumber
-
-        if alternate_setting is None:
-            if intf is None:
-                intf = Interface(self)
-            alternate_setting = intf.bAlternateSetting
-
-        self.intf_claimed.claim(interface)
-        self.devmgr.backend.set_interface_altsetting(self.devmgr.handle, interface, alternate_setting)
-        self.alt_map[interface] = alternate_setting
+        self._ctx.managed_set_interface(interface, alternate_setting)
 
     def reset(self):
         r"""Reset the device."""
-        self.devmgr.open()
-        self.devmgr.backend.reset_device(self.devmgr.handle)
+        self._ctx.managed_open()
+        self.backend.reset_device(self._ctx.handle)
 
     def write(self, endpoint, data, interface = None, timeout = None):
         r"""Write data to the endpoint.
@@ -429,21 +432,20 @@ class Device(object):
 
         The method returns the number of bytes written.
         """
-        def get_write_fn():
-            fn_map = {util.ENDPOINT_TYPE_BULK:self.devmgr.backend.bulk_write,
-                      util.ENDPOINT_TYPE_INTR:self.devmgr.backend.intr_write,
-                      util.ENDPOINT_TYPE_ISO:self.devmgr.backend.iso_write}
-            alt = self.alt_map[interface]
-            return fn_map[self.ep_map.get(endpoint, self.current_configuration, interface, alt)]
+        def get_write_fn(i):
+            fn_map = {util.ENDPOINT_TYPE_BULK:self.backend.bulk_write,
+                      util.ENDPOINT_TYPE_INTR:self.backend.intr_write,
+                      util.ENDPOINT_TYPE_ISO:self.backend.iso_write}
+            return fn_map[self._ctx.get_endpoint_type(self, endpoint, i)]
 
-        interface = self.__get_interface(interface)
-        self.intf_claimed.claim(interface)
+        intf = self._ctx.get_interface(self, interface)
+        self._ctx.managed_claim_interface(intf.bInterfaceNumber)
 
-        return get_write_fn()(self.devmgr.handle,
-                              endpoint,
-                              interface,
-                              array.array('B', data),
-                              self.__get_timeout(timeout))
+        return get_write_fn(intf)(self.backend.handle,
+                                  endpoint,
+                                  interface.bInterfaceNumber,
+                                  array.array('B', data),
+                                  self._get_timeout(timeout))
 
     def read(self, endpoint, size, interface = None, timeout = None):
         r"""Read data from the endpoint.
@@ -460,21 +462,20 @@ class Device(object):
 
         The method returns an array object with the data read.
         """
-        def get_read_fn():
-            fn_map = {util.ENDPOINT_TYPE_BULK:self.devmgr.backend.bulk_read,
-                      util.ENDPOINT_TYPE_INTR:self.devmgr.backend.intr_read,
-                      util.ENDPOINT_TYPE_ISO:self.devmgr.backend.iso_read}
-            alt = self.alt_map[interface]
-            return fn_map[self.ep_map.get(endpoint, self.current_configuration, interface, alt)]
+        def get_read_fn(i):
+            fn_map = {util.ENDPOINT_TYPE_BULK:self.backend.bulk_read,
+                      util.ENDPOINT_TYPE_INTR:self.backend.intr_read,
+                      util.ENDPOINT_TYPE_ISO:self.backend.iso_read}
+            return fn_map[self._ctx.get_endpoint_type(self, endpoint, i)]
 
-        interface = self.__get_interface(interface)
-        self.intf_claimed.claim(interface)
+        intf = self._ctx.get_interface(self, interface)
+        self._ctx.managed_claim_interface(intf.bInterfaceNumber)
 
-        return get_read_fn()(self.devmgr.handle,
-                             endpoint,
-                             interface,
-                             size,
-                             self.__get_timeout(timeout))
+        return get_read_fn(intf)(self._ctx.handle,
+                                 endpoint,
+                                 intf.bInterfaceNumber,
+                                 size,
+                                 self._get_timeout(timeout))
 
 
     def ctrl_transfer(self, bmRequestType, bRequest, wValue, wIndex,
@@ -499,53 +500,52 @@ class Device(object):
         value is the data payload read, as an array object.
         """
         if util.ctrl_direction(bmRequestType) == util.CTRL_OUT:
-            a = array.array('B', data_or_wLength)
+            a = (data_or_wLength is None) and array.array('B') or array.array('B', data_or_wLength)
         else:
             a = (data_or_wLength is None) and 0 or data_or_wLength
 
-        self.devmgr.open()
+        self._ctx.managed_open()
 
-        return self.devmgr.backend.ctrl_transfer(self.devmgr.handle,
+        return self._ctx.backend.ctrl_transfer(self._ctx.handle,
                                                  bmRequestType,
                                                  bRequest,
                                                  wValue,
                                                  wIndex,
                                                  a,
-                                                 self.__get_timeout(timeout))
+                                                 self._get_timeout(timeout))
 
     def is_kernel_driver_active(self, interface):
         r"""Determine if there is kernel driver associated with the interface.
 
         If a kernel driver is active, and the object will be unable to perform I/O.
         """
-        self.devmgr.open()
-        return self.devmgr.backend.is_kernel_driver_active(self.devmgr.handle, interface)
+        self._ctx.managed_open()
+        return self._ctx.backend.is_kernel_driver_active(self._ctx.handle, interface)
 
     def detach_kernel_driver(self, interface):
         r"""Detach a kernel driver.
 
         If successful, you will then be able to perform I/O.
         """
-        self.devmgr.open()
-        self.devmgr.backend.detach_kernel_driver(self.devmgr.handle, interface)
+        self._ctx.managed_open()
+        self.backend.detach_kernel_driver(self._ctx.handle, interface)
 
     def attach_kernel_driver(self, interface):
         r"""Re-attach an interface's kernel driver, which was previously
         detached using detach_kernel_driver()."""
-        self.devmgr.open()
-        self.devmgr.backend.attach_kernel_driver(self.devmgr.handle, interface)
+        self._ctx.managed_open()
+        self.backend.attach_kernel_driver(self._ctx.handle, interface)
 
     def __iter__(self):
         r"""Iterate over all configurations of the device."""
         for i in range(self.bNumConfigurations):
             yield Configuration(self, i)
 
-    def __get_interface(self, interface):
-        if interface is not None:
-            return interface
-        return Interface(self, configuration = self.current_configuration).bInterfaceNumber
+    def __getitem__(self, index):
+        r"""Return the Configuration object in the given position."""
+        return Configuration(self, index)
 
-    def __get_timeout(self, timeout):
+    def _get_timeout(self, timeout):
         if timeout is not None:
             return timeout
         return self.__default_timeout
@@ -577,10 +577,10 @@ def find(find_all=False, backend = None, custom_match = None, **args):
     the first one found will be returned. If a matching device cannot
     be found the function returns None. If you want to get all
     devices, you can set the parameter find_all to True, then find
-    will return an iterator like object which contains the devices. If
-    no matching device is found, it will return an empty iterator. Example:
+    will return an list with all matched devices. If no matching device
+    is found, it will return an empty list. Example:
 
-    printers = [p for p in find(find_all=True, bDeviceClass=7)]
+    printers = find(find_all=True, bDeviceClass=7)
 
     This call will get all the USB printers connected to the system.
     (actually may be not, because some devices put their class
@@ -594,15 +594,14 @@ def find(find_all=False, backend = None, custom_match = None, **args):
     so:
 
     def is_printer(dev):
+        import usb.util
         if dev.bDeviceClass == 7:
             return True
-
         for cfg in dev:
-            for intf in cfg:
-                if intf.bInterfaceClass == 7:
-                    return True
+            if util.find_descriptor(cfg, bInterfaceClass=7) is not None:
+                return True
 
-    printers = [p for p in find(find_all=True, custom_match = is_printer)]
+    printers = find(find_all=True, custom_match = is_printer)
 
     Now even if the device class code is in the interface descriptor the
     printer will be found.
@@ -612,12 +611,12 @@ def find(find_all=False, backend = None, custom_match = None, **args):
     previous example, if we would like to get all printers belonging to the
     manufacturer 0x3f4, the code would be like so:
 
-    printers = [p for p in find(find_all=True, idVendor=0x3f4, custom_match=is_printer)]
+    printers = find(find_all=True, idVendor=0x3f4, custom_match=is_printer)
 
     If you want to use find as a 'list all devices' function, just call
     it with find_all = True:
 
-    devices = [dev for dev in find(find_all=True)]
+    devices = find(find_all=True)
 
     Finally, you may pass a custom backend to the find function:
 
@@ -636,7 +635,8 @@ def find(find_all=False, backend = None, custom_match = None, **args):
             d = Device(dev, backend)
             if (custom_match is None or custom_match(d)) and \
                 reduce(lambda a, b: a and b, map(operator.eq, v,
-                                map(lambda i: getattr(d, i), k)), True):
+                       map(lambda i: getattr(d, i), k)),
+                       True):
                 yield d
 
     if backend is None:
@@ -654,7 +654,7 @@ def find(find_all=False, backend = None, custom_match = None, **args):
     k, v = args.keys(), args.values()
     
     if find_all:
-        return (d for d in device_iter(k, v))
+        return [d for d in device_iter(k, v)]
     else:
         try:
             return device_iter(k, v).next()

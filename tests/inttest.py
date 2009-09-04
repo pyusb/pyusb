@@ -1,6 +1,8 @@
+# Integraion tests
+
 import unittest
 import usb.core
-import device_info as di
+import devinfo
 import utils
 import usb.util
 import sys
@@ -18,17 +20,17 @@ data_list = (utils.get_array_data1(),
 class FindTest(unittest.TestCase):
     def runTest(self):
         # TODO: more tests
-        self.assertEqual(usb.core.find(idVendor=di.ID_VENDOR, idProduct=0xFFFF), None)
-        self.assertEqual(len([i for i in usb.core.find(find_all=True, idVendor=di.ID_VENDOR, idProduct=2)]), 0)
-        self.assertNotEqual(usb.core.find(idVendor=di.ID_VENDOR, idProduct=di.ID_PRODUCT), None)
-        self.assertEqual(len([i for i in usb.core.find(find_all=True, idVendor=di.ID_VENDOR, idProduct=di.ID_PRODUCT)]), 1)
-        self.assertEqual(usb.core.find(predicate = lambda d: d.idVendor==di.ID_VENDOR and d.idProduct==0xFFFF), None)
-        self.assertNotEqual(usb.core.find(predicate = lambda d: d.idVendor==di.ID_VENDOR and d.idProduct==di.ID_PRODUCT), None)
+        self.assertEqual(usb.core.find(idVendor=devinfo.ID_VENDOR, idProduct=0xFFFF), None)
+        self.assertEqual(len(usb.core.find(find_all=True, idVendor=devinfo.ID_VENDOR, idProduct=2)), 0)
+        self.assertNotEqual(usb.core.find(idVendor=devinfo.ID_VENDOR, idProduct=devinfo.ID_PRODUCT), None)
+        self.assertEqual(len(usb.core.find(find_all=True, idVendor=devinfo.ID_VENDOR, idProduct=devinfo.ID_PRODUCT)), 1)
+        self.assertEqual(usb.core.find(custom_match = lambda d: d.idVendor==devinfo.ID_VENDOR and d.idProduct==0xFFFF), None)
+        self.assertNotEqual(usb.core.find(custom_match = lambda d: d.idVendor==devinfo.ID_VENDOR and d.idProduct==devinfo.ID_PRODUCT), None)
 
 class DeviceTest(unittest.TestCase):
-    def __init__(self, backend):
+    def __init__(self, dev):
         unittest.TestCase.__init__(self)
-        self.dev = usb.core.find(backend=backend, idVendor=di.ID_VENDOR, idProduct=di.ID_PRODUCT)
+        self.dev = dev
 
     def runTest(self):
         self.test_attributes()
@@ -43,8 +45,8 @@ class DeviceTest(unittest.TestCase):
         self.assertEqual(self.dev.bLength, 18)
         self.assertEqual(self.dev.bDescriptorType, usb.util.DESC_TYPE_DEVICE)
         self.assertEqual(self.dev.bcdUSB, 0x0200)
-        self.assertEqual(self.dev.idVendor, di.ID_VENDOR)
-        self.assertEqual(self.dev.idProduct, di.ID_PRODUCT)
+        self.assertEqual(self.dev.idVendor, devinfo.ID_VENDOR)
+        self.assertEqual(self.dev.idProduct, devinfo.ID_PRODUCT)
         self.assertEqual(self.dev.bcdDevice, 0x0001)
         self.assertEqual(self.dev.iManufacturer, 0x01)
         self.assertEqual(self.dev.iProduct, 0x02)
@@ -80,8 +82,8 @@ class DeviceTest(unittest.TestCase):
         self.dev.reset()
 
     def test_write_read(self):
-        ep_list = ((di.EP_BULK_OUT, di.EP_BULK_IN),
-                   (di.EP_INTR_OUT, di.EP_INTR_IN))
+        ep_list = ((devinfo.EP_BULK_OUT, devinfo.EP_BULK_IN),
+                   (devinfo.EP_INTR_OUT, devinfo.EP_INTR_IN))
 
         for ep in ep_list:
             for data in data_list:
@@ -92,16 +94,15 @@ class DeviceTest(unittest.TestCase):
 
     def test_ctrl_transfer(self):
         for data in data_list:
-            ret = self.dev.ctrl_transfer(0x40, di.CTRL_LOOPBACK_WRITE, 0, 0, data)
+            ret = self.dev.ctrl_transfer(0x40, devinfo.CTRL_LOOPBACK_WRITE, 0, 0, data)
             self.assertEqual(ret, len(data), 'Failed to write data: ' + str(data))
-            ret = utils.to_array(self.dev.ctrl_transfer(0xC0, di.CTRL_LOOPBACK_READ, 0, 0, len(data)))
+            ret = utils.to_array(self.dev.ctrl_transfer(0xC0, devinfo.CTRL_LOOPBACK_READ, 0, 0, len(data)))
             self.assertEqual(ret, utils.to_array(data), 'Failed to read data: ' + str(data))
 
 class ConfigurationTest(unittest.TestCase):
-    def __init__(self, backend):
+    def __init__(self, dev):
         unittest.TestCase.__init__(self)
-        self.dev = usb.core.find(backend=backend, idVendor=di.ID_VENDOR, idProduct=di.ID_PRODUCT)
-        self.cfg = usb.core.Configuration(self.dev)
+        self.cfg = dev[0]
     def runTest(self):
         self.test_attributes()
         self.test_set()
@@ -120,8 +121,8 @@ class ConfigurationTest(unittest.TestCase):
 class InterfaceTest(unittest.TestCase):
     def __init__(self, backend):
         unittest.TestCase.__init__(self)
-        self.dev = usb.core.find(backend=backend, idVendor=di.ID_VENDOR, idProduct=di.ID_PRODUCT)
-        self.intf = usb.core.Interface(self.dev)
+        dev = usb.core.find(backend=backend, idVendor=devinfo.ID_VENDOR, idProduct=devinfo.ID_PRODUCT)
+        self.intf = dev[0][(0,0)]
     def runTest(self):
         self.test_attributes()
         self.test_set_altsetting()
@@ -139,10 +140,10 @@ class InterfaceTest(unittest.TestCase):
         self.intf.set_altsetting()
 
 class EndpointTest(unittest.TestCase):
-    def __init__(self, backend):
+    def __init__(self, dev):
         unittest.TestCase.__init__(self)
-        self.dev = usb.core.find(backend=backend, idVendor=di.ID_VENDOR, idProduct=di.ID_PRODUCT)
-        self.dev.set_configuration()
+        dev.set_configuration()
+        self.ep = dev[0][(0,0)][0]
         self.ep = usb.core.Endpoint(self.dev, 0)
     def runTest(self):
         self.test_attributes()
@@ -166,8 +167,12 @@ def get_testsuite():
     suite.addTest(FindTest())
     for m in (libusb10, libusb01, openusb):
         b = m.get_backend()
-        if b is not None:
-            for ObjectTestCase in (DeviceTest, ConfigurationTest, InterfaceTest, EndpointTest):
-                sys.stdout.write('Adding %s(%s) to test suite...\n' % (ObjectTestCase.__name__, m.__name__))
-                suite.addTest(ObjectTestCase(b))
+        if b is None:
+            continue
+        dev = usb.core.find(backend=b, idVendor=devinfo.ID_VENDOR, idProduct=devinfo.ID_PRODUCT)
+        if dev is None:
+            continue
+        for ObjectTestCase in (DeviceTest, ConfigurationTest, InterfaceTest, EndpointTest):
+            sys.stdout.write('Adding %s(%s) to test suite...\n' % (ObjectTestCase.__name__, m.__name__))
+            suite.addTest(ObjectTestCase(dev))
     return suite
