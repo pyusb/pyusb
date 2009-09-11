@@ -23,7 +23,7 @@ class UtilTest(unittest.TestCase):
         self.assertEqual(ctrl_direction(CTRL_OUT), CTRL_OUT)
         self.assertEqual(ctrl_direction(CTRL_IN), CTRL_IN)
 
-def get_testsuite():
+def get_suite():
     suite = unittest.TestSuite()
     suite.addTest(UtilTest())
     return suite

@@ -1,0 +1,69 @@
+import usb.backend
+from usb.core import find
+import usb.util
+import unittest
+import devinfo
+
+class _DeviceDescriptor(object):
+    def __init__(self, idVendor, idProduct):
+        self.bLength = 18
+        self.bDescriptorType = usb.util.DESC_TYPE_DEVICE
+        self.bcdUSB = 0x0200
+        self.idVendor = idVendor
+        self.idProduct = idProduct
+        self.bcdDevice = 0x0001
+        self.iManufacturer = 0
+        self.iProduct = 0
+        self.iSerialNumber = 0
+        self.bNumConfigurations = 0
+        self.bMaxPacketSize0 = 64
+        self.bDeviceClass = 0xff
+        self.bDeviceSubClass = 0xff
+        self.bDeviceProtocol = 0xff
+
+# We are only interested in test usb.find() function, we don't need
+# to implement all IBackend stuff
+class _MyBackend(usb.backend.IBackend):
+    def __init__(self):
+        self.devices = [_DeviceDescriptor(devinfo.ID_VENDOR, p) for p in range(4)]
+    def enumerate_devices(self):
+        return range(len(self.devices))
+    def get_device_descriptor(self, dev):
+        return self.devices[dev]
+
+class FindTest(unittest.TestCase):
+    def test_find(self):
+        b = _MyBackend()
+        self.assertEqual(find(backend=b, idVendor=1), None)
+        self.assertNotEqual(find(backend=b, idProduct=1), None)
+        self.assertEqual(len(find(find_all=True, backend=b)), len(b.devices))
+        self.assertEqual(len(find(find_all=True, backend=b, idProduct=1)), 1)
+        self.assertEqual(len(find(find_all=True, backend=b, idVendor=1)), 0)
+
+        self.assertEqual(
+                len(
+                    find(
+                        find_all=True,
+                        backend=b,
+                        custom_match = lambda d: d.idProduct==1
+                    ),
+                ),
+                1
+            )
+
+        self.assertEqual(
+                len(
+                    find(
+                        find_all=True,
+                        backend=b,
+                        custom_match = lambda d: d.idVendor==devinfo.ID_VENDOR,
+                        idProduct=1
+                    ),
+                ),
+                1
+            )
+
+def get_suite():
+    suite = unittest.TestSuite()
+    suite.addTest(unittest.defaultTestLoader.loadTestsFromTestCase(FindTest))
+    return suite

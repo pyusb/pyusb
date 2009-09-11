@@ -15,7 +15,6 @@ __all__ = ['Device', 'Configuration', 'Interface', 'Endpoint', 'find']
 
 import array
 import util
-import weakref
 
 _DEFAULT_TIMEOUT = 1000
 
@@ -157,16 +156,30 @@ class Endpoint(object):
         self.interface = intf.bInterfaceNumber
         self.index = endpoint
 
-        desc = device.backend.get_endpoint_descriptor(
+        backend = device._ctx.backend
+
+        desc = backend.get_endpoint_descriptor(
                     device.dev,
                     endpoint,
                     interface,
                     alternate_setting,
-                    configuration)
+                    configuration
+                )
 
-        _set_attr(desc, self,
-            ('bLength', 'bDescriptorType', 'bEndpointAddress', 'bmAttributes',
-            'wMaxPacketSize', 'bInterval', 'bRefresh', 'bSynchAddress'))
+        _set_attr(
+                desc,
+                self,
+                (
+                    'bLength',
+                    'bDescriptorType',
+                    'bEndpointAddress',
+                    'bmAttributes',
+                    'wMaxPacketSize',
+                    'bInterval',
+                    'bRefresh',
+                    'bSynchAddress'
+                )
+            )
 
     def write(self, data, timeout = None):
         r"""Write data to the endpoint.
@@ -228,31 +241,57 @@ class Interface(object):
         self.index = interface
         self.configuration = configuration
 
-        desc = device.backend.get_interface_descriptor(
+        backend = device._ctx.backend
+
+        desc = backend.get_interface_descriptor(
                     self.device.dev,
                     interface,
                     alternate_setting,
-                    configuration)
+                    configuration
+                )
 
-        _set_attr(desc, self, 
-            ('bLength', 'bDescriptorType', 'bInterfaceNumber', 'bAlternateSetting',
-             'bNumEndpoints', 'bInterfaceClass', 'bInterfaceSubClass', 
-             'bInterfaceProtocol', 'iInterface'))
+        _set_attr(
+                desc,
+                self,
+                (
+                    'bLength',
+                    'bDescriptorType',
+                    'bInterfaceNumber',
+                    'bAlternateSetting',
+                    'bNumEndpoints',
+                    'bInterfaceClass',
+                    'bInterfaceSubClass',
+                    'bInterfaceProtocol',
+                    'iInterface'
+                )
+            )
 
     def set_altsetting(self):
         r"""Set the interface alternate setting."""
         self.device.set_interface_altsetting(
-            self.bInterfaceNumber, self.bAlternateSetting)
+            self.bInterfaceNumber,
+            self.bAlternateSetting
+        )
 
     def __iter__(self):
         r"""Iterate over all endpoints of the interface."""
         for i in range(self.bNumEndpoints):
-            yield Endpoint(self.device, i, self.index,
-                           self.alternate_index, self.configuration)
+            yield Endpoint(
+                    self.device,
+                    i,
+                    self.index,
+                    self.alternate_index,
+                    self.configuration
+                )
     def __getitem__(self, index):
         r"""Return the Endpoint object in the given position."""
-        return Endpoint(self.device, index, self.index,
-                        self.alternate_index, self.configuration)
+        return Endpoint(
+                self.device,
+                index,
+                self.index,
+                self.alternate_index,
+                self.configuration
+            )
 
 class Configuration(object):
     r"""Represent a configuration object.
@@ -280,13 +319,27 @@ class Configuration(object):
         self.device = device
         self.index = configuration
 
-        desc = device.backend.get_configuration_descriptor(
-                self.device.dev,
-                configuration)
+        backend = device._ctx.backend
 
-        _set_attr(desc, self,
-            ('bLength', 'bDescriptorType', 'wTotalLength', 'bNumInterfaces',
-             'bConfigurationValue', 'iConfiguration', 'bmAttributes', 'bMaxPower'))
+        desc = backend.get_configuration_descriptor(
+                self.device.dev,
+                configuration
+            )
+
+        _set_attr(
+                desc,
+                self,
+                (
+                    'bLength',
+                    'bDescriptorType',
+                    'wTotalLength',
+                    'bNumInterfaces',
+                    'bConfigurationValue',
+                    'iConfiguration',
+                    'bmAttributes',
+                    'bMaxPower'
+                )
+            )
 
     def set(self):
         r"""Set this configuration as the active one."""
@@ -361,17 +414,28 @@ class Device(object):
         self._ctx = _ResourceManager(dev, backend)
         self.__default_timeout = _DEFAULT_TIMEOUT
 
-        # just a convenience
-        self.backend = weakref.ref(self._ctx.backend)
-        self.dev = weakref.ref(self._ctx.dev)
-
         desc = backend.get_device_descriptor(dev)
 
-        _set_attr(desc, self,
-            ('bLength', 'bDescriptorType', 'bcdUSB', 'bDeviceClass',
-             'bDeviceSubClass', 'bDeviceProtocol', 'bMaxPacketSize0',
-             'idVendor', 'idProduct', 'bcdDevice', 'iManufacturer',
-             'iProduct', 'iSerialNumber', 'bNumConfigurations'))
+        _set_attr(
+                desc,
+                self,
+                (
+                    'bLength',
+                    'bDescriptorType',
+                    'bcdUSB',
+                    'bDeviceClass',
+                    'bDeviceSubClass',
+                    'bDeviceProtocol',
+                    'bMaxPacketSize0',
+                    'idVendor',
+                    'idProduct',
+                    'bcdDevice',
+                    'iManufacturer',
+                    'iProduct',
+                    'iSerialNumber',
+                    'bNumConfigurations'
+                )
+            )
 
     def set_configuration(self, configuration = None):
         r"""Set the active configuration.
@@ -413,7 +477,7 @@ class Device(object):
     def reset(self):
         r"""Reset the device."""
         self._ctx.managed_open()
-        self.backend.reset_device(self._ctx.handle)
+        self._ctx.backend.reset_device(self._ctx.handle)
 
     def write(self, endpoint, data, interface = None, timeout = None):
         r"""Write data to the endpoint.
@@ -432,20 +496,25 @@ class Device(object):
 
         The method returns the number of bytes written.
         """
-        def get_write_fn(i):
-            fn_map = {util.ENDPOINT_TYPE_BULK:self.backend.bulk_write,
-                      util.ENDPOINT_TYPE_INTR:self.backend.intr_write,
-                      util.ENDPOINT_TYPE_ISO:self.backend.iso_write}
-            return fn_map[self._ctx.get_endpoint_type(self, endpoint, i)]
+        backend = self._ctx.backend
+
+        fn_map = {
+                    util.ENDPOINT_TYPE_BULK:backend.bulk_write,
+                    util.ENDPOINT_TYPE_INTR:backend.intr_write,
+                    util.ENDPOINT_TYPE_ISO:backend.iso_write
+                }
 
         intf = self._ctx.get_interface(self, interface)
+        fn = fn_map[self._ctx.get_endpoint_type(self, endpoint, intf)]
         self._ctx.managed_claim_interface(intf.bInterfaceNumber)
 
-        return get_write_fn(intf)(self.backend.handle,
-                                  endpoint,
-                                  interface.bInterfaceNumber,
-                                  array.array('B', data),
-                                  self._get_timeout(timeout))
+        return fn(
+                backend.handle,
+                endpoint,
+                interface.bInterfaceNumber,
+                array.array('B', data),
+                self._get_timeout(timeout)
+            )
 
     def read(self, endpoint, size, interface = None, timeout = None):
         r"""Read data from the endpoint.
@@ -462,20 +531,25 @@ class Device(object):
 
         The method returns an array object with the data read.
         """
-        def get_read_fn(i):
-            fn_map = {util.ENDPOINT_TYPE_BULK:self.backend.bulk_read,
-                      util.ENDPOINT_TYPE_INTR:self.backend.intr_read,
-                      util.ENDPOINT_TYPE_ISO:self.backend.iso_read}
-            return fn_map[self._ctx.get_endpoint_type(self, endpoint, i)]
+        backend = self._ctx.backend
+
+        fn_map = {
+                    util.ENDPOINT_TYPE_BULK:backend.bulk_read,
+                    util.ENDPOINT_TYPE_INTR:backend.intr_read,
+                    util.ENDPOINT_TYPE_ISO:backend.iso_read
+                }
 
         intf = self._ctx.get_interface(self, interface)
+        fn = fn_map[self._ctx.get_endpoint_type(self, endpoint, intf)]
         self._ctx.managed_claim_interface(intf.bInterfaceNumber)
 
-        return get_read_fn(intf)(self._ctx.handle,
-                                 endpoint,
-                                 intf.bInterfaceNumber,
-                                 size,
-                                 self._get_timeout(timeout))
+        return fn(
+                self._ctx.handle,
+                endpoint,
+                intf.bInterfaceNumber,
+                size,
+                self._get_timeout(timeout)
+            )
 
 
     def ctrl_transfer(self, bmRequestType, bRequest, wValue, wIndex,
@@ -506,13 +580,15 @@ class Device(object):
 
         self._ctx.managed_open()
 
-        return self._ctx.backend.ctrl_transfer(self._ctx.handle,
-                                                 bmRequestType,
-                                                 bRequest,
-                                                 wValue,
-                                                 wIndex,
-                                                 a,
-                                                 self._get_timeout(timeout))
+        return self._ctx.backend.ctrl_transfer(
+                                    self._ctx.handle,
+                                    bmRequestType,
+                                    bRequest,
+                                    wValue,
+                                    wIndex,
+                                    a,
+                                    self._get_timeout(timeout)
+                                )
 
     def is_kernel_driver_active(self, interface):
         r"""Determine if there is kernel driver associated with the interface.
@@ -528,13 +604,13 @@ class Device(object):
         If successful, you will then be able to perform I/O.
         """
         self._ctx.managed_open()
-        self.backend.detach_kernel_driver(self._ctx.handle, interface)
+        self._ctx.backend.detach_kernel_driver(self._ctx.handle, interface)
 
     def attach_kernel_driver(self, interface):
         r"""Re-attach an interface's kernel driver, which was previously
         detached using detach_kernel_driver()."""
         self._ctx.managed_open()
-        self.backend.attach_kernel_driver(self._ctx.handle, interface)
+        self._ctx.backend.attach_kernel_driver(self._ctx.handle, interface)
 
     def __iter__(self):
         r"""Iterate over all configurations of the device."""
@@ -558,7 +634,11 @@ class Device(object):
     def __get_def_tmo(self):
         return self.__default_timeout
 
-    default_timeout = property(__get_def_tmo, __set_def_tmo, doc = 'Default timeout for transfers')
+    default_timeout = property(
+                        __get_def_tmo,
+                        __set_def_tmo,
+                        doc = 'Default timeout for transfers'
+                    )
 
 def find(find_all=False, backend = None, custom_match = None, **args):
     r"""Find an USB device and return it.
@@ -634,9 +714,15 @@ def find(find_all=False, backend = None, custom_match = None, **args):
         for dev in backend.enumerate_devices():
             d = Device(dev, backend)
             if (custom_match is None or custom_match(d)) and \
-                reduce(lambda a, b: a and b, map(operator.eq, v,
-                       map(lambda i: getattr(d, i), k)),
-                       True):
+                reduce(
+                        lambda a, b: a and b,
+                        map(
+                            operator.eq,
+                            v,
+                            map(lambda i: getattr(d, i), k)
+                        ),
+                        True
+                    ):
                 yield d
 
     if backend is None:

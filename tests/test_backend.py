@@ -145,7 +145,7 @@ class BackendTest(unittest.TestCase):
             ret = read_fn(self.handle, ep_in, intf, len(data), 1000)
             self.assertEqual(ret, data, 'Failed to read data: ' + str(data) + ', in EP = ' + str(ep_in))
 
-def get_testsuite():
+def get_suite():
     suite = unittest.TestSuite()
     if utils.is_test_hw_present():
         for m in (libusb10, libusb01, openusb):

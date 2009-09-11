@@ -111,9 +111,15 @@ def find_descriptor(desc, find_all=False, custom_match=None, **args):
     def desc_iter(k, v):
         for d in desc:
             if (custom_match is None or custom_match(d)) and \
-                reduce(lambda a, b: a and b,
-                       map(operator.eq, v, map(lambda i: getattr(d, i), k)),
-                       True):
+                reduce(
+                        lambda a, b: a and b,
+                        map(
+                            operator.eq,
+                            v,
+                            map(lambda i: getattr(d, i), k)
+                        ),
+                        True
+                    ):
                 yield d
 
     k, v = args.keys(), args.values()

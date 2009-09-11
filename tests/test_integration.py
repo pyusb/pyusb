@@ -17,16 +17,6 @@ data_list = (utils.get_array_data1(),
              utils.get_str_data1(),
              utils.get_str_data1())
 
-class FindTest(unittest.TestCase):
-    def runTest(self):
-        # TODO: more tests
-        self.assertEqual(usb.core.find(idVendor=devinfo.ID_VENDOR, idProduct=0xFFFF), None)
-        self.assertEqual(len(usb.core.find(find_all=True, idVendor=devinfo.ID_VENDOR, idProduct=2)), 0)
-        self.assertNotEqual(usb.core.find(idVendor=devinfo.ID_VENDOR, idProduct=devinfo.ID_PRODUCT), None)
-        self.assertEqual(len(usb.core.find(find_all=True, idVendor=devinfo.ID_VENDOR, idProduct=devinfo.ID_PRODUCT)), 1)
-        self.assertEqual(usb.core.find(custom_match = lambda d: d.idVendor==devinfo.ID_VENDOR and d.idProduct==0xFFFF), None)
-        self.assertNotEqual(usb.core.find(custom_match = lambda d: d.idVendor==devinfo.ID_VENDOR and d.idProduct==devinfo.ID_PRODUCT), None)
-
 class DeviceTest(unittest.TestCase):
     def __init__(self, dev):
         unittest.TestCase.__init__(self)
@@ -162,9 +152,8 @@ class EndpointTest(unittest.TestCase):
             ret = utils.to_array(self.ep.read(len(data)))
             self.assertEqual(ret, utils.to_array(data), 'Failed to read data: ' + str(data))
 
-def get_testsuite():
+def get_suite():
     suite = unittest.TestSuite()
-    suite.addTest(FindTest())
     for m in (libusb10, libusb01, openusb):
         b = m.get_backend()
         if b is None:
