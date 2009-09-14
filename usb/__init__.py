@@ -12,7 +12,7 @@ module. New applications are encouraged to use it.
 
 __author__ = 'Wander Lairson Costa'
 
-__all__ = ['legacy', 'core', 'backend']
+__all__ = ['legacy', 'core', 'backend', 'util']
 
 # We import all 'legacy' module symbols to provide compatility
 # with applications that use 0.x versions.

@@ -244,7 +244,7 @@ class Interface(object):
         backend = device._ctx.backend
 
         desc = backend.get_interface_descriptor(
-                    self.device.dev,
+                    self.device._ctx.dev,
                     interface,
                     alternate_setting,
                     configuration
@@ -322,7 +322,7 @@ class Configuration(object):
         backend = device._ctx.backend
 
         desc = backend.get_configuration_descriptor(
-                self.device.dev,
+                self.device._ctx.dev,
                 configuration
             )
 

@@ -91,9 +91,14 @@ class Configuration(object):
         self.selfPowered = (cfg.bmAttributes >> 6) & 1
         self.totalLength = cfg.wTotalLength
         self.value = cfg.bConfigurationValue
-        self.interfaces = [list(g) for k, g in itertools.groupby(
-                            sorted([Interface(i) for i in cfg], key=lambda i: i.interfaceNumber),
-                                                                lambda i: i.alternateSetting)]
+        self.interfaces = [
+                            list(g) for k, g in itertools.groupby(
+                                    sorted(
+                                        [Interface(i) for i in cfg],
+                                        key=lambda i: i.interfaceNumber
+                                    ),
+                                    lambda i: i.alternateSetting)
+                        ]
 
 class DeviceHandle(object):
     def __init__(self, dev):
@@ -161,8 +166,14 @@ class DeviceHandle(object):
             timeout: operation timeout in miliseconds. (default: 100)
         Return the number of bytes written.
         """
-        return self.dev.ctrl_transfer(requestType, request, wValue = value, wIndex = index,
-                                        data_or_wLength = buffer, timeout = timeout)
+        return self.dev.ctrl_transfer(
+                    requestType,
+                    request,
+                    wValue = value,
+                    wIndex = index,
+                    data_or_wLength = buffer,
+                    timeout = timeout
+                )
 
     def clearHalt(endpoint):
         r"""Clears any halt status on the specified endpoint.
@@ -170,7 +181,7 @@ class DeviceHandle(object):
         Arguments:
             endpoint: endpoint number.
         """
-        pass
+        raise NotImplemented('This function has not been implemented yet')
 
     def claimInterface(interface):
         r"""Claims the interface with the Operating System.
@@ -178,10 +189,12 @@ class DeviceHandle(object):
         Arguments:
             interface: interface number or an Interface object.
         """
+        util.claim_interface(interface)
         self.__claimed_interface = interface
 
     def releaseInterface():
         r"""Release an interface previously claimed with claimInterface."""
+        util.release_interface(interface)
         self.__claimed_interface = -1
 
     def reset():
@@ -223,7 +236,7 @@ class DeviceHandle(object):
             langid: Language ID. If it is omittedi, will be
                     used the first language.
         """
-        pass
+        raise NotImplemented('This function has not been implemented yet')
 
     def getDescriptor(type, index, len, endpoint = -1):
         r"""Retrieves a descriptor from the device identified by the type
@@ -236,7 +249,7 @@ class DeviceHandle(object):
             endpoint: endpoint number from descriptor is read. If it is
                       omitted, the descriptor is read from default control pipe.
         """
-        pass
+        raise NotImplemented('This function has not been implemented yet')
 
     def detachKernelDriver(interface):
         r"""Detach a kernel driver from the interface (if one is attached,

@@ -2,6 +2,8 @@ r"""usb.util - Utility functions."""
 
 __author__ = 'Wander Lairson Costa'
 
+import operator
+
 # descriptor type
 DESC_TYPE_DEVICE = 0x01
 DESC_TYPE_CONFIG = 0x02
