@@ -370,7 +370,10 @@ class _OpenUSB(usb.backend.IBackend):
 
         ret = _check(_lib.openusb_ctrl_xfer(dev_handle, 0, 0, byref(request)))
 
-        return direction == ENDPOINT_OUT and ret or buffer[:ret]
+        if direction == ENDPOINT_OUT:
+            ret
+        else:
+            buffer[:ret]
 
     def reset_device(self, dev_handle):
         _check(_lib.openusb_reset(dev_handle))

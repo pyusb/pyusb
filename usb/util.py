@@ -145,7 +145,7 @@ def claim_interface(device, interface):
     If the interface is already claimed, either through a previously call
     to claim_interface or internally by the device object, nothing happens.
     """
-    device._ctx.managed_claim_interface(interface)
+    device._ctx.managed_claim_interface(device, interface)
 
 def release_interface(device, interface):
     r"""Explicitly release an interface.
@@ -157,7 +157,7 @@ def release_interface(device, interface):
     Normally, you do not need to worry about claiming policies, as
     the device object takes care of it automatically.
     """
-    device._ctx.managed_release_interface(interface)
+    device._ctx.managed_release_interface(device, interface)
 
 def dispose_resources(device):
     r"""Release internal resources allocated by the object.
@@ -173,4 +173,4 @@ def dispose_resources(device):
     object normally. If the resources will be necessary again, it
     will allocate them automatically.
     """
-    device._ctx.dispose()
+    device._ctx.dispose(device)

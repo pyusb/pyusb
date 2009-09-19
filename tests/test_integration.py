@@ -23,13 +23,16 @@ class DeviceTest(unittest.TestCase):
         self.dev = dev
 
     def runTest(self):
-        self.test_attributes()
-        self.test_timeout()
-        self.test_set_configuration()
-        self.test_set_interface_altsetting()
-        self.test_write_read()
-        self.test_ctrl_transfer()
-        self.test_reset()
+        try:
+            self.test_attributes()
+            self.test_timeout()
+            self.test_set_configuration()
+            self.test_set_interface_altsetting()
+            self.test_write_read()
+            self.test_ctrl_transfer()
+            self.test_reset()
+        finally:
+            usb.util.dispose_resources(self.dev)
 
     def test_attributes(self):
         self.assertEqual(self.dev.bLength, 18)
@@ -62,6 +65,7 @@ class DeviceTest(unittest.TestCase):
         cfg = usb.core.Configuration(self.dev).bConfigurationValue
         self.dev.set_configuration(cfg)
         self.dev.set_configuration()
+        self.assertEqual(cfg, self.dev.get_active_configuration().bConfigurationValue)
 
     def test_set_interface_altsetting(self):
         intf = usb.core.Interface(self.dev)
@@ -80,22 +84,25 @@ class DeviceTest(unittest.TestCase):
                 ret = self.dev.write(ep[0], data)
                 self.assertEqual(ret, len(data), 'Failed to write data: ' + str(data) + ', in EP = ' + str(ep[0]))
                 ret = utils.to_array(self.dev.read(ep[1], len(data)))
-                self.assertEqual(ret, utils.to_array(data), 'Failed to read data: ' + str(data) + ', in EP = ' + str(ep[1]))
+                self.assertEqual(ret, utils.to_array(data), str(ret) + ' != ' + str(data) + ', in EP = ' + str(ep[1]))
 
     def test_ctrl_transfer(self):
         for data in data_list:
             ret = self.dev.ctrl_transfer(0x40, devinfo.CTRL_LOOPBACK_WRITE, 0, 0, data)
             self.assertEqual(ret, len(data), 'Failed to write data: ' + str(data))
             ret = utils.to_array(self.dev.ctrl_transfer(0xC0, devinfo.CTRL_LOOPBACK_READ, 0, 0, len(data)))
-            self.assertEqual(ret, utils.to_array(data), 'Failed to read data: ' + str(data))
+            self.assertEqual(ret, utils.to_array(data), str(ret) + ' != ' + str(data))
 
 class ConfigurationTest(unittest.TestCase):
     def __init__(self, dev):
         unittest.TestCase.__init__(self)
         self.cfg = dev[0]
     def runTest(self):
-        self.test_attributes()
-        self.test_set()
+        try:
+            self.test_attributes()
+            self.test_set()
+        finally:
+            usb.util.dispose_resources(self.cfg.device)
     def test_attributes(self):
         self.assertEqual(self.cfg.bLength, 9)
         self.assertEqual(self.cfg.bDescriptorType, usb.util.DESC_TYPE_CONFIG)
@@ -109,13 +116,15 @@ class ConfigurationTest(unittest.TestCase):
         self.cfg.set()
 
 class InterfaceTest(unittest.TestCase):
-    def __init__(self, backend):
+    def __init__(self, dev):
         unittest.TestCase.__init__(self)
-        dev = usb.core.find(backend=backend, idVendor=devinfo.ID_VENDOR, idProduct=devinfo.ID_PRODUCT)
         self.intf = dev[0][(0,0)]
     def runTest(self):
-        self.test_attributes()
-        self.test_set_altsetting()
+        try:
+            self.test_attributes()
+            self.test_set_altsetting()
+        finally:
+            usb.util.dispose_resources(self.intf.device)
     def test_attributes(self):
         self.assertEqual(self.intf.bLength, 9)
         self.assertEqual(self.intf.bDescriptorType, usb.util.DESC_TYPE_INTERFACE)
@@ -133,24 +142,29 @@ class EndpointTest(unittest.TestCase):
     def __init__(self, dev):
         unittest.TestCase.__init__(self)
         dev.set_configuration()
-        self.ep = dev[0][(0,0)][0]
-        self.ep = usb.core.Endpoint(self.dev, 0)
+        intf = dev[0][(0,0)]
+        self.ep_out = usb.util.find_descriptor(intf, bEndpointAddress=0x01)
+        self.ep_in = usb.util.find_descriptor(intf, bEndpointAddress=0x81)
     def runTest(self):
-        self.test_attributes()
-        self.test_write_read()
+        try:
+            self.test_attributes()
+            self.test_write_read()
+        finally:
+            usb.util.dispose_resources(self.ep_out.device)
+            usb.util.dispose_resources(self.ep_in.device)
     def test_attributes(self):
-        self.assertEqual(self.ep.bLength, 7)
-        self.assertEqual(self.ep.bDescriptorType, usb.util.DESC_TYPE_ENDPOINT)
-        self.assertEqual(self.ep.bEndpointAddress, 0x01)
-        self.assertEqual(self.ep.bmAttributes, 0x02)
-        self.assertEqual(self.ep.wMaxPacketSize, 64)
-        self.assertEqual(self.ep.bInterval, 32)
+        self.assertEqual(self.ep_out.bLength, 7)
+        self.assertEqual(self.ep_out.bDescriptorType, usb.util.DESC_TYPE_ENDPOINT)
+        self.assertEqual(self.ep_out.bEndpointAddress, 0x01)
+        self.assertEqual(self.ep_out.bmAttributes, 0x02)
+        self.assertEqual(self.ep_out.wMaxPacketSize, 64)
+        self.assertEqual(self.ep_out.bInterval, 32)
     def test_write_read(self):
         for data in data_list:
-            ret = self.ep.write(data)
+            ret = self.ep_out.write(data)
             self.assertEqual(ret, len(data), 'Failed to write data: ' + str(data))
-            ret = utils.to_array(self.ep.read(len(data)))
-            self.assertEqual(ret, utils.to_array(data), 'Failed to read data: ' + str(data))
+            ret = utils.to_array(self.ep_in.read(len(data)))
+            self.assertEqual(ret, utils.to_array(data), str(ret) + ' != ' + str(data))
 
 def get_suite():
     suite = unittest.TestSuite()

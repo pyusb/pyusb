@@ -15,6 +15,7 @@ __all__ = ['Device', 'Configuration', 'Interface', 'Endpoint', 'find']
 
 import array
 import util
+import copy
 
 _DEFAULT_TIMEOUT = 1000
 
@@ -23,8 +24,9 @@ def _set_attr(input, output, fields):
         setattr(output, f, int(getattr(input, f)))
 
 class _ResourceManager(object):
-    def __init__(self, dev, backend):
+    def __init__(self, parent, dev, backend):
         self.backend = backend
+        self._active_cfg_index = None
         self.dev = dev
         self.handle = None
         self._claimed_intf = set()
@@ -38,80 +40,107 @@ class _ResourceManager(object):
         if self.handle is not None:
             self.backend.close_device(self.handle)
             self.handle = None
-    def managed_set_configuration(self, config):
-        cfg = isinstance(config, Configuration) and config.bConfigurationValue or config
+    def managed_set_configuration(self, device, config):
+        if config is None:
+            cfg = Configuration(device)
+        elif isinstance(config, Configuration):
+            cfg = config
+        else:
+            cfg = util.find_descriptor(device, bConfigurationValue=config)
         self.managed_open()
-        self.backend.set_configuration(self.handle, cfg)
+        self.backend.set_configuration(self.handle, cfg.bConfigurationValue)
         # cache the index instead of the object to avoid cyclic references
         # of the device and Configuration (Device tracks the _ResourceManager,
-        # which tracks the Configuration, whihc tracks the Device)
-        self._active_cfg_index = util.find_descriptor(bConfigurationValue=cfg).index
+        # which tracks the Configuration, which tracks the Device)
+        self._active_cfg_index = cfg.index
         # after changing configuration, out alternate setting and endpoint type caches
         # are not valid anymore
         self._ep_type_map.clear()
         self._alt_set.clear()
-    def managed_claim_interface(self, intf):
+    def managed_claim_interface(self, device, intf):
         self.managed_open()
-        i = isinstance(intf, Interface) and intf.bInterfaceNumber or intf
+        if intf is None:
+            i = Interface(device, configuration = self._active_cfg_index).bInterfaceNumber
+        elif isinstance(intf, Interface):
+            i = intf.bInterfaceNumber
+        else:
+            i = intf
         if i not in self._claimed_intf:
             self.backend.claim_interface(self.handle, i)
             self._claimed_intf.add(i)
-    def managed_release_interface(self, intf):
-        i = isinstance(intf, Interface) and intf.bInterfaceNumber or intf
+    def managed_release_interface(self, device, intf):
+        if intf is None:
+            cfg = self.get_active_configuration(device)
+            i = Interface(device, configuration = cfg.index).bInterfaceNumber
+        elif isinstance(intf, Interface):
+            i = intf.bInterfaceNumber
+        else:
+            i = intf
         if i in self._claimed_intf:
             self.backend.release_interface(self.handle, i)
             self._claimed_intf.remove(i)
-    def managed_set_interface(self, intf, alt):
-        i = isinstance(intf, Interface) and intf.bInterfaceNumber or intf
-        self.managed_claim_interface(i)
-        self.backend.set_interface_altsetting(self.handle, i, alt)
-        self._alt_set[i] = alt
+    def managed_set_interface(self, device, intf, alt):
+        if intf is None:
+            i = self.get_interface(device, intf)
+        elif isinstance(intf, Interface):
+            i = intf
+        else:
+            cfg = self.get_active_configuration(device)
+            if alt is not None:
+                i = util.find_descriptor(cfg, bInterfaceNumber=intf, bAlternateSetting=alt)
+            else:
+                i = util.find_descriptor(cfg, bInterfaceNumber=intf)
+        self.managed_claim_interface(device, i)
+        if alt is None:
+            alt = i.bAlternateSetting
+        self.backend.set_interface_altsetting(self.handle, i.bInterfaceNumber, alt)
+        self._alt_set[i.bInterfaceNumber] = alt
     def get_interface(self, device, intf):
         # TODO: check the viability of issuing a GET_INTERFACE
         # request when we don't have a alternate setting cached
-        if intf is not None:
-            if isinstance(intf, Interface):
-                return intf
-            else:
-                cfg = self._get_active_configuration(device)
-                if intf in self._alt_set:
-                    return util.find_descriptor(cfg, bInterfaceNumber=intf,
-                                                bAlternateSetting=self._alt_set[intf])
-                else:
-                    return util.find_descriptor(cfg, bInterfaceNumber=intf)
+        if intf is None:
+            cfg = self.get_active_configuration(device)
+            return Interface(device, configuration = cfg.index)
+        elif isinstance(intf, Interface):
+            return intf
         else:
             cfg = self.get_active_configuration(device)
-            return util.find_descriptor(cfg)
+            if intf in self._alt_set:
+                return util.find_descriptor(cfg,
+                                            bInterfaceNumber=intf,
+                                            bAlternateSetting=self._alt_set[intf])
+            else:
+                return util.find_descriptor(cfg, bInterfaceNumber=intf)
     def get_active_configuration(self, device):
         # TODO: when we haven't called managed_set_configuration,
         # issue a get_configuration request to discover the current configuration
         # See patch #283765.
         # Meanwhile, we just return # the first configuration found
         if self._active_cfg_index is None:
-            cfg = util.find_descriptor(device)
+            cfg = Configuration(device)
             self._active_cfg_index = cfg.index
             return cfg
         return Configuration(device=device, configuration=self._active_cfg_index)
     def get_endpoint_type(self, device, address, intf):
-        intf = self.get_interface(intf)
+        intf = self.get_interface(device, intf)
         key = (address, intf.bInterfaceNumber, intf.bAlternateSetting)
         try:
             return self._ep_type_map[key]
         except KeyError:
             e = util.find_descriptor(intf, bEndpointAddress=address)
-            type = util.get_endpoint_type(e.bmAttributes)
+            type = util.endpoint_type(e.bmAttributes)
             self._ep_type_map[key] = type
             return type
-    def release_all_interfaces(self):
-        for i in self._claimed_intf:
-            self.managed_release_interface(i)
-    def dispose(self):
-        self.release_all_interfaces()
+    def release_all_interfaces(self, device):
+        claimed = copy.copy(self._claimed_intf)
+        for i in claimed:
+            self.managed_release_interface(device, i)
+    def dispose(self, device):
+        self.release_all_interfaces(device)
         self.managed_close()
         self._ep_type_map.clear()
         self._alt_set.clear()
-    def __del__(self):
-        self.dispose()
+        self._active_cfg_index = None
 
 class USBError(IOError):
     r"""Exception class for USB errors.
@@ -159,7 +188,7 @@ class Endpoint(object):
         backend = device._ctx.backend
 
         desc = backend.get_endpoint_descriptor(
-                    device.dev,
+                    device._ctx.dev,
                     endpoint,
                     interface,
                     alternate_setting,
@@ -411,7 +440,7 @@ class Device(object):
         of it. The backend parameter is a instance of a backend
         object.
         """
-        self._ctx = _ResourceManager(dev, backend)
+        self._ctx = _ResourceManager(self, dev, backend)
         self.__default_timeout = _DEFAULT_TIMEOUT
 
         desc = backend.get_device_descriptor(dev)
@@ -446,7 +475,11 @@ class Device(object):
         As a device hardly ever has more than one configuration, calling
         the method without parameter is enough to get the device ready.
         """
-        self._ctx.managed_set_configuration(configuration)
+        self._ctx.managed_set_configuration(self, configuration)
+
+    def get_active_configuration(self):
+        r"""Return a Configuration object representing the current configuration set."""
+        return self._ctx.get_active_configuration(self)
 
     def set_interface_altsetting(self, interface = None, alternate_setting = None):
         r"""Set the alternate setting for an interface.
@@ -472,10 +505,11 @@ class Device(object):
         >>> except usb.core.USBError:
         >>>     pass
         """
-        self._ctx.managed_set_interface(interface, alternate_setting)
+        self._ctx.managed_set_interface(self, interface, alternate_setting)
 
     def reset(self):
         r"""Reset the device."""
+        util.dispose_resources(self)
         self._ctx.managed_open()
         self._ctx.backend.reset_device(self._ctx.handle)
 
@@ -506,12 +540,12 @@ class Device(object):
 
         intf = self._ctx.get_interface(self, interface)
         fn = fn_map[self._ctx.get_endpoint_type(self, endpoint, intf)]
-        self._ctx.managed_claim_interface(intf.bInterfaceNumber)
+        self._ctx.managed_claim_interface(self, intf)
 
         return fn(
-                backend.handle,
+                self._ctx.handle,
                 endpoint,
-                interface.bInterfaceNumber,
+                intf.bInterfaceNumber,
                 array.array('B', data),
                 self._get_timeout(timeout)
             )
@@ -541,7 +575,7 @@ class Device(object):
 
         intf = self._ctx.get_interface(self, interface)
         fn = fn_map[self._ctx.get_endpoint_type(self, endpoint, intf)]
-        self._ctx.managed_claim_interface(intf.bInterfaceNumber)
+        self._ctx.managed_claim_interface(self, intf)
 
         return fn(
                 self._ctx.handle,
@@ -575,8 +609,10 @@ class Device(object):
         """
         if util.ctrl_direction(bmRequestType) == util.CTRL_OUT:
             a = (data_or_wLength is None) and array.array('B') or array.array('B', data_or_wLength)
+        elif data_or_wLength is None:
+            a = 0
         else:
-            a = (data_or_wLength is None) and 0 or data_or_wLength
+            a = data_or_wLength
 
         self._ctx.managed_open()
 
@@ -620,6 +656,9 @@ class Device(object):
     def __getitem__(self, index):
         r"""Return the Configuration object in the given position."""
         return Configuration(self, index)
+
+    def __del__(self):
+        self._ctx.dispose(self)
 
     def _get_timeout(self, timeout):
         if timeout is not None:

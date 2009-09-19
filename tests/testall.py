@@ -5,15 +5,14 @@ import unittest
 import glob
 import os.path
 
-sys.path.append('..')
-suite = unittest.TestSuite()
+if __name__ == '__main__':
+    sys.path.append('..')
+    suite = unittest.TestSuite()
 
-for i in glob.glob('*.py'):
-    m = __import__(os.path.splitext(i)[0])
-    try:
-        suite.addTest(m.get_suite())
-    except:
-        continue
+    for i in glob.glob('*.py'):
+        m = __import__(os.path.splitext(i)[0])
+        if hasattr(m, 'get_suite'):
+            suite.addTest(m.get_suite())
 
-runner = unittest.TextTestRunner()
-runner.run(suite)
+    runner = unittest.TextTestRunner()
+    runner.run(suite)

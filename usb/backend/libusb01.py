@@ -5,6 +5,7 @@ import usb.backend
 import usb.util
 import array
 import sys
+from usb.core import USBError
 
 __author__ = 'Wander Lairson Costa'
 
@@ -17,7 +18,7 @@ _PC_PATH_MAX = 4
 if sys.platform != 'win32':
     _PATH_MAX = os.pathconf('.', _PC_PATH_MAX)
 else:
-    _PATH_MAX = 512
+    _PATH_MAX = 511
 
 # Data structures
 
@@ -122,7 +123,7 @@ _lib = None
 
 def _load_library():
     if sys.platform == 'win32':
-        libname = ctypes.util.find_library('usb0')
+        libname = ctypes.util.find_library('libusb0')
     else:
         libname = ctypes.util.find_library('usb')
     if libname is None:
@@ -217,17 +218,21 @@ def _setup_prototypes(lib):
     lib.usb_get_busses.restype = POINTER(_usb_bus)
 
 def _check(retval):
-    from usb.core import USBError
-    if isinstance(retval, c_int):
-        if retval.value < 0:
-            raise USBError(_lib.usb_strerror())
-        return retval.value
-    elif retval == None:
-        raise USBError(_lib.usb_strerror())
+    if retval is None:
+        errmsg = _lib.usb_strerror()
     else:
-        if retval < 0:
-            raise USBError(_lib.usb_strerror())
-        return retval
+        ret = int(retval)
+        if ret < 0:
+            errmsg = _lib.usb_strerror()
+            # No error means that we need to get the error
+            # message from the return code
+            # Thanks to Nicholas Wheeler to point out the problem...
+            # Also see issue #2860940
+            if errmsg.lower() == 'no error':
+                errmsg = os.strerror(-ret)
+        else:
+            return ret
+    raise USBError(errmsg)
 
 # implementation of libusb 0.1.x backend
 class _LibUSB(usb.backend.IBackend):

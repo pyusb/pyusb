@@ -220,6 +220,7 @@ class _Device(object):
         _lib.libusb_unref_device(self.devid)
 
 # wrap a descriptor and keep a reference to another object
+# Thanks to Thomas Reitmayr.
 class _WrapDescriptor(object):
     def __init__(self, desc, obj = None):
         self.obj = obj
