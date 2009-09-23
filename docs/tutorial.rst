@@ -354,7 +354,54 @@ is omitted, it is used the ``Device.default_timeout`` property as the operation 
 Additional Topics
 =================
 
-TODO.
+Don't be selfish
+----------------
+
+Python has what we say *automatic memory management*. This means that the virtual machine
+will take care about when to release objects from the memory. Under the hoods, PyUSB manages
+all low level resource management it needs to work (interface claiming, device handles, etc.)
+internally and most of users don't need to worry about that. But, because of the underterminisc
+nature of automatic object destruction of Python, users cannot predict when the resources
+allocated are freed. Some applications need to allocate and free the resources deterministically.
+For these kind of applications, the `usb.util` module has a set of functions to deal with resource
+management.
+
+If you want to claim and release interfaces manually, you may use the ``claim_interface``
+and ``release_interface`` functions. ``claim_interface`` will claim the specified interface
+if the device has not done it yet. If the device already claimed the interface, it does nothing.
+In a similar way, ``release_interface`` will release the specified interface if it is claimed.
+If the interface is not claimed, it does nothing. You can use manual interface claim to solve
+the `configuration selection problem <http://libusb.sourceforge.net/api-1.0/caveats.html>`_
+described in the libusb_ documentation.
+
+If you want to free all resources allocated by the device object (including interfaces claimed),
+you can use the ``dispose_resources`` function. It releases all resources allocated and put the
+device object (but not the device hardware itself) in the state it was at the time of the ``find`` 
+function return.
+
+Oldschool rules
+---------------
+
+If you wrote an application using the old PyUSB API (0.whatever), you may be asking yourself
+if you need to update your code to use the new API. Well, you should, but you must not. PyUSB
+1.0 comes with the ``usb.legacy`` compatibility module. It implements the older API above the
+new API. "So, do I have just to replace my ``import usb`` statement with ``import usb.legacy as
+usb`` to getting my application working?", you ask. The answer is yes, it will, but you don't have
+to. If you run your application untouched it will just work, because the ``import usb`` statement
+will import all public symbols from ``usb.legacy``. If you face a problem, probably you found a bug.
+
+Help me, please
+---------------
+
+If you need help, **do not email me**, the mailing list is there for this. Subscribe instructions
+can be found at PyUSB_ website.
+
+What do you think about it?
+---------------------------
+
+At alpha stage, users of PyUSB are invited to give their opinion about the PyUSB API.
+If you think a feature is hard to use and you have a better idea, open a new thread
+in the mailing list so we can discuss about that.
 
 .. [#] When I say True or False (capitalized), I mean the respectivelly values of the
        Python language. And when I say true and false, I mean any expression in Python
