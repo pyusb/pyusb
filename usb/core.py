@@ -16,6 +16,9 @@ __all__ = ['Device', 'Configuration', 'Interface', 'Endpoint', 'find']
 import array
 import util
 import copy
+import sys
+import operator
+import _interop
 
 _DEFAULT_TIMEOUT = 1000
 
@@ -42,7 +45,7 @@ class _ResourceManager(object):
             self.handle = None
     def managed_set_configuration(self, device, config):
         if config is None:
-            cfg = Configuration(device)
+            cfg = device[0]
         elif isinstance(config, Configuration):
             cfg = config
         else:
@@ -60,7 +63,8 @@ class _ResourceManager(object):
     def managed_claim_interface(self, device, intf):
         self.managed_open()
         if intf is None:
-            i = Interface(device, configuration = self._active_cfg_index).bInterfaceNumber
+            cfg = self.get_active_configuration()
+            i = cfg[(0,0)].bInterfaceNumber
         elif isinstance(intf, Interface):
             i = intf.bInterfaceNumber
         else:
@@ -71,7 +75,7 @@ class _ResourceManager(object):
     def managed_release_interface(self, device, intf):
         if intf is None:
             cfg = self.get_active_configuration(device)
-            i = Interface(device, configuration = cfg.index).bInterfaceNumber
+            i = cfg[(0,0)].bInterfaceNumber
         elif isinstance(intf, Interface):
             i = intf.bInterfaceNumber
         else:
@@ -100,7 +104,7 @@ class _ResourceManager(object):
         # request when we don't have a alternate setting cached
         if intf is None:
             cfg = self.get_active_configuration(device)
-            return Interface(device, configuration = cfg.index)
+            return cfg[(0,0)]
         elif isinstance(intf, Interface):
             return intf
         else:
@@ -117,10 +121,10 @@ class _ResourceManager(object):
         # See patch #283765.
         # Meanwhile, we just return # the first configuration found
         if self._active_cfg_index is None:
-            cfg = Configuration(device)
+            cfg = device[0]
             self._active_cfg_index = cfg.index
             return cfg
-        return Configuration(device=device, configuration=self._active_cfg_index)
+        return device[self._active_cfg_index]
     def get_endpoint_type(self, device, address, intf):
         intf = self.get_interface(device, intf)
         key = (address, intf.bInterfaceNumber, intf.bAlternateSetting)
@@ -741,19 +745,18 @@ def find(find_all=False, backend = None, custom_match = None, **args):
 
     find(backend = MyBackend())
 
-    PyUSB has predefined backends for libusb 0.1, libusb 1.0 and OpenUSB.
+    PyUSB has builtin backends for libusb 0.1, libusb 1.0 and OpenUSB.
     If you do not supply a backend explicitly, find() function will select
     one of the predefineds backends according to system availability.
 
     Backends are explained in the usb.backend module.
     """
-    import operator
 
     def device_iter(k, v):
         for dev in backend.enumerate_devices():
             d = Device(dev, backend)
             if (custom_match is None or custom_match(d)) and \
-                reduce(
+                _interop._reduce(
                         lambda a, b: a and b,
                         map(
                             operator.eq,

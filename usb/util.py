@@ -3,6 +3,7 @@ r"""usb.util - Utility functions."""
 __author__ = 'Wander Lairson Costa'
 
 import operator
+import _interop
 
 # descriptor type
 DESC_TYPE_DEVICE = 0x01
@@ -113,7 +114,7 @@ def find_descriptor(desc, find_all=False, custom_match=None, **args):
     def desc_iter(k, v):
         for d in desc:
             if (custom_match is None or custom_match(d)) and \
-                reduce(
+                _interop._reduce(
                         lambda a, b: a and b,
                         map(
                             operator.eq,

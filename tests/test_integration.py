@@ -62,13 +62,14 @@ class DeviceTest(unittest.TestCase):
         self.assertEqual(self.dev.default_timeout, tmo)
 
     def test_set_configuration(self):
-        cfg = usb.core.Configuration(self.dev).bConfigurationValue
+        cfg = self.dev[0].bConfigurationValue
         self.dev.set_configuration(cfg)
         self.dev.set_configuration()
         self.assertEqual(cfg, self.dev.get_active_configuration().bConfigurationValue)
 
     def test_set_interface_altsetting(self):
-        intf = usb.core.Interface(self.dev)
+        intf = self.dev.get_active_configuration()[(0,0)]
+        cfg = usb.core.Configuration(self.dev).bConfigurationValue
         self.dev.set_interface_altsetting(intf.bInterfaceNumber, intf.bAlternateSetting)
         self.dev.set_interface_altsetting()
 
@@ -82,16 +83,42 @@ class DeviceTest(unittest.TestCase):
         for ep in ep_list:
             for data in data_list:
                 ret = self.dev.write(ep[0], data)
-                self.assertEqual(ret, len(data), 'Failed to write data: ' + str(data) + ', in EP = ' + str(ep[0]))
+                self.assertEqual(ret,
+                                 len(data),
+                                 'Failed to write data: ' + \
+                                    str(data) + ', in EP = ' + \
+                                    str(ep[0])
+                                )
                 ret = utils.to_array(self.dev.read(ep[1], len(data)))
-                self.assertEqual(ret, utils.to_array(data), str(ret) + ' != ' + str(data) + ', in EP = ' + str(ep[1]))
+                self.assertEqual(ret,
+                                 utils.to_array(data),
+                                 str(ret) + ' != ' + \
+                                    str(data) + ', in EP = ' + \
+                                    str(ep[1])
+                                )
 
     def test_ctrl_transfer(self):
         for data in data_list:
-            ret = self.dev.ctrl_transfer(0x40, devinfo.CTRL_LOOPBACK_WRITE, 0, 0, data)
-            self.assertEqual(ret, len(data), 'Failed to write data: ' + str(data))
-            ret = utils.to_array(self.dev.ctrl_transfer(0xC0, devinfo.CTRL_LOOPBACK_READ, 0, 0, len(data)))
-            self.assertEqual(ret, utils.to_array(data), str(ret) + ' != ' + str(data))
+            ret = self.dev.ctrl_transfer(
+                    0x40,
+                    devinfo.CTRL_LOOPBACK_WRITE,
+                    0,
+                    0,
+                    data
+                )
+            self.assertEqual(ret,
+                             len(data),
+                             'Failed to write data: ' + str(data))
+            ret = utils.to_array(self.dev.ctrl_transfer(
+                        0xC0,
+                        devinfo.CTRL_LOOPBACK_READ,
+                        0,
+                        0,
+                        len(data)
+                    ))
+            self.assertEqual(ret,
+                             utils.to_array(data),
+                             str(ret) + ' != ' + str(data))
 
 class ConfigurationTest(unittest.TestCase):
     def __init__(self, dev):
@@ -168,14 +195,23 @@ class EndpointTest(unittest.TestCase):
 
 def get_suite():
     suite = unittest.TestSuite()
+    test_cases = (DeviceTest, ConfigurationTest, InterfaceTest, EndpointTest)
     for m in (libusb10, libusb01, openusb):
         b = m.get_backend()
         if b is None:
             continue
-        dev = usb.core.find(backend=b, idVendor=devinfo.ID_VENDOR, idProduct=devinfo.ID_PRODUCT)
+        dev = usb.core.find(backend=b,
+                            idVendor=devinfo.ID_VENDOR,
+                            idProduct=devinfo.ID_PRODUCT)
         if dev is None:
             continue
-        for ObjectTestCase in (DeviceTest, ConfigurationTest, InterfaceTest, EndpointTest):
-            sys.stdout.write('Adding %s(%s) to test suite...\n' % (ObjectTestCase.__name__, m.__name__))
+        for ObjectTestCase in test_cases:
+            sys.stdout.write(
+                'Adding ' + \
+                ObjectTestCase.__name__ + \
+                '(' + \
+                m.__name__ + \
+                ') to test suite...\n'
+            )
             suite.addTest(ObjectTestCase(dev))
     return suite

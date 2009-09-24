@@ -129,10 +129,26 @@ class BackendTest(unittest.TestCase):
 
     def test_ctrl_transfer(self):
         for data in (utils.get_array_data1(), utils.get_array_data2()):
-            ret = self.backend.ctrl_transfer(self.handle, 0x40, devinfo.CTRL_LOOPBACK_WRITE, 0, 0, data, 1000)
-            self.assertEqual(ret, len(data), 'Failed to write data: ' + str(data))
-            ret = self.backend.ctrl_transfer(self.handle, 0xC0, devinfo.CTRL_LOOPBACK_READ, 0, 0, len(data), 1000)
-            self.assertEqual(ret, data,  'Failed to read data: ' + str(data))
+            ret = self.backend.ctrl_transfer(self.handle,
+                                             0x40,
+                                             devinfo.CTRL_LOOPBACK_WRITE,
+                                             0,
+                                             0,
+                                             data,
+                                             1000)
+            self.assertEqual(ret,
+                             len(data),
+                             'Failed to write data: ' + str(data))
+            ret = self.backend.ctrl_transfer(self.handle,
+                                             0xC0,
+                                             devinfo.CTRL_LOOPBACK_READ,
+                                             0,
+                                             0,
+                                             len(data),
+                                             1000)
+            self.assertEqual(ret,
+                             data,
+                             'Failed to read data: ' + str(data))
 
     def test_reset_device(self):
         self.backend.reset_device(self.handle)
@@ -141,9 +157,19 @@ class BackendTest(unittest.TestCase):
         intf = self.backend.get_interface_descriptor(self.dev, 0, 0, 0).bInterfaceNumber
         for data in (utils.get_array_data1(), utils.get_array_data2()):
             ret = write_fn(self.handle, ep_out, intf, data, 1000)
-            self.assertEqual(ret, len(data), 'Failed to write data: ' + str(data) + ', in EP = ' + str(ep_out))
+            self.assertEqual(ret,
+                             len(data),
+                             'Failed to write data: ' + \
+                                str(data) + \
+                                ', in EP = ' + \
+                                str(ep_out))
             ret = read_fn(self.handle, ep_in, intf, len(data), 1000)
-            self.assertEqual(ret, data, 'Failed to read data: ' + str(data) + ', in EP = ' + str(ep_in))
+            self.assertEqual(ret,
+                             data,
+                             'Failed to read data: ' + \
+                                str(data) + \
+                                ', in EP = ' + \
+                                str(ep_in))
 
 def get_suite():
     suite = unittest.TestSuite()
@@ -151,6 +177,12 @@ def get_suite():
         for m in (libusb10, libusb01, openusb):
             b = m.get_backend()
             if b is not None:
-                sys.stdout.write('Adding %s(%s) to test suite...\n' % (BackendTest.__name__, m.__name__))
+                sys.stdout.write(
+                    'Adding ' + \
+                    BackendTest.__name__ + \
+                    '(' + \
+                    m.__name__ + \
+                    ') to test suite...\n'
+                )
                 suite.addTest(BackendTest(b))
     return suite

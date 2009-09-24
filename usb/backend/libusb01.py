@@ -138,49 +138,128 @@ def _setup_prototypes(lib):
     # int usb_close(usb_dev_handle *dev);
     lib.usb_close.argtypes = [_usb_dev_handle]
 
-    # int usb_get_string(usb_dev_handle *dev, int index, int langid, char *buf,size_t buflen);
-    lib.usb_get_string.argtypes = [_usb_dev_handle, c_int, c_int, c_char_p, c_size_t]
+    # int usb_get_string(usb_dev_handle *dev,
+    #                    int index,
+    #                    int langid,
+    #                    char *buf,
+    #                    size_t buflen);
+    lib.usb_get_string.argtypes = [
+            _usb_dev_handle,
+            c_int,
+            c_int,
+            c_char_p,
+            c_size_t
+        ]
 
+    # int usb_get_string_simple(usb_dev_handle *dev,
+    #                           int index,
+    #                           char *buf,
+    #                           size_t buflen);
+    lib.usb_get_string_simple.argtypes = [
+            _usb_dev_handle,
+            c_int,
+            c_char_p,
+            c_size_t
+        ]
 
-    # int usb_get_string_simple(usb_dev_handle *dev, int index, char *buf, size_t buflen);
-    lib.usb_get_string_simple.argtypes = [_usb_dev_handle, c_int, c_char_p, c_size_t]
+    # int usb_get_descriptor_by_endpoint(usb_dev_handle *udev,
+    #                                    int ep,
+    #	                                 unsigned char type,
+    #                                    unsigned char index,
+    #                                    void *buf,
+    #                                    int size);
+    lib.usb_get_descriptor_by_endpoint.argtypes = [
+                                _usb_dev_handle,
+                                c_int,
+                                c_ubyte,
+                                c_ubyte,
+                                c_void_p,
+                                c_int
+                            ]
 
+    # int usb_get_descriptor(usb_dev_handle *udev,
+    #                        unsigned char type,
+    #	                     unsigned char index,
+    #                        void *buf,
+    #                        int size);
+    lib.usb_get_descriptor.argtypes = [
+                    _usb_dev_handle,
+                    c_ubyte,
+                    c_ubyte,
+                    c_void_p,
+                    c_int
+                ]
 
-    # int usb_get_descriptor_by_endpoint(usb_dev_handle *udev, int ep,
-    #	unsigned char type, unsigned char index, void *buf, int size);
-    lib.usb_get_descriptor_by_endpoint.argtypes = [_usb_dev_handle, c_int, c_ubyte,
-                                                    c_ubyte, c_void_p, c_int]
+    # int usb_bulk_write(usb_dev_handle *dev,
+    #                    int ep,
+    #                    const char *bytes,
+    #                    int size,
+    #                    int timeout);
+    lib.usb_bulk_write.argtypes = [
+            _usb_dev_handle,
+            c_int,
+            c_char_p,
+            c_int,
+            c_int
+        ]
 
+    # int usb_bulk_read(usb_dev_handle *dev,
+    #                   int ep,
+    #                   char *bytes,
+    #                   int size,
+    #                   int timeout);
+    lib.usb_bulk_read.argtypes = [
+            _usb_dev_handle,
+            c_int,
+            c_char_p,
+            c_int,
+            c_int
+        ]
 
-    # int usb_get_descriptor(usb_dev_handle *udev, unsigned char type,
-    #	unsigned char index, void *buf, int size);
-    lib.usb_get_descriptor.argtypes = [_usb_dev_handle, c_ubyte, c_ubyte,
-                                        c_void_p, c_int]
+    # int usb_interrupt_write(usb_dev_handle *dev,
+    #                         int ep,
+    #                         const char *bytes,
+    #                         int size,
+    #                         int timeout);
+    lib.usb_interrupt_write.argtypes = [
+            _usb_dev_handle,
+            c_int,
+            c_char_p,
+            c_int,
+            c_int
+        ]
 
+    # int usb_interrupt_read(usb_dev_handle *dev,
+    #                        int ep,
+    #                        char *bytes,
+    #                        int size,
+    #                        int timeout);
+    lib.usb_interrupt_read.argtypes = [
+            _usb_dev_handle,
+            c_int,
+            c_char_p,
+            c_int,
+            c_int
+        ]
 
-    # int usb_bulk_write(usb_dev_handle *dev, int ep, const char *bytes, int size,
-    #	int timeout);
-    lib.usb_bulk_write.argtypes = [_usb_dev_handle, c_int, c_char_p, c_int, c_int]
-
-
-    # int usb_bulk_read(usb_dev_handle *dev, int ep, char *bytes, int size,
-    #	int timeout);
-    lib.usb_bulk_read.argtypes = [_usb_dev_handle, c_int, c_char_p, c_int, c_int]
-
-    # int usb_interrupt_write(usb_dev_handle *dev, int ep, const char *bytes, int size,
-    #         int timeout);
-    lib.usb_interrupt_write.argtypes = [_usb_dev_handle, c_int, c_char_p,
-                                        c_int, c_int]
-
-    # int usb_interrupt_read(usb_dev_handle *dev, int ep, char *bytes, int size,
-    #         int timeout);
-    lib.usb_interrupt_read.argtypes = [_usb_dev_handle, c_int, c_char_p,
-                                        c_int, c_int]
-
-    # int usb_control_msg(usb_dev_handle *dev, int requesttype, int request,
-    # 	int value, int index, char *bytes, int size, int timeout);
-    lib.usb_control_msg.argtypes = [_usb_dev_handle, c_int, c_int, c_int,
-                                    c_int, c_char_p, c_int, c_int]
+    # int usb_control_msg(usb_dev_handle *dev,
+    #                     int requesttype,
+    #                     int request,
+    # 	                  int value,
+    #                     int index,
+    #                     char *bytes,
+    #                     int size,
+    #                     int timeout);
+    lib.usb_control_msg.argtypes = [
+            _usb_dev_handle,
+            c_int,
+            c_int,
+            c_int,
+            c_int,
+            c_char_p,
+            c_int,
+            c_int
+        ]
 
     # int usb_set_configuration(usb_dev_handle *dev, int configuration);
     lib.usb_set_configuration.argtypes = [_usb_dev_handle, c_int]
@@ -254,22 +333,22 @@ class _LibUSB(usb.backend.IBackend):
 
     def get_configuration_descriptor(self, dev, config):
         if config >= dev.descriptor.bNumConfigurations:
-            raise IndexError('Invalid configuration index %d' % (config))
+            raise IndexError('Invalid configuration index ' + str(config))
         return dev.config[config]
 
     def get_interface_descriptor(self, dev, intf, alt, config):
         cfgdesc = self.get_configuration_descriptor(dev, config)
         if intf >= cfgdesc.bNumInterfaces:
-            raise IndexError('Invalid interface index %d' % (interface))
+            raise IndexError('Invalid interface index ' + str(interface))
         interface = cfgdesc.interface[intf]
         if alt >= interface.num_altsetting:
-            raise IndexError('Invalid alternate setting index %d' % (alt))
+            raise IndexError('Invalid alternate setting index ' + str(alt))
         return interface.altsetting[alt]
 
     def get_endpoint_descriptor(self, dev, ep, intf, alt, config):
         interface = self.get_interface_descriptor(dev, intf, alt, config)
         if ep >= interface.bNumEndpoints:
-            raise IndexError('Invalid endpoint index %d' % (ep))
+            raise IndexError('Invalid endpoint index ' + str(ep))
         return interface.endpoint[ep]
 
     def open_device(self, dev):
@@ -291,28 +370,70 @@ class _LibUSB(usb.backend.IBackend):
         _check(_lib.usb_release_interface(dev_handle, intf))
 
     def bulk_write(self, dev_handle, ep, intf, data, timeout):
-        return self.__write(_lib.usb_bulk_write, dev_handle, ep, intf, data, timeout)
+        return self.__write(_lib.usb_bulk_write,
+                            dev_handle,
+                            ep,
+                            intf,
+                            data, timeout)
 
     def bulk_read(self, dev_handle, ep, intf, size, timeout):
-        return self.__read(_lib.usb_bulk_read, dev_handle, ep, intf, size, timeout)
+        return self.__read(_lib.usb_bulk_read,
+                           dev_handle,
+                           ep,
+                           intf,
+                           size,
+                           timeout)
 
     def intr_write(self, dev_handle, ep, intf, data, timeout):
-        return self.__write(_lib.usb_interrupt_write, dev_handle, ep, intf, data, timeout)
+        return self.__write(_lib.usb_interrupt_write,
+                            dev_handle,
+                            ep,
+                            intf,
+                            data,
+                            timeout)
 
     def intr_read(self, dev_handle, ep, intf, size, timeout):
-        return self.__read(_lib.usb_interrupt_read, dev_handle, ep, intf, size, timeout)
+        return self.__read(_lib.usb_interrupt_read,
+                           dev_handle,
+                           ep,
+                           intf,
+                           size,
+                           timeout)
 
-    def ctrl_transfer(self, dev_handle, bmRequestType, bRequest, wValue, wIndex, data_or_wLength, timeout):
+    def ctrl_transfer(self,
+                      dev_handle,
+                      bmRequestType,
+                      bRequest,
+                      wValue,
+                      wIndex,
+                      data_or_wLength,
+                      timeout):
         if usb.util.ctrl_direction(bmRequestType) == usb.util.CTRL_OUT:
             address, length = data_or_wLength.buffer_info()
             length *= data_or_wLength.itemsize
-            return _check(_lib.usb_control_msg(dev_handle, bmRequestType, bRequest, wValue,
-                                               wIndex, cast(address, c_char_p), length, timeout))
+            return _check(_lib.usb_control_msg(
+                                dev_handle,
+                                bmRequestType,
+                                bRequest,
+                                wValue,
+                                wIndex,
+                                cast(address, c_char_p),
+                                length,
+                                timeout
+                            ))
         else:
             buffer = array.array('B', '\x00' * data_or_wLength)
-            read = int(_check(_lib.usb_control_msg(dev_handle, bmRequestType, bRequest, wValue,
-                                            wIndex, cast(buffer.buffer_info()[0], c_char_p),
-                                            data_or_wLength, timeout)))
+            read = int(_check(_lib.usb_control_msg(
+                                dev_handle,
+                                bmRequestType,
+                                bRequest,
+                                wValue,
+                                wIndex,
+                                cast(buffer.buffer_info()[0],
+                                     c_char_p),
+                                data_or_wLength,
+                                timeout
+                            )))
             return buffer[:read]
 
     def reset_device(self, dev_handle):
@@ -323,12 +444,24 @@ class _LibUSB(usb.backend.IBackend):
 
     def __write(self, fn, dev_handle, ep, intf, data, timeout):
         address, length = data.buffer_info()
-        return int(_check(fn(dev_handle, ep, cast(address, c_char_p), length, timeout)))
+        return int(_check(fn(
+                        dev_handle,
+                        ep,
+                        cast(address, c_char_p),
+                        length,
+                        timeout
+                    )))
 
     def __read(self, fn, dev_handle, ep, intf, size, timeout):
         buffer = array.array('B', '\x00' * size)
         address, length = buffer.buffer_info()
-        ret = int(_check(fn(dev_handle, ep, cast(address, c_char_p), length, timeout)))
+        ret = int(_check(fn(
+                    dev_handle,
+                    ep,
+                    cast(address, c_char_p),
+                    length,
+                    timeout
+                )))
         return buffer[:ret]
 
 def get_backend():

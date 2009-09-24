@@ -20,4 +20,8 @@ def to_array(data):
 
 # check if our test hardware is present
 def is_test_hw_present():
-    return usb.core.find(idVendor=devinfo.ID_VENDOR, idProduct=devinfo.ID_PRODUCT) is not None
+    try:
+        return usb.core.find(idVendor=devinfo.ID_VENDOR,
+                             idProduct=devinfo.ID_PRODUCT) is not None
+    except:
+        return False

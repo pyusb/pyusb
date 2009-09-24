@@ -276,7 +276,14 @@ class IBackend(object):
         """
         _not_implemented(self.iso_read)
 
-    def ctrl_transfer(self, dev_handle, bmRequestType, bRequest, wValue, wIndex, data_or_wLength, timeout):
+    def ctrl_transfer(self,
+                      dev_handle,
+                      bmRequestType,
+                      bRequest,
+                      wValue,
+                      wIndex,
+                      data_or_wLength,
+                      timeout):
         r"""Perform a control transfer on the endpoint 0.
 
         The direction of the transfer is inferred from the bmRequestType
