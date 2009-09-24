@@ -139,9 +139,10 @@ class _ResourceManager(object):
         claimed = copy.copy(self._claimed_intf)
         for i in claimed:
             self.managed_release_interface(device, i)
-    def dispose(self, device):
+    def dispose(self, device, close_handle = True):
         self.release_all_interfaces(device)
-        self.managed_close()
+        if close_handle:
+            self.managed_close()
         self._ep_type_map.clear()
         self._alt_set.clear()
         self._active_cfg_index = None
@@ -511,10 +512,13 @@ class Device(object):
         """
         self._ctx.managed_set_interface(self, interface, alternate_setting)
 
+    def get_interface_altsetting(self, interface = None):
+        r"""Get the active alternate setting of the given interface."""
+        return self._ctx.get_interface(self, interface)
+
     def reset(self):
         r"""Reset the device."""
-        util.dispose_resources(self)
-        self._ctx.managed_open()
+        self._ctx.dispose(self, False)
         self._ctx.backend.reset_device(self._ctx.handle)
 
     def write(self, endpoint, data, interface = None, timeout = None):

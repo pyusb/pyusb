@@ -2,8 +2,8 @@
 Programming with PyUSB 1.0
 ==========================
 
-Introduction
-============
+Let me introduce myself
+=======================
 
 PyUSB 1.0 is a Python_ library allowing easy USB_ access. It has the following features:
 
@@ -31,6 +31,60 @@ recommend you the excellent Jan Axelson's book **USB Complete**.
 
 Enough talk, let's code!
 ========================
+
+Let's get it started
+--------------------
+
+Follows is a simplistic program that sends the 'test' string to the first OUT endpoint
+found::
+
+    import usb.core
+    import usb.util
+
+    # find our device
+    dev = usb.core.find(idVendor=0xfffe, idProduct=0x0001)
+
+    # was it found?
+    if dev is None:
+        raise ValueError('Device not found')
+
+    # set the active configuration. In this way, the first
+    # configuration will be the active one
+    dev.set_configuration()
+
+    # get an endpoint instance
+    ep = uti.find_descriptor(
+            dev.get_interface_altsetting(),   # first interface
+            # match the first OUT endpoint
+            custom_match = \
+                lambda e: \
+                    usb.util.endpoint_direction(e.bEndpointAddress) == \
+                    usb.util.ENDPOINT_OUT
+        )
+
+    assert ep is not None
+
+    # write the data
+    ep.write('test')
+
+The first two lines import PyUSB modules. ``usb.core`` is the main module, and
+``usb.util`` contains utility functions. The next command searches our device
+and returns an instance object if it is found. If not, ``None`` is returned.
+After, we set the configuration to use. Repair that no parameter indicating what
+configuration we want is supplied. As you will see, many PyUSB functions
+have defaults for most common devices. In this case, the configuration set is
+the first one found.
+
+Then, we look for the endpoint we are interested. We search it inside the first
+interface we have. After finding the endpoint, we send data to it.
+
+If we know the endpoint address in advance, we could just call the ``write`` function
+from the device object::
+
+    dev.write(1, 'test', 0)
+
+Here we write the data 'test' at endpoint address *1* of the interface number *0*.
+All these functions will be detailed in the next sections.
 
 Who's who
 ---------
@@ -354,6 +408,26 @@ is omitted, it is used the ``Device.default_timeout`` property as the operation 
 Additional Topics
 =================
 
+Behind every great abstraction, there's a great implementation
+--------------------------------------------------------------
+
+On early days, there was only libusb_. Then came libusb 1.0, and now we had libusb 0.1 and 1.0.
+After, they created OpenUSB_, and now we live at the
+`Tower of Babel <http://en.wikipedia.org/wiki/Tower_of_Babel>`_ of the USB libraries [#]_.
+How does PyUSB deal with it? Well, PyUSB is a democratic library, you may choose whatever
+library you want.  Actually, you can write your own USB library from scratch and tell
+PyUSB to use it.
+
+The ``find`` function has one more parameter that I haven't told you. It is the ``backend``
+parameter. If you don't supply it, it will be used one of the builtin backends. A backend
+is a object derived from ``usb.backend.IBackend``, responsible to implement the operating
+system specific USB stuff. As you might guess, the builtins are libusb 0.1, libusb 1.0 and
+OpenUSB backends. 
+
+You can create you own backend and use it. Just inherit from ``IBackend`` and implement
+the methods necessary. You might want to give a look at ``backend`` package documentation
+to learn how to do that.
+
 Don't be selfish
 ----------------
 
@@ -425,6 +499,8 @@ in the mailing list so we can discuss about that.
 
 .. [#] In PyUSB, control transfers are only issued in the endpoint 0. It's very very very
        rare a device having an alternate control endpoint (I've never seem such device).
+
+.. [#] It's just a joke, don't take it serious. Many choices is better than no choice.
 
 .. _libusb: http://www.libusb.org
 .. _OpenUSB: http://openusb.wiki.sourceforge.net

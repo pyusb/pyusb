@@ -28,20 +28,22 @@ _LIBUSB_ERROR_NOT_SUPPORTED = -12
 _LIBUSB_ERROR_OTHER = -99
 
 # map return codes to strings
-_str_error = {_LIBUSB_SUCCESS:'LIBUSB_SUCCESS',
-            _LIBUSB_ERROR_IO:'LIBUSB_ERROR_IO',
-            _LIBUSB_ERROR_INVALID_PARAM:'LIBUSB_ERROR_INVALID_PARAM',
-            _LIBUSB_ERROR_ACCESS:'LIBUSB_ERROR_ACCESS',
-            _LIBUSB_ERROR_NO_DEVICE:'LIBUSB_ERROR_NO_DEVICE',
-            _LIBUSB_ERROR_NOT_FOUND:'LIBUSB_ERROR_NOT_FOUND',
-            _LIBUSB_ERROR_BUSY:'LIBUSB_ERROR_BUSY',
-            _LIBUSB_ERROR_TIMEOUT:'LIBUSB_ERROR_TIMEOUT',
-            _LIBUSB_ERROR_OVERFLOW:'LIBUSB_ERROR_OVERFLOW',
-            _LIBUSB_ERROR_PIPE:'LIBUSB_ERROR_PIPE',
-            _LIBUSB_ERROR_INTERRUPTED:'LIBUSB_ERROR_INTERRUPTED',
-            _LIBUSB_ERROR_NO_MEM:'LIBUSB_ERROR_NO_MEM',
-            _LIBUSB_ERROR_NOT_SUPPORTED:'LIBUSB_ERROR_NOT_SUPPORTED',
-            _LIBUSB_ERROR_OTHER:'LIBUSB_ERROR_OTHER'}
+_str_error = {
+    _LIBUSB_SUCCESS:'Success (no error)',
+    _LIBUSB_ERROR_IO:'Input/output error',
+    _LIBUSB_ERROR_INVALID_PARAM:'Invalid parameter',
+    _LIBUSB_ERROR_ACCESS:'Access denied (insufficient permissions)',
+    _LIBUSB_ERROR_NO_DEVICE:'No such device (it may have been disconnected)',
+    _LIBUSB_ERROR_NOT_FOUND:'Entity not found',
+    _LIBUSB_ERROR_BUSY:'Resource busy',
+    _LIBUSB_ERROR_TIMEOUT:'Operation timed out',
+    _LIBUSB_ERROR_OVERFLOW:'Overflow',
+    _LIBUSB_ERROR_PIPE:'Pipe error',
+    _LIBUSB_ERROR_INTERRUPTED:'System call interrupted (perhaps due to signal)',
+    _LIBUSB_ERROR_NO_MEM:'Insufficient memory',
+    _LIBUSB_ERROR_NOT_SUPPORTED:'Operation not supported or unimplemented on this platform',
+    _LIBUSB_ERROR_OTHER:'Unknown error'
+}
 
 # Data structures
 
@@ -398,9 +400,6 @@ class _LibUSB(usb.backend.IBackend):
     def release_interface(self, dev_handle, intf):
         _check(_lib.libusb_release_interface(dev_handle, intf))
 
-# TODO: implement isochronous transfer
-#    def isochronous_transfer(self, dev_handle, ep, data_or_length, intf, timeout):
-
     def bulk_write(self, dev_handle, ep, intf, data, timeout):
         return self.__write(_lib.libusb_bulk_transfer,
                             dev_handle,
@@ -432,6 +431,13 @@ class _LibUSB(usb.backend.IBackend):
                            intf,
                            size,
                            timeout)
+
+# TODO: implement isochronous
+#    def iso_write(self, dev_handle, ep, intf, data, timeout):
+#       pass
+
+#    def iso_read(self, dev_handle, ep, intf, size, timeout):
+#        pass
 
     def ctrl_transfer(self,
                       dev_handle,
