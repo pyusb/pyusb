@@ -351,8 +351,8 @@ from ``bInterfaceNumber`` and ``bAlternateSetting`` fields. Example::
 Talk to me, honey
 -----------------
 
-Now it's time to we learn how to communicate with USB devices. USB spec has four
-types of transfers: bulk, interrupt, isochronous and control. I do not intend
+Now it's time to we learn how to communicate with USB devices. USB has four
+flavors of transfers: bulk, interrupt, isochronous and control. I do not intend
 to explain the purpose of each transfer and the differences among them. Therefore,
 I assume you know at least the basics of USB transfers.
 
@@ -373,18 +373,18 @@ structure. Following is a example of how to do a control transfer [#]_::
     >>> sret = ''.join([chr(x) for x in ret])
     >>> assert sret == msg
 
-The beggining four parameters are the ``bmRequestType``, ``bmRequest``, ``wValue`` and
+The first four parameters are the ``bmRequestType``, ``bmRequest``, ``wValue`` and
 ``wIndex`` fields of the standard control transfer structure. The fifth parameter is either
 the data payload for an OUT transfer or the number of bytes to read in an IN transfer.
-The data payload can be any sequence type that can be used as a parameter in the array
-__init__ method.  If there is no data payload, the parameter should be None (or 0 in case
+The data payload can be any sequence type that can be used as a parameter in the array_
+``__init__`` method.  If there is no data payload, the parameter should be ``None`` (or 0 in case
 of an IN transfer).  There is one last optional parameter specifying the timeout of the operation.
 If you don't supply it, a default timeout will be used (more on that later).
 
-It is assumed that we have created a device specific pair of control requests that implement
-a loopback pipe. What you write with the ``CTRL_LOOPBACK_WRITE`` message, you can read with the
+It is assumed that our device implements two custom control requests that act as a loopback
+pipe. What you write with the ``CTRL_LOOPBACK_WRITE`` message, you can read with the
 ``CTRL_LOOPBACK_READ`` message. In an OUT transfer, the return value is the number of bytes
-really written in the payload. In an IN transfer, the return value is an ``array.array`` object
+really sent to the device. In an IN transfer, the return value is an array_ object
 with the data read. 
 
 For the other transfers, you use the method ``write`` and ``read``, respectivelly, to
@@ -393,14 +393,15 @@ determined from the endpoint address. Here is our loopback example assuming the 
 a loopback pipe in the endpoint 1::
 
     >>> msg = 'test'
-    >>> assert len(dev.write(1, msg, 0, 100)) == msg
-    >>> ret = ''join([chr(x) for x in dev.read(0x81, len(msg), 0, 100)])
-    >>> assert ret == msg
+    >>> assert len(dev.write(1, msg, 0, 100)) == len(msg)
+    >>> ret = dev.read(0x81, len(msg), 0, 100)
+    >>> sret = ''.join([chr(x) for x in ret])
+    >>> assert sret == msg
 
 The first, third and fourth parameters are equal for both methods, they are the endpoint
 address, interface number and timeout, respectivelly. The third parameter is the data
-payload (write) and the number of bytes to read (read). The return of the ``read``
-function is an instance of the ``array.array`` object and the number of bytes written
+payload (write) or the number of bytes to read (read). The return of the ``read``
+function is an instance of the array_ object and the number of bytes written
 for the ``write`` method.
 
 As in ``ctrl_transfer``, the ``timeout`` parameter is optional. When the ``timeout``
@@ -435,10 +436,10 @@ Don't be selfish
 Python has what we say *automatic memory management*. This means that the virtual machine
 will take care about when to release objects from the memory. Under the hoods, PyUSB manages
 all low level resource management it needs to work (interface claiming, device handles, etc.)
-internally and most of users don't need to worry about that. But, because of the underterminisc
+internally and most of users don't need to worry about that. But, because of the nonderterminisc
 nature of automatic object destruction of Python, users cannot predict when the resources
-allocated are freed. Some applications need to allocate and free the resources deterministically.
-For these kind of applications, the `usb.util` module has a set of functions to deal with resource
+allocated will be released. Some applications need to allocate and free the resources deterministically.
+For these kind of applications, the ``usb.util`` module has a set of functions to deal with resource
 management.
 
 If you want to claim and release interfaces manually, you may use the ``claim_interface``
@@ -451,8 +452,8 @@ described in the libusb_ documentation.
 
 If you want to free all resources allocated by the device object (including interfaces claimed),
 you can use the ``dispose_resources`` function. It releases all resources allocated and put the
-device object (but not the device hardware itself) in the state it was at the time of the ``find`` 
-function return.
+device object (but not the device hardware itself) in the state it was at the time when the ``find`` 
+function returned.
 
 Oldschool rules
 ---------------
@@ -461,7 +462,7 @@ If you wrote an application using the old PyUSB API (0.whatever), you may be ask
 if you need to update your code to use the new API. Well, you should, but you must not. PyUSB
 1.0 comes with the ``usb.legacy`` compatibility module. It implements the older API above the
 new API. "So, do I have just to replace my ``import usb`` statement with ``import usb.legacy as
-usb`` to getting my application working?", you ask. The answer is yes, it will, but you don't have
+usb`` to get my application working?", you ask. The answer is yes, it will, but you don't have
 to. If you run your application untouched it will just work, because the ``import usb`` statement
 will import all public symbols from ``usb.legacy``. If you face a problem, probably you found a bug.
 
@@ -510,3 +511,4 @@ in the mailing list so we can discuss about that.
 .. _Python: http://www.python.org
 .. _ctypes: http://docs.python.org/library/ctypes.html
 .. _Descriptor: http://www.beyondlogic.org/usbnutshell/usb5.htm
+.. _array: http://docs.python.org/library/array.html
