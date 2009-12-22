@@ -105,7 +105,7 @@ class DeviceHandle(object):
         self.dev = dev
         self.__claimed_interface = -1
 
-    def bulkWrite(endpoint, buffer, timeout = 100):
+    def bulkWrite(self, endpoint, buffer, timeout = 100):
         r"""Perform a bulk write request to the endpoint specified.
 
             Arguments:
@@ -117,7 +117,7 @@ class DeviceHandle(object):
         """
         return self.dev.write(endpoint, buffer, self.__claimed_interface, timeout)
 
-    def bulkRead(endpoint, size, timeout = 100):
+    def bulkRead(self, endpoint, size, timeout = 100):
         r"""Performs a bulk read request to the endpoint specified.
 
             Arguments:
@@ -128,7 +128,7 @@ class DeviceHandle(object):
         """
         return self.dev.read(endpoint, size, self.__claimed_interface, timeout)
 
-    def interruptWrite(endpoint, buffer, timeout = 100):
+    def interruptWrite(self, endpoint, buffer, timeout = 100):
         r"""Perform a interrupt write request to the endpoint specified.
 
             Arguments:
@@ -140,7 +140,7 @@ class DeviceHandle(object):
         """
         return self.dev.write(endpoint, buffer, self.__claimed_interface, timeout)
 
-    def interruptRead(endpoint, size, timeout = 100):
+    def interruptRead(self, endpoint, size, timeout = 100):
         r"""Performs a interrupt read request to the endpoint specified.
 
             Arguments:
@@ -151,7 +151,7 @@ class DeviceHandle(object):
         """
         return self.dev.read(endpoint, size, self.__claimed_interface, timeout)
 
-    def controlMsg(requestType, request, buffer, value = 0, index = 0, timeout = 100):
+    def controlMsg(self, requestType, request, buffer, value = 0, index = 0, timeout = 100):
         r"""Perform a control request to the default control pipe on a device.
 
         Arguments:
@@ -175,7 +175,7 @@ class DeviceHandle(object):
                     timeout = timeout
                 )
 
-    def clearHalt(endpoint):
+    def clearHalt(self, endpoint):
         r"""Clears any halt status on the specified endpoint.
 
         Arguments:
@@ -183,26 +183,26 @@ class DeviceHandle(object):
         """
         raise NotImplemented('This function has not been implemented yet')
 
-    def claimInterface(interface):
+    def claimInterface(self, interface):
         r"""Claims the interface with the Operating System.
 
         Arguments:
             interface: interface number or an Interface object.
         """
-        util.claim_interface(interface)
+        util.claim_interface(self.dev, interface)
         self.__claimed_interface = interface
 
-    def releaseInterface():
+    def releaseInterface(self):
         r"""Release an interface previously claimed with claimInterface."""
-        util.release_interface(interface)
+        util.release_interface(self.dev, self.__claimed_interface)
         self.__claimed_interface = -1
 
-    def reset():
+    def reset(self):
         r"""Reset the specified device by sending a RESET
             down the port it is connected to."""
         self.dev.reset()
 
-    def resetEndpoint(endpoint):
+    def resetEndpoint(self, endpoint):
         r"""Reset all states for the specified endpoint.
 
         Arguments:
@@ -210,7 +210,7 @@ class DeviceHandle(object):
         """
         self.clearHalt(endpoint)
 
-    def setConfiguration(configuration):
+    def setConfiguration(self, configuration):
         r"""Set the active configuration of a device.
 
         Arguments:
@@ -218,7 +218,7 @@ class DeviceHandle(object):
         """
         self.dev.set_configuration(configuration)
 
-    def setAltInterface(alternate):
+    def setAltInterface(self, alternate):
         r"""Sets the active alternate setting of the current interface.
 
         Arguments:
@@ -226,7 +226,7 @@ class DeviceHandle(object):
         """
         self.dev.set_interface_altsetting(self.__claimed_interface, alternate)
 
-    def getString(index, len, langid = -1):
+    def getString(self, index, len, langid = -1):
         r"""Retrieve the string descriptor specified by index
             and langid from a device.
 
@@ -238,7 +238,7 @@ class DeviceHandle(object):
         """
         raise NotImplemented('This function has not been implemented yet')
 
-    def getDescriptor(type, index, len, endpoint = -1):
+    def getDescriptor(self, type, index, len, endpoint = -1):
         r"""Retrieves a descriptor from the device identified by the type
         and index of the descriptor.
 
@@ -251,7 +251,7 @@ class DeviceHandle(object):
         """
         raise NotImplemented('This function has not been implemented yet')
 
-    def detachKernelDriver(interface):
+    def detachKernelDriver(self, interface):
         r"""Detach a kernel driver from the interface (if one is attached,
             we have permission and the operation is supported by the OS)
 
@@ -279,7 +279,7 @@ class Device(object):
         self.configurations = [Configuration(c) for c in dev]
         self.dev = dev
 
-    def open():
+    def open(self):
         r"""Open the device for use.
 
         Return a DeviceHandle object
