@@ -594,7 +594,7 @@ class Device(object):
             )
 
 
-    def ctrl_transfer(self, bmRequestType, bRequest, wValue, wIndex,
+    def ctrl_transfer(self, bmRequestType, bRequest, wValue=0, wIndex=0,
             data_or_wLength = None, timeout = None):
         r"""Do a control transfer on the endpoint 0.
 
@@ -616,7 +616,10 @@ class Device(object):
         value is the data payload read, as an array object.
         """
         if util.ctrl_direction(bmRequestType) == util.CTRL_OUT:
-            a = (data_or_wLength is None) and array.array('B') or array.array('B', data_or_wLength)
+            if data_or_wLength is None:
+                a = array.array('B')
+            else:
+                a = array.array('B', data_or_wLength)
         elif data_or_wLength is None:
             a = 0
         else:

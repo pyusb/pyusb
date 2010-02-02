@@ -73,7 +73,7 @@ found::
     dev.set_configuration()
 
     # get an endpoint instance
-    ep = uti.find_descriptor(
+    ep = usb.util.find_descriptor(
             dev.get_interface_altsetting(),   # first interface
             # match the first OUT endpoint
             custom_match = \
