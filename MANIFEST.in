@@ -1,0 +1,2 @@
+include LICENSE TODO ACKNOWLEDGEMENTS
+recursive-include docs *.txt

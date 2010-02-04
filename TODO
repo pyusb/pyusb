@@ -1,0 +1,8 @@
+* Implement standard control requests API.
+* Finish implementation of legacy compatibility layer.
+* Determine automatically current configuration when user hasn't set it.
+* Validate it on platforms other than Windows and Linux.
+* Validate it on Python 2.3 and Python 3.x.
+* Samples.
+* Improve documentation.
+* Test, test and test.

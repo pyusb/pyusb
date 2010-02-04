@@ -4,8 +4,8 @@ from distutils.core import setup
 
 setup(
     name='PyUSB',
-    version='1.0.0a1',
-    description='Python USB access library',
+    version='1.0.0-a0',
+    description='Python USB access module',
     author='Wander Lairson Costa',
     author_email='wander.lairson@gmail.com',
     license = 'BSD',

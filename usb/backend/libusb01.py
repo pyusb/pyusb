@@ -22,13 +22,13 @@ else:
 
 # libusb-win32 makes all structures packed, while
 # default libusb only does for some structures
-# PackPolicy defines the structure packing according
+# _PackPolicy defines the structure packing according
 # to the platform.
-class PackPolicy(object):
+class _PackPolicy(object):
     pass
 
 if sys.platform == 'win32':
-    PackPolicy._pack_ = 1
+    _PackPolicy._pack_ = 1
 
 # Data structures
 
@@ -43,7 +43,7 @@ class _usb_string_descriptor(Structure):
                 ('bDescriptorType', c_uint8),
                 ('wData', c_uint16)]
 
-class _usb_endpoint_descriptor(Structure, PackPolicy):
+class _usb_endpoint_descriptor(Structure, _PackPolicy):
     _fields_ = [('bLength', c_uint8),
                 ('bDescriptorType', c_uint8),
                 ('bEndpointAddress', c_uint8),
@@ -55,7 +55,7 @@ class _usb_endpoint_descriptor(Structure, PackPolicy):
                 ('extra', POINTER(c_uint8)),
                 ('extralen', c_int)]
 
-class _usb_interface_descriptor(Structure, PackPolicy):
+class _usb_interface_descriptor(Structure, _PackPolicy):
     _fields_ = [('bLength', c_uint8),
                 ('bDescriptorType', c_uint8),
                 ('bInterfaceNumber', c_uint8),
@@ -69,11 +69,11 @@ class _usb_interface_descriptor(Structure, PackPolicy):
                 ('extra', POINTER(c_uint8)),
                 ('extralen', c_int)]
 
-class _usb_interface(Structure, PackPolicy):
+class _usb_interface(Structure, _PackPolicy):
     _fields_ = [('altsetting', POINTER(_usb_interface_descriptor)),
                 ('num_altsetting', c_int)]
 
-class _usb_config_descriptor(Structure, PackPolicy):
+class _usb_config_descriptor(Structure, _PackPolicy):
     _fields_ = [('bLength', c_uint8),
                 ('bDescriptorType', c_uint8),
                 ('wTotalLength', c_uint16),
@@ -86,7 +86,7 @@ class _usb_config_descriptor(Structure, PackPolicy):
                 ('extra', POINTER(c_uint8)),
                 ('extralen', c_int)]
 
-class _usb_device_descriptor(Structure, PackPolicy):
+class _usb_device_descriptor(Structure, _PackPolicy):
     _pack_ = 1
     _fields_ = [('bLength', c_uint8),
                 ('bDescriptorType', c_uint8),
@@ -103,10 +103,10 @@ class _usb_device_descriptor(Structure, PackPolicy):
                 ('iSerialNumber', c_uint8),
                 ('bNumConfigurations', c_uint8)]
 
-class _usb_device(Structure, PackPolicy):
+class _usb_device(Structure, _PackPolicy):
     pass
 
-class _usb_bus(Structure, PackPolicy):
+class _usb_bus(Structure, _PackPolicy):
     pass
 
 _usb_device._fields_ = [('next', POINTER(_usb_device)),
