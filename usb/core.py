@@ -42,11 +42,11 @@ __author__ = 'Wander Lairson Costa'
 __all__ = ['Device', 'Configuration', 'Interface', 'Endpoint', 'find']
 
 import array
-from . import util
+import usb.util as util
 import copy
 import sys
 import operator
-from . import _interop
+import usb._interop as _interop
 
 _DEFAULT_TIMEOUT = 1000
 

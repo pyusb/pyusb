@@ -26,10 +26,10 @@
 # NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR
 # MODIFICATIONS.
 
-from . import core
-from . import util
+import usb.core as core
+import usb.util as util
 import itertools
-from .core import USBError
+from usb.core import USBError
 
 __author__ = 'Wander Lairson Costa'
 

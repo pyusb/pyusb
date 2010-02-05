@@ -31,7 +31,7 @@ r"""usb.util - Utility functions."""
 __author__ = 'Wander Lairson Costa'
 
 import operator
-from . import _interop
+import usb._interop as _interop
 
 # descriptor type
 DESC_TYPE_DEVICE = 0x01
