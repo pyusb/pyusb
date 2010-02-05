@@ -17,7 +17,7 @@ Platform neutrality:
     interface. PyUSB comes with builtin backends for libusb 0.1, libusb 1.0 and OpenUSB.
     You can write your own backend if you desire to.
 Portability:
-    PyUSB should run on any platform with Python >= 2.3, ctypes_ and at least one of the
+    PyUSB should run on any platform with Python >= 2.5, ctypes_ and at least one of the
     suppoted USB builtin backends.
 Easiness:
     Communicating with an USB_ device has never been so easy! USB is a complex protocol,
