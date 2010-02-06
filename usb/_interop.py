@@ -44,7 +44,7 @@ else:
     _set = set
 
 # On Python >= 2.6, we have the builtin next() function
-# On Python 2.5, we have to call the iterator method next()
+# On Python 2.5 and before, we have to call the iterator method next()
 if sys.version_info[0] <= 2 and sys.version_info[1] < 6:
     def _next(iter):
         return iter.next()
