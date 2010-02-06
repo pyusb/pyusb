@@ -715,7 +715,7 @@ class Device(object):
     default_timeout = property(
                         __get_def_tmo,
                         __set_def_tmo,
-                        doc = 'Default timeout for transfers'
+                        doc = 'Default timeout for transfer I/O functions'
                     )
 
 def find(find_all=False, backend = None, custom_match = None, **args):
@@ -803,9 +803,9 @@ def find(find_all=False, backend = None, custom_match = None, **args):
                 yield d
 
     if backend is None:
-        import backend.libusb10 as libusb10
-        import backend.libusb01 as libusb01
-        import backend.openusb as openusb
+        import usb.backend.libusb10 as libusb10
+        import usb.backend.libusb01 as libusb01
+        import usb.backend.openusb as openusb
 
         for m in (libusb10, openusb, libusb01):
             backend = m.get_backend()
