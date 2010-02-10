@@ -84,7 +84,7 @@ class _ResourceManager(object):
         # of the device and Configuration (Device tracks the _ResourceManager,
         # which tracks the Configuration, which tracks the Device)
         self._active_cfg_index = cfg.index
-        # after changing configuration, out alternate setting and endpoint type caches
+        # after changing configuration, our alternate setting and endpoint type caches
         # are not valid anymore
         self._ep_type_map.clear()
         self._alt_set.clear()
@@ -147,7 +147,7 @@ class _ResourceManager(object):
         # TODO: when we haven't called managed_set_configuration,
         # issue a get_configuration request to discover the current configuration
         # See patch #283765.
-        # Meanwhile, we just return # the first configuration found
+        # Meanwhile, we just return the first configuration found
         if self._active_cfg_index is None:
             cfg = device[0]
             self._active_cfg_index = cfg.index
@@ -583,7 +583,7 @@ class Device(object):
                 endpoint,
                 intf.bInterfaceNumber,
                 array.array('B', data),
-                self._get_timeout(timeout)
+                self.__get_timeout(timeout)
             )
 
     def read(self, endpoint, size, interface = None, timeout = None):
@@ -618,7 +618,7 @@ class Device(object):
                 endpoint,
                 intf.bInterfaceNumber,
                 size,
-                self._get_timeout(timeout)
+                self.__get_timeout(timeout)
             )
 
 
@@ -662,7 +662,7 @@ class Device(object):
                                     wValue,
                                     wIndex,
                                     a,
-                                    self._get_timeout(timeout)
+                                    self.__get_timeout(timeout)
                                 )
 
     def is_kernel_driver_active(self, interface):
@@ -699,7 +699,7 @@ class Device(object):
     def __del__(self):
         self._ctx.dispose(self)
 
-    def _get_timeout(self, timeout):
+    def __get_timeout(self, timeout):
         if timeout is not None:
             return timeout
         return self.__default_timeout
