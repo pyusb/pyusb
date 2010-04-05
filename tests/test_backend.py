@@ -31,7 +31,6 @@ import array
 import devinfo
 import utils
 import usb.util
-import sys
 import usb.backend.libusb01 as libusb01
 import usb.backend.libusb10 as libusb10
 import usb.backend.openusb as openusb
@@ -205,12 +204,10 @@ def get_suite():
         for m in (libusb10, libusb01, openusb):
             b = m.get_backend()
             if b is not None:
-                sys.stdout.write(
-                    'Adding ' + \
-                    BackendTest.__name__ + \
-                    '(' + \
-                    m.__name__ + \
-                    ') to test suite...\n'
-                )
+                utils.logger.info('Adding %s(%s) to test suite...', BackendTest.__name__, m.__name__)
                 suite.addTest(BackendTest(b))
+            else:
+                utils.logger.warning('%s(%s) is not available', BackendTest.__name__, m.__name__)
+    else:
+        utils.logger.warning('Test hardware not connected')
     return suite

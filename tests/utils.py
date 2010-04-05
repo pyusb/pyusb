@@ -29,6 +29,9 @@
 import array
 import usb.core
 import devinfo
+import logging
+
+logger = logging.getLogger('usb.test')
 
 # data generation functions
 def get_array_data1(length = 10):

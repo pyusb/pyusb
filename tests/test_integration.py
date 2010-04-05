@@ -232,14 +232,11 @@ def get_suite():
                             idVendor=devinfo.ID_VENDOR,
                             idProduct=devinfo.ID_PRODUCT)
         if dev is None:
+            utils.logger.warning('Test hardware not found for backend %s', m.__name__)
             continue
+
         for ObjectTestCase in test_cases:
-            sys.stdout.write(
-                'Adding ' + \
-                ObjectTestCase.__name__ + \
-                '(' + \
-                m.__name__ + \
-                ') to test suite...\n'
-            )
+            utils.logger.info('Adding %s(%s) to test suite...', ObjectTestCase.__name__, m.__name__)
             suite.addTest(ObjectTestCase(dev))
+
     return suite

@@ -47,6 +47,9 @@ import copy
 import sys
 import operator
 import usb._interop as _interop
+import logging
+
+_logger = logging.getLogger('usb.core')
 
 _DEFAULT_TIMEOUT = 1000
 
@@ -79,6 +82,7 @@ class _ResourceManager(object):
         else:
             cfg = util.find_descriptor(device, bConfigurationValue=config)
         self.managed_open()
+        _logger.info('Setting configuration %d', cfg.bConfigurationValue)
         self.backend.set_configuration(self.handle, cfg.bConfigurationValue)
         # cache the index instead of the object to avoid cyclic references
         # of the device and Configuration (Device tracks the _ResourceManager,
@@ -97,6 +101,7 @@ class _ResourceManager(object):
             i = intf.bInterfaceNumber
         else:
             i = intf
+        _logger.info('Claiming interface %d', i)
         if i not in self._claimed_intf:
             self.backend.claim_interface(self.handle, i)
             self._claimed_intf.add(i)
@@ -108,6 +113,7 @@ class _ResourceManager(object):
             i = intf.bInterfaceNumber
         else:
             i = intf
+        _logger.info('Releasing interface %d', i)
         if i in self._claimed_intf:
             self.backend.release_interface(self.handle, i)
             self._claimed_intf.remove(i)
@@ -125,6 +131,11 @@ class _ResourceManager(object):
         self.managed_claim_interface(device, i)
         if alt is None:
             alt = i.bAlternateSetting
+        _logger.info(
+            'Setting interface. bInterfaceNumber=%d, bAlternateSetting=%d',
+            i.bInterfaceNumber,
+            alt
+        )
         self.backend.set_interface_altsetting(self.handle, i.bInterfaceNumber, alt)
         self._alt_set[i.bInterfaceNumber] = alt
     def get_interface(self, device, intf):
@@ -810,6 +821,7 @@ def find(find_all=False, backend = None, custom_match = None, **args):
         for m in (libusb10, openusb, libusb01):
             backend = m.get_backend()
             if backend is not None:
+                _logger.info('Using backend "%s"', m.__name__)
                 break
         else:
             raise ValueError('No backend is available in the system')

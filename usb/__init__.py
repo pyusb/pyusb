@@ -38,9 +38,38 @@ Since version 1.0, main PyUSB implementation lives in the 'usb.core'
 module. New applications are encouraged to use it.
 """
 
+import logging
+import os
+
 __author__ = 'Wander Lairson Costa'
 
 __all__ = ['legacy', 'core', 'backend', 'util']
+
+def _setup_log():
+    logger = logging.getLogger('usb')
+    debug_level = os.getenv('PYUSB_DEBUG_LEVEL')
+    filename = os.getenv('PYUSB_LOG_FILENAME')
+
+    LEVELS = {'debug': logging.DEBUG,
+              'info': logging.INFO,
+              'warning': logging.WARNING,
+              'error': logging.ERROR,
+              'critical': logging.CRITICAL}
+
+    level = LEVELS.get(debug_level, logging.NOTSET)
+
+    logger.setLevel(level = level)
+
+    try:
+        handler = logging.FileHandler(filename)
+    except:
+        handler = logging.StreamHandler()
+
+    fmt = logging.Formatter('%(asctime)s %(levelname)s:%(name)s:%(message)s')
+    handler.setFormatter(fmt)
+    logger.addHandler(handler)
+
+_setup_log()
 
 # We import all 'legacy' module symbols to provide compatility
 # with applications that use 0.x versions.

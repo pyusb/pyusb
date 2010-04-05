@@ -35,39 +35,36 @@ import sys
 
 __all__ = ['_reduce', '_set', '_next', '_groupby', '_sorted']
 
-_major_ver = sys.version_info[0]
-_minor_ver = sys.version_info[1]
-
 # we support Python >= 2.3
-assert _major_ver >= 2
-if _major_ver == 2:
-    assert _minor_ver >= 3
+assert sys.hexversion >= 0x020300f0
 
 # On Python 3, reduce became a functools module function
-if _major_ver > 2:
+try:
     import functools
     _reduce = functools.reduce
-else:
+except (ImportError, AttributeError):
     _reduce = reduce
 
 # we only have the builtin set type since 2.5 version
-if _major_ver == 2 and _minor_ver <= 4:
+try:
+    _set = set
+except NameError:
     import sets
     _set = sets.Set
-else:
-    _set = set
 
 # On Python >= 2.6, we have the builtin next() function
 # On Python 2.5 and before, we have to call the iterator method next()
-if _major_ver == 2 and _minor_ver < 6:
-    def _next(iter):
-        return iter.next()
-else:
-    def _next(iter):
+def _next(iter):
+    try:
         return next(iter)
+    except NameError:
+        return iter.next()
 
 # groupby is available only since 2.4 version
-if _major_ver == 2 and _minor_ver < 4:
+try:
+    import itertools
+    _groupby = itertools.groupby
+except (ImportError, AttributeError):
     # stolen from Python docs
     class _groupby(object):
         # [k for k, g in groupby('AAAABBBCCDAABBB')] --> A B C D A B
@@ -91,12 +88,11 @@ if _major_ver == 2 and _minor_ver < 4:
                 yield self.currvalue
                 self.currvalue = _next(self.it)    # Exit on StopIteration
                 self.currkey = self.keyfunc(self.currvalue)
-else:
-    import itertools
-    _groupby = itertools.groupby
 
 # builtin sorted function is only availale since 2.4 version
-if _major_ver == 2 and _minor_ver < 4:
+try:
+    _sorted = sorted
+except NameError:
     def _sorted(l, key=None, reverse=False):
         # sort function on Python 2.3 does not
         # support 'key' parameter
@@ -115,5 +111,3 @@ if _major_ver == 2 and _minor_ver < 4:
         tmp = list(l)
         tmp.sort(KeyToCmp(key))
         return tmp
-else:
-    _sorted = sorted

@@ -34,10 +34,13 @@ import usb.util
 import array
 import sys
 from usb.core import USBError
+import logging
 
 __author__ = 'Wander Lairson Costa'
 
 __all__ = ['get_backend']
+
+_logger = logging.getLogger('usb.backend.libusb01')
 
 # usb.h
 
@@ -510,5 +513,6 @@ def get_backend():
             _setup_prototypes(_lib)
             _lib.usb_init()
         return _LibUSB()
-    except OSError:
+    except Exception:
+        _logger.debug('Error loading libusb 0.1 backend', exc_info=True)
         return None

@@ -30,10 +30,13 @@ from ctypes import *
 import ctypes.util
 import usb.util
 import sys
+import logging
 
 __author__ = 'Wander Lairson Costa'
 
 __all__ = ['get_backend']
+
+_logger = logging.getLogger('usb.backend.openusb')
 
 class _usb_endpoint_desc(Structure):
     _fields_ = [('bLength', c_uint8),
@@ -566,5 +569,6 @@ def get_backend():
             _setup_prototypes(_lib)
             _ctx = _Context()
         return _OpenUSB()
-    except OSError:
+    except Exception:
+        _logger.debug('Error loading OpenUSB backend', exc_info=True)
         return None
