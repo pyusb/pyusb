@@ -140,10 +140,23 @@ _init = None
 _libusb_device_handle = c_void_p
 
 def _load_library():
-    libname = ctypes.util.find_library('usb-1.0')
-    if libname is None:
+    candidates = ('usb-1.0', 'libusb-1.0', 'usb')
+    for candidate in candidates:
+        libname = ctypes.util.find_library(candidate)
+        if libname is not None: break
+    else:
         raise OSError('USB library could not be found')
-    return CDLL(libname)
+    # Windows backend uses stdcall calling convention
+    if sys.platform == 'win32':
+        l = WinDLL(libname)
+    else:
+        l = CDLL(libname)
+    # On FreeBSD 8/9, libusb 1.0 and libusb 0.1 are in the same shared
+    # object libusb.so, so if we found libusb library name, we must assure
+    # it is 1.0 version. We just try to get some symbol from 1.0 version
+    if not hasattr(l, 'libusb_init'):
+        raise OSError('USB library could not be found')
+    return l
 
 def _setup_prototypes(lib):
     # void libusb_set_debug (libusb_context *ctx, int level)

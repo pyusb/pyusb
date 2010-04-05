@@ -160,11 +160,11 @@ _usb_dev_handle = c_void_p
 _lib = None
 
 def _load_library():
-    if sys.platform == 'win32':
-        libname = ctypes.util.find_library('libusb0')
+    candidates = ('usb', 'libusb0')
+    for candidate in candidates:
+        libname = ctypes.util.find_library(candidate)
+        if libname is not None: break
     else:
-        libname = ctypes.util.find_library('usb')
-    if libname is None:
         raise OSError('USB library could not be found')
     return CDLL(libname)
 

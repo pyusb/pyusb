@@ -1,6 +1,7 @@
 This is a list of people who has contributed to PyUSB 1.0 development.
 
 1.0.0-a0:
-    * Thomas Reitmayr: thanks for your loads of patches to get PyUSB running with libusb 1.0.
+    * Thomas Reitmayr: thanks for your patches to get PyUSB running with libusb 1.0.
     * Carl Ritson: thanks for your patch to get minimal working of legacy layer.
     * Romain Aviolat: thanks for pointing out a mistake in the tutorial and to report a bug in ctrl_transfer.
+    * Xiaofan Chen: thanks for your effort testing PyUSB with libusb 1.0 Windows backend and on FreeBSD.
