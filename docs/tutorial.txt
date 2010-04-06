@@ -113,6 +113,16 @@ Every function in PyUSB raises an exception in case of an error. Besides the `Py
 standard exceptions <http://docs.python.org/library/exceptions.html>`_, PyUSB defines
 the ``usb.core.USBError`` for USB related errors.
 
+You can also use the PyUSB log funcionality. It uses the `logging 
+<http://docs.python.org/library/logging.html>`_ module. To enable it, define
+the environment variable ``PYUSB_DEBUG_LEVEL`` with one of the following level
+names: ``critical``, ``error``, ``warning``, ``info`` or ``debug``.
+
+By default the messages are sent to `sys.stderr <http://docs.python.org/library/sys.html>`_.
+If you want to, you can redirect log messages to a file by defining the ``PYUSB_LOG_FILENAME``
+environment variable. If its value is a valid file path, messages will be written to it,
+otherwise it will be sent to ``sys.stderr``.
+
 Where are you?
 --------------
 

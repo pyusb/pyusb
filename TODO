@@ -7,4 +7,5 @@
     * Validate it on Python 2.3 and Python 3.x.
     * Samples.
     * Improve documentation.
+    * Implement isochronous transfers.
     * Test, test and test.
