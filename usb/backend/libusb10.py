@@ -143,7 +143,7 @@ _init = None
 _libusb_device_handle = c_void_p
 
 def _load_library():
-    candidates = ('usb-1.0', 'libusb-1.0', 'usb')
+    candidates = ('usb-1.0', 'libusb-1.0', 'cygusb-1.0', 'usb')
     for candidate in candidates:
         libname = ctypes.util.find_library(candidate)
         if libname is not None: break
