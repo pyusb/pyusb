@@ -32,9 +32,20 @@ import sys
 import unittest
 import glob
 import os.path
+import os
+
+parent_dir = os.path.split(os.getcwd())[0]
+
+# if we are at PyUSB source tree, add usb package to python path
+if os.path.exists(os.path.join(parent_dir, 'usb')):
+    sys.path.insert(0, parent_dir)
+
+import logging
+import utils
 
 if __name__ == '__main__':
-    sys.path.append('..')
+
+    utils.logger.setLevel(logging.INFO)
     suite = unittest.TestSuite()
 
     for i in glob.glob('*.py'):
