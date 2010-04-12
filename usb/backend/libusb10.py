@@ -143,11 +143,19 @@ _init = None
 _libusb_device_handle = c_void_p
 
 def _load_library():
-    candidates = ('usb-1.0', 'libusb-1.0', 'cygusb-1.0', 'usb')
+    candidates = ('usb-1.0', 'libusb-1.0', 'usb')
     for candidate in candidates:
         libname = ctypes.util.find_library(candidate)
         if libname is not None: break
     else:
+        # corner cases
+        # cygwin predefines library names with 'cyg' instead of 'lib'
+        if sys.platform == 'cygwin':
+            try:
+                return CDLL('cygusb-1.0-0.dll')
+            except Exception:
+                _logger.error('Libusb 1.0 could not be loaded in cygwin', exc_info=True)
+
         raise OSError('USB library could not be found')
     # Windows backend uses stdcall calling convention
     if sys.platform == 'win32':
@@ -558,5 +566,5 @@ def get_backend():
             _init = _Initializer()
         return _LibUSB()
     except Exception:
-        _logger.debug('Error loading libusb 1.0 backend', exc_info=True)
+        _logger.error('Error loading libusb 1.0 backend', exc_info=True)
         return None
