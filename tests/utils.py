@@ -26,10 +26,21 @@
 # NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR
 # MODIFICATIONS.
 
+import sys
+import os.path
+
+parent_dir = os.path.split(os.getcwd())[0]
+
+# if we are at PyUSB source tree, add usb package to python path
+if os.path.exists(os.path.join(parent_dir, 'usb')):
+    sys.path.insert(0, parent_dir)
+
 import array
 import usb.core
-import devinfo
 import logging
+import devinfo
+import time
+import unittest
 
 logger = logging.getLogger('usb.test')
 
@@ -55,6 +66,9 @@ def get_str_data2(length = 10):
 def to_array(data):
     return array.array('B', data)
 
+def delay_after_reset():
+    time.sleep(3) # necessary to wait device reenumeration
+
 # check if our test hardware is present
 def is_test_hw_present():
     try:
@@ -62,3 +76,7 @@ def is_test_hw_present():
                              idProduct=devinfo.ID_PRODUCT) is not None
     except:
         return False
+
+def run_tests(suite):
+    runner = unittest.TextTestRunner()
+    runner.run(suite)

@@ -34,6 +34,7 @@ import usb.util
 import array
 import sys
 from usb.core import USBError
+from usb._debug import methodtrace
 import logging
 
 __author__ = 'Wander Lairson Costa'
@@ -364,6 +365,7 @@ def _check(retval):
 
 # implementation of libusb 0.1.x backend
 class _LibUSB(usb.backend.IBackend):
+    @methodtrace(_logger)
     def enumerate_devices(self):
         _check(_lib.usb_find_busses())
         _check(_lib.usb_find_devices())
@@ -377,14 +379,17 @@ class _LibUSB(usb.backend.IBackend):
                 dev = dev[0].next
             bus = bus[0].next
 
+    @methodtrace(_logger)
     def get_device_descriptor(self, dev):
         return dev.descriptor
 
+    @methodtrace(_logger)
     def get_configuration_descriptor(self, dev, config):
         if config >= dev.descriptor.bNumConfigurations:
             raise IndexError('Invalid configuration index ' + str(config))
         return dev.config[config]
 
+    @methodtrace(_logger)
     def get_interface_descriptor(self, dev, intf, alt, config):
         cfgdesc = self.get_configuration_descriptor(dev, config)
         if intf >= cfgdesc.bNumInterfaces:
@@ -394,30 +399,38 @@ class _LibUSB(usb.backend.IBackend):
             raise IndexError('Invalid alternate setting index ' + str(alt))
         return interface.altsetting[alt]
 
+    @methodtrace(_logger)
     def get_endpoint_descriptor(self, dev, ep, intf, alt, config):
         interface = self.get_interface_descriptor(dev, intf, alt, config)
         if ep >= interface.bNumEndpoints:
             raise IndexError('Invalid endpoint index ' + str(ep))
         return interface.endpoint[ep]
 
+    @methodtrace(_logger)
     def open_device(self, dev):
         return _check(_lib.usb_open(dev))
 
+    @methodtrace(_logger)
     def close_device(self, dev_handle):
         _check(_lib.usb_close(dev_handle))
 
+    @methodtrace(_logger)
     def set_configuration(self, dev_handle, config_value):
         _check(_lib.usb_set_configuration(dev_handle, config_value))
 
+    @methodtrace(_logger)
     def set_interface_altsetting(self, dev_handle, intf, altsetting):
         _check(_lib.usb_set_altinterface(dev_handle, altsetting))
 
+    @methodtrace(_logger)
     def claim_interface(self, dev_handle, intf):
         _check(_lib.usb_claim_interface(dev_handle, intf))
 
+    @methodtrace(_logger)
     def release_interface(self, dev_handle, intf):
         _check(_lib.usb_release_interface(dev_handle, intf))
 
+    @methodtrace(_logger)
     def bulk_write(self, dev_handle, ep, intf, data, timeout):
         return self.__write(_lib.usb_bulk_write,
                             dev_handle,
@@ -425,6 +438,7 @@ class _LibUSB(usb.backend.IBackend):
                             intf,
                             data, timeout)
 
+    @methodtrace(_logger)
     def bulk_read(self, dev_handle, ep, intf, size, timeout):
         return self.__read(_lib.usb_bulk_read,
                            dev_handle,
@@ -433,6 +447,7 @@ class _LibUSB(usb.backend.IBackend):
                            size,
                            timeout)
 
+    @methodtrace(_logger)
     def intr_write(self, dev_handle, ep, intf, data, timeout):
         return self.__write(_lib.usb_interrupt_write,
                             dev_handle,
@@ -441,6 +456,7 @@ class _LibUSB(usb.backend.IBackend):
                             data,
                             timeout)
 
+    @methodtrace(_logger)
     def intr_read(self, dev_handle, ep, intf, size, timeout):
         return self.__read(_lib.usb_interrupt_read,
                            dev_handle,
@@ -449,6 +465,7 @@ class _LibUSB(usb.backend.IBackend):
                            size,
                            timeout)
 
+    @methodtrace(_logger)
     def ctrl_transfer(self,
                       dev_handle,
                       bmRequestType,
@@ -485,9 +502,11 @@ class _LibUSB(usb.backend.IBackend):
                             )))
             return buffer[:read]
 
+    @methodtrace(_logger)
     def reset_device(self, dev_handle):
         _check(_lib.usb_reset(dev_handle))
 
+    @methodtrace(_logger)
     def detach_kernel_driver(self, dev_handle, intf):
         _check(_lib.usb_detach_kernel_driver_np(dev_handle, intf))
 

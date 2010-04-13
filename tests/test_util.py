@@ -26,6 +26,7 @@
 # NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR
 # MODIFICATIONS.
 
+import utils
 import unittest
 from usb.util import *
 from devinfo import *
@@ -141,3 +142,6 @@ def get_suite():
     suite.addTest(FindDescriptorTest())
     suite.addTest(unittest.defaultTestLoader.loadTestsFromTestCase(UtilTest))
     return suite
+
+if __name__ == '__main__':
+    utils.run_tests(get_suite())

@@ -33,7 +33,7 @@
 
 import sys
 
-__all__ = ['_reduce', '_set', '_next', '_groupby', '_sorted']
+__all__ = ['_reduce', '_set', '_next', '_groupby', '_sorted', '_update_wrapper']
 
 # we support Python >= 2.3
 assert sys.hexversion >= 0x020300f0
@@ -111,3 +111,13 @@ except NameError:
         tmp = list(l)
         tmp.sort(KeyToCmp(key))
         return tmp
+
+try:
+    import functools
+    _update_wrapper = functools.update_wrapper
+except (ImportError, AttributeError):
+    def _update_wrapper(wrapper, wrapped):
+        wrapper.__name__ = wrapped.__name__
+        wrapper.__module__ = wrapped.__module__
+        wrapper.__doc__ = wrapped.__doc__
+        wrapper.__dict__ = wrapped.__dict__

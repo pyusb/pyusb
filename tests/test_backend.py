@@ -26,10 +26,10 @@
 # NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR
 # MODIFICATIONS.
 
+import utils
 import unittest
 import array
 import devinfo
-import utils
 import usb.util
 import usb.backend.libusb01 as libusb01
 import usb.backend.libusb10 as libusb10
@@ -179,6 +179,7 @@ class BackendTest(unittest.TestCase):
 
     def test_reset_device(self):
         self.backend.reset_device(self.handle)
+        utils.delay_after_reset()
 
     def __write_read(self, write_fn, read_fn, ep_out, ep_in):
         intf = self.backend.get_interface_descriptor(self.dev, 0, 0, 0).bInterfaceNumber
@@ -211,3 +212,6 @@ def get_suite():
     else:
         utils.logger.warning('Test hardware not connected')
     return suite
+
+if __name__ == '__main__':
+    utils.run_tests(get_suite())

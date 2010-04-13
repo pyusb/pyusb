@@ -26,6 +26,7 @@
 # NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR
 # MODIFICATIONS.
 
+import utils
 import usb.backend
 from usb.core import find
 import usb.util
@@ -95,3 +96,6 @@ def get_suite():
     suite = unittest.TestSuite()
     suite.addTest(unittest.defaultTestLoader.loadTestsFromTestCase(FindTest))
     return suite
+
+if __name__ == '__main__':
+    utils.run_tests(get_suite())

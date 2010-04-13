@@ -28,10 +28,10 @@
 
 # Integraion tests
 
+import utils
 import unittest
 import usb.core
 import devinfo
-import utils
 import usb.util
 import sys
 import usb.backend.libusb01 as libusb01
@@ -103,6 +103,7 @@ class DeviceTest(unittest.TestCase):
 
     def test_reset(self):
         self.dev.reset()
+        utils.delay_after_reset()
 
     def test_write_read(self):
         ep_list = ((devinfo.EP_BULK_OUT, devinfo.EP_BULK_IN),
@@ -240,3 +241,6 @@ def get_suite():
             suite.addTest(ObjectTestCase(dev))
 
     return suite
+
+if __name__ == '__main__':
+    utils.run_tests(get_suite())

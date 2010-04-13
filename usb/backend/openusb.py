@@ -30,6 +30,7 @@ from ctypes import *
 import ctypes.util
 import usb.util
 import sys
+from usb._debug import methodtrace
 import logging
 
 __author__ = 'Wander Lairson Costa'
@@ -414,11 +415,13 @@ class _DevIterator(object):
         _lib.openusb_free_devid_list(self.devlist)
 
 class _OpenUSB(usb.backend.IBackend):
+    @methodtrace(_logger)
     def enumerate_devices(self):
         for bus in _BusIterator():
             for devid in _DevIterator(bus):
                 yield devid
 
+    @methodtrace(_logger)
     def get_device_descriptor(self, dev):
         desc = _usb_device_desc()
         _check(_lib.openusb_parse_device_desc(_ctx.handle,
@@ -428,6 +431,7 @@ class _OpenUSB(usb.backend.IBackend):
                                               byref(desc)))
         return desc
 
+    @methodtrace(_logger)
     def get_configuration_descriptor(self, dev, config):
         desc = _usb_config_desc()
         _check(_lib.openusb_parse_config_desc(_ctx.handle,
@@ -438,6 +442,7 @@ class _OpenUSB(usb.backend.IBackend):
                                               byref(desc)))
         return desc
 
+    @methodtrace(_logger)
     def get_interface_descriptor(self, dev, intf, alt, config):
         desc = _usb_interface_desc()
         _check(_lib.openusb_parse_interface_desc(_ctx.handle,
@@ -450,6 +455,7 @@ class _OpenUSB(usb.backend.IBackend):
                                                  byref(desc)))
         return desc
 
+    @methodtrace(_logger)
     def get_endpoint_descriptor(self, dev, ep, intf, alt, config):
         desc = _usb_endpoint_desc()
         _check(_lib.openusb_parse_endpoint_desc(_ctx.handle,
@@ -463,26 +469,33 @@ class _OpenUSB(usb.backend.IBackend):
                                                 byref(desc)))
         return desc
 
+    @methodtrace(_logger)
     def open_device(self, dev):
         handle = _openusb_dev_handle()
         _check(_lib.openusb_open_device(_ctx.handle, dev, 0, byref(handle)))
         return handle
 
+    @methodtrace(_logger)
     def close_device(self, dev_handle):
         _lib.openusb_close_device(dev_handle)
 
+    @methodtrace(_logger)
     def set_configuration(self, dev_handle, config_value):
         _check(_lib.openusb_set_configuration(dev_handle, config_value))
 
+    @methodtrace(_logger)
     def set_interface_altsetting(self, dev_handle, intf, altsetting):
         _check(_lib.set_altsetting(dev_handle, intf, altsetting))
 
+    @methodtrace(_logger)
     def claim_interface(self, dev_handle, intf):
         _check(_lib.openusb_claim_interface(dev_handle, intf, 0))
 
+    @methodtrace(_logger)
     def release_interface(self, dev_handle, intf):
         _lib.openusb_release_interface(dev_handle, intf)
 
+    @methodtrace(_logger)
     def bulk_write(self, dev_handle, ep, intf, data, timeout):
         request = _openusb_bulk_request()
         memset(byref(request), 0, sizeof(request))
@@ -491,6 +504,7 @@ class _OpenUSB(usb.backend.IBackend):
         _check(_lib.openusb_bulk_xfer(dev_handle, intf, ep, byref(request)))
         return request.transfered_bytes.value
 
+    @methodtrace(_logger)
     def bulk_read(self, dev_handle, ep, intf, size, timeout):
         request = _openusb_bulk_request()
         buffer = array.array('B', '\x00' * size)
@@ -500,6 +514,7 @@ class _OpenUSB(usb.backend.IBackend):
         _check(_lib.openusb_bulk_xfer(dev_handle, intf, ep, byref(request)))
         return buffer[:request.transfered_bytes.value]
 
+    @methodtrace(_logger)
     def intr_write(self, dev_handle, ep, intf, data, timeout):
         request = _openusb_intr_request()
         memset(byref(request), 0, sizeof(request))
@@ -509,6 +524,7 @@ class _OpenUSB(usb.backend.IBackend):
         _check(_lib.openusb_intr_xfer(dev_handle, intf, ep, byref(request)))
         return request.transfered_bytes.value
 
+    @methodtrace(_logger)
     def intr_read(self, dev_handle, ep, intf, size, timeout):
         request = _openusb_intr_request()
         buffer = array.array('B', '\x00' * size)
@@ -520,12 +536,15 @@ class _OpenUSB(usb.backend.IBackend):
         return buffer[:request.transfered_bytes.value]
 
 # TODO: implement isochronous
+#    @methodtrace(_logger)
 #    def iso_write(self, dev_handle, ep, intf, data, timeout):
 #       pass
 
+#    @methodtrace(_logger)
 #    def iso_read(self, dev_handle, ep, intf, size, timeout):
 #        pass
 
+    @methodtrace(_logger)
     def ctrl_transfer(self,
                       dev_handle,
                       bmRequestType,
@@ -558,6 +577,7 @@ class _OpenUSB(usb.backend.IBackend):
         else:
             buffer[:ret]
 
+    @methodtrace(_logger)
     def reset_device(self, dev_handle):
         _check(_lib.openusb_reset(dev_handle))
 
@@ -570,5 +590,5 @@ def get_backend():
             _ctx = _Context()
         return _OpenUSB()
     except Exception:
-        _logger.debug('Error loading OpenUSB backend', exc_info=True)
+        _logger.error('Error loading OpenUSB backend', exc_info=True)
         return None

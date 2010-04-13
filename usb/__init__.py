@@ -45,29 +45,38 @@ __author__ = 'Wander Lairson Costa'
 
 __all__ = ['legacy', 'core', 'backend', 'util']
 
+
 def _setup_log():
     logger = logging.getLogger('usb')
     debug_level = os.getenv('PYUSB_DEBUG_LEVEL')
-    filename = os.getenv('PYUSB_LOG_FILENAME')
 
-    LEVELS = {'debug': logging.DEBUG,
-              'info': logging.INFO,
-              'warning': logging.WARNING,
-              'error': logging.ERROR,
-              'critical': logging.CRITICAL}
+    if debug_level is not None:
+        filename = os.getenv('PYUSB_LOG_FILENAME')
 
-    level = LEVELS.get(debug_level, logging.NOTSET)
+        LEVELS = {'debug': logging.DEBUG,
+                  'info': logging.INFO,
+                  'warning': logging.WARNING,
+                  'error': logging.ERROR,
+                  'critical': logging.CRITICAL}
 
-    logger.setLevel(level = level)
+        level = LEVELS.get(debug_level, logging.CRITICAL + 10)
+        logger.setLevel(level = level)
 
-    try:
-        handler = logging.FileHandler(filename)
-    except:
-        handler = logging.StreamHandler()
+        try:
+            handler = logging.FileHandler(filename)
+        except:
+            handler = logging.StreamHandler()
 
-    fmt = logging.Formatter('%(asctime)s %(levelname)s:%(name)s:%(message)s')
-    handler.setFormatter(fmt)
-    logger.addHandler(handler)
+        fmt = logging.Formatter('%(asctime)s %(levelname)s:%(name)s:%(message)s')
+        handler.setFormatter(fmt)
+        logger.addHandler(handler)
+    else:
+        class NullHandler(logging.Handler):
+            def emit(self, record):
+                pass
+
+        logger.addHandler(NullHandler())
+
 
 _setup_log()
 

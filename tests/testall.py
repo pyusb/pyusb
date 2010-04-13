@@ -28,24 +28,12 @@
 # NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR
 # MODIFICATIONS.
 
-import sys
+import utils
 import unittest
 import glob
 import os.path
-import os
-
-parent_dir = os.path.split(os.getcwd())[0]
-
-# if we are at PyUSB source tree, add usb package to python path
-if os.path.exists(os.path.join(parent_dir, 'usb')):
-    sys.path.insert(0, parent_dir)
-
-import logging
-import utils
 
 if __name__ == '__main__':
-
-    utils.logger.setLevel(logging.INFO)
     suite = unittest.TestSuite()
 
     for i in glob.glob('*.py'):
@@ -53,5 +41,4 @@ if __name__ == '__main__':
         if hasattr(m, 'get_suite'):
             suite.addTest(m.get_suite())
 
-    runner = unittest.TextTestRunner()
-    runner.run(suite)
+    utils.run_tests(suite)
