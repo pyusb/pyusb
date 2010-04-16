@@ -21,7 +21,7 @@ Features not implemented
 Known issues
 ------------
 
-- `reset` method fails under FreeUSB (libusb 1.0 backend).
-- `reset` method hangs under Windows (libusb 1.0 backend).
+- ``reset`` method fails under FreeUSB (libusb 1.0 backend).
+- ``reset`` method hangs under Windows (libusb 1.0 backend).
 - Sometimes occurs `read` timeout on Windows (libusb 1.0 backend).
 - Test cases fail to run under cygwin.
