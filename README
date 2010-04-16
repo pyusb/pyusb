@@ -10,7 +10,7 @@ machine's Universal Serial Bus (USB) system.
 
 Until 0.4 version, PyUSB used to be a thin wrapper aroung libusb.
 With 1.0 version, things changed considerably. Now PyUSB is an
-API rich, backend neutral Python USB module easy to deal with.
+API rich, backend neutral Python USB module easy to use.
 
 As with most Python modules, PyUSB's documentation is based on Python
 doc strings and can therefore be manipulated by tools such as pydoc.
@@ -26,7 +26,7 @@ to worry about that, unless in some corner cases.
 
 If you have any question about PyUSB, you can use the PyUSB mailing list
 hosted in the SourceForge. In the PyUSB website (http://pyusb.sourceforge.net)
-you can find instructions to subscribe to the mailing list.
+you can find instructions on how to subscribe to the mailing list.
 
 Installing PyUSB on GNU/Linux Systems
 =====================================
@@ -60,7 +60,8 @@ Installing PyUSB on Windows
 
 Now that PyUSB is 100% written in Python, you install it on Windows
 in the same way you do on Linux, but libusb for Windows is done
-through libusb-win32 package. Install it I do as usual:
+through libusb-win32 package (libusb 1.0 backend is in progress).
+To install it you do as usual:
 
 python setup.py install
 
@@ -71,4 +72,4 @@ Some people have been sending me patches and reporting bugs directly
 in my email. Please, do it through SourceForge tracker, I had
 a hardtime tracking their names to put them in the acknowledgments file. ;-)
 
-PS: this README file was adapted from the great Josh Lifton's one... ^_^
+PS: this README file was based on the great Josh Lifton's one... ^_^

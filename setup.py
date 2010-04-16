@@ -31,7 +31,7 @@
 from distutils.core import setup
 
 setup(
-    name='PyUSB',
+    name='pyusb',
     version='1.0.0-a0',
     description='Python USB access module',
     author='Wander Lairson Costa',

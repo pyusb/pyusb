@@ -8,4 +8,5 @@
     * Samples.
     * Improve documentation.
     * Implement isochronous transfers.
+    * Upgrade PIC test firmware to use 2.6a version Microchip USB stack.
     * Test, test and test.

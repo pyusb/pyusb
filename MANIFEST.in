@@ -1,2 +1,4 @@
-include LICENSE TODO ACKNOWLEDGEMENTS
+include LICENSE TODO ACKNOWLEDGEMENTS ChangeLog NEWS
 recursive-include docs *.txt
+recursive-include tests *.py
+recursive-include tests/pic18f4550 *
