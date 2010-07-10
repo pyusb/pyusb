@@ -1,0 +1,126 @@
+[HEADER]
+magic_cookie={66E99B07-E706-4689-9E80-9B2582898A13}
+file_version=1.0
+device=PIC32MX460F512L
+[PATH_INFO]
+BuildDirPolicy=BuildDirIsProjectDir
+dir_src=
+dir_bin=
+dir_tmp=./Objects\USB Device - Benchmark - C32
+dir_sin=
+dir_inc=.;..;..\..\Microchip\Include
+dir_lib=C:\Program Files\Microchip\MPLAB C30\lib
+dir_lkr=
+[CAT_FILTERS]
+filter_src=*.s;*.c
+filter_inc=*.h;*.inc
+filter_obj=*.o
+filter_lib=*.a
+filter_lkr=*.gld
+[CAT_SUBFOLDERS]
+subfolder_src=USB Stack
+subfolder_inc=Common;Hardware Profile;USB Stack
+subfolder_obj=
+subfolder_lib=
+subfolder_lkr=
+[FILE_SUBFOLDERS]
+file_000=.
+file_001=.
+file_002=USB Stack
+file_003=USB Stack
+file_004=.
+file_005=.
+file_006=.
+file_007=Common
+file_008=Common
+file_009=USB Stack
+file_010=USB Stack
+file_011=USB Stack
+file_012=USB Stack
+file_013=USB Stack
+file_014=USB Stack
+file_015=USB Stack
+file_016=Hardware Profile
+file_017=Hardware Profile
+file_018=.
+file_019=.
+[GENERATED_FILES]
+file_000=no
+file_001=no
+file_002=no
+file_003=no
+file_004=no
+file_005=no
+file_006=no
+file_007=no
+file_008=no
+file_009=no
+file_010=no
+file_011=no
+file_012=no
+file_013=no
+file_014=no
+file_015=no
+file_016=no
+file_017=no
+file_018=no
+file_019=no
+[OTHER_FILES]
+file_000=no
+file_001=no
+file_002=no
+file_003=no
+file_004=no
+file_005=no
+file_006=no
+file_007=no
+file_008=no
+file_009=no
+file_010=no
+file_011=no
+file_012=no
+file_013=no
+file_014=no
+file_015=no
+file_016=no
+file_017=no
+file_018=no
+file_019=no
+[FILE_INFO]
+file_000=main.c
+file_001=usb_descriptors.c
+file_002=..\..\Microchip\USB\usb_device.c
+file_003=..\..\Microchip\USB\Generic Device Driver\usb_function_generic.c
+file_004=Benchmark.c
+file_005=HardwareProfile.h
+file_006=usb_config.h
+file_007=..\..\Microchip\Include\GenericTypeDefs.h
+file_008=..\..\Microchip\Include\Compiler.h
+file_009=..\..\Microchip\Include\USB\usb.h
+file_010=..\..\Microchip\Include\USB\usb_ch9.h
+file_011=..\..\Microchip\Include\USB\usb_common.h
+file_012=..\..\Microchip\Include\USB\usb_device.h
+file_013=..\..\Microchip\Include\USB\usb_function_generic.h
+file_014=..\..\Microchip\Include\USB\usb_hal.h
+file_015=..\..\Microchip\Include\USB\usb_hal_pic32.h
+file_016=HardwareProfile - PIC32MX460F512L PIM.h
+file_017=HardwareProfile - PIC32 USB Starter Kit.h
+file_018=Benchmark.h
+file_019=BDT_transfer.h
+[SUITE_INFO]
+suite_guid={14495C23-81F8-43F3-8A44-859C583D7760}
+suite_state=
+[TOOL_SETTINGS]
+TS{CB0AF4B8-4022-429D-8F99-8A56782B2C6D}=-gdwarf-2
+TS{9C698E0A-CBC9-4EFF-AE7D-B569F93E7322}=-g -DPIC32_USB_STARTER_KIT -Os
+TS{77F59DA1-3C53-4677-AC5F-A03EB0125170}=-o"$(BINDIR_)$(TARGETBASE).$(TARGETSUFFIX)" -Map="$(BINDIR_)$(TARGETBASE).map"
+TS{0396C0A1-9052-4E4F-8B84-EF0162B1B4E9}=
+[INSTRUMENTED_TRACE]
+enable=0
+transport=0
+format=0
+[CUSTOM_BUILD]
+Pre-Build=
+Pre-BuildEnabled=1
+Post-Build=
+Post-BuildEnabled=1

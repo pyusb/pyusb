@@ -1,0 +1,39 @@
+// $Id: 18f14K50.lkr,v 1.1.4.1 2005/07/25 18:23:28 nairnj Exp $
+// File: 18f14K50.lkr
+// Sample linker script for the PIC18F14k50 processor
+
+LIBPATH .
+
+FILES c018i.o
+FILES clib.lib
+FILES p18f14k50.lib
+
+// Bootloader
+CODEPAGE   NAME=vectors    START=0x0            END=0x29           PROTECTED
+CODEPAGE   NAME=bootloader   START=0x2A           END=0xFFF		   PROTECTED
+CODEPAGE   NAME=page       START=0x1000           END=0x3FFF
+
+// Application
+//CODEPAGE   NAME=boot       START=0x0            END=0x1F         PROTECTED
+//CODEPAGE   NAME=vectors    START=0x1000         END=0x1029         PROTECTED
+//CODEPAGE   NAME=page       START=0x102A         END=0x3FFF
+
+CODEPAGE   NAME=idlocs     START=0x200000       END=0x200007       PROTECTED
+CODEPAGE   NAME=config     START=0x300000       END=0x30000D       PROTECTED
+CODEPAGE   NAME=devid      START=0x3FFFFE       END=0x3FFFFF       PROTECTED
+
+ACCESSBANK NAME=accessram  START=0x0            END=0x5F
+DATABANK   NAME=gpr0       START=0x60           END=0xFF
+DATABANK   NAME=gpr1       START=0x100          END=0x1F3
+DATABANK   NAME=usb2       START=0x200          END=0x2FF          PROTECTED
+DATABANK   NAME=sfr15      START=0xF40          END=0xF5F          PROTECTED
+ACCESSBANK NAME=accesssfr  START=0xF60          END=0xFFF          PROTECTED
+
+SECTION    NAME=CONFIG     ROM=config
+SECTION    NAME=GP0        RAM=gpr0
+SECTION    NAME=GP1        RAM=gpr1
+SECTION    NAME=usbram2     RAM=usb2
+
+SECTION    NAME=USB_VARS   RAM=usb2
+
+STACK SIZE=0x40 RAM=gpr1

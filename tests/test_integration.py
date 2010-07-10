@@ -71,9 +71,9 @@ class DeviceTest(unittest.TestCase):
         self.assertEqual(self.dev.bcdDevice, 0x0001)
         self.assertEqual(self.dev.iManufacturer, 0x01)
         self.assertEqual(self.dev.iProduct, 0x02)
-        self.assertEqual(self.dev.iSerialNumber, 0x00)
+        self.assertEqual(self.dev.iSerialNumber, 0x03)
         self.assertEqual(self.dev.bNumConfigurations, 0x01)
-        self.assertEqual(self.dev.bMaxPacketSize0, 64)
+        self.assertEqual(self.dev.bMaxPacketSize0, 16)
         self.assertEqual(self.dev.bDeviceClass, 0x00)
         self.assertEqual(self.dev.bDeviceSubClass, 0x00)
         self.assertEqual(self.dev.bDeviceProtocol, 0x00)
@@ -162,7 +162,7 @@ class ConfigurationTest(unittest.TestCase):
     def test_attributes(self):
         self.assertEqual(self.cfg.bLength, 9)
         self.assertEqual(self.cfg.bDescriptorType, usb.util.DESC_TYPE_CONFIG)
-        self.assertEqual(self.cfg.wTotalLength, 60)
+        self.assertEqual(self.cfg.wTotalLength, 46)
         self.assertEqual(self.cfg.bNumInterfaces, 0x01)
         self.assertEqual(self.cfg.bConfigurationValue, 0x01)
         self.assertEqual(self.cfg.iConfiguration, 0x00)
@@ -174,9 +174,11 @@ class ConfigurationTest(unittest.TestCase):
 class InterfaceTest(unittest.TestCase):
     def __init__(self, dev):
         unittest.TestCase.__init__(self)
+        self.dev = dev
         self.intf = dev[0][(0,0)]
     def runTest(self):
         try:
+            self.dev.set_configuration()
             self.test_attributes()
             self.test_set_altsetting()
         finally:
@@ -186,7 +188,7 @@ class InterfaceTest(unittest.TestCase):
         self.assertEqual(self.intf.bDescriptorType, usb.util.DESC_TYPE_INTERFACE)
         self.assertEqual(self.intf.bInterfaceNumber, 0)
         self.assertEqual(self.intf.bAlternateSetting, 0)
-        self.assertEqual(self.intf.bNumEndpoints, 6)
+        self.assertEqual(self.intf.bNumEndpoints, 4)
         self.assertEqual(self.intf.bInterfaceClass, 0xFF)
         self.assertEqual(self.intf.bInterfaceSubClass, 0xFF)
         self.assertEqual(self.intf.bInterfaceProtocol, 0xFF)
@@ -197,17 +199,17 @@ class InterfaceTest(unittest.TestCase):
 class EndpointTest(unittest.TestCase):
     def __init__(self, dev):
         unittest.TestCase.__init__(self)
-        dev.set_configuration()
+        self.dev = dev
         intf = dev[0][(0,0)]
         self.ep_out = usb.util.find_descriptor(intf, bEndpointAddress=0x01)
         self.ep_in = usb.util.find_descriptor(intf, bEndpointAddress=0x81)
     def runTest(self):
         try:
+            self.dev.set_configuration()
             self.test_attributes()
             self.test_write_read()
         finally:
-            usb.util.dispose_resources(self.ep_out.device)
-            usb.util.dispose_resources(self.ep_in.device)
+            usb.util.dispose_resources(self.dev)
     def test_attributes(self):
         self.assertEqual(self.ep_out.bLength, 7)
         self.assertEqual(self.ep_out.bDescriptorType, usb.util.DESC_TYPE_ENDPOINT)

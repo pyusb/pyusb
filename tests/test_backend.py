@@ -76,9 +76,9 @@ class BackendTest(unittest.TestCase):
         self.assertEqual(dsc.bcdDevice, 0x0001)
         self.assertEqual(dsc.iManufacturer, 0x01)
         self.assertEqual(dsc.iProduct, 0x02)
-        self.assertEqual(dsc.iSerialNumber, 0x00)
+        self.assertEqual(dsc.iSerialNumber, 0x03)
         self.assertEqual(dsc.bNumConfigurations, 0x01)
-        self.assertEqual(dsc.bMaxPacketSize0, 64)
+        self.assertEqual(dsc.bMaxPacketSize0, 16)
         self.assertEqual(dsc.bDeviceClass, 0x00)
         self.assertEqual(dsc.bDeviceSubClass, 0x00)
         self.assertEqual(dsc.bDeviceProtocol, 0x00)
@@ -87,7 +87,7 @@ class BackendTest(unittest.TestCase):
         cfg = self.backend.get_configuration_descriptor(self.dev, 0)
         self.assertEqual(cfg.bLength, 9)
         self.assertEqual(cfg.bDescriptorType, usb.util.DESC_TYPE_CONFIG)
-        self.assertEqual(cfg.wTotalLength, 60)
+        self.assertEqual(cfg.wTotalLength, 46)
         self.assertEqual(cfg.bNumInterfaces, 0x01)
         self.assertEqual(cfg.bConfigurationValue, 0x01)
         self.assertEqual(cfg.iConfiguration, 0x00)
@@ -100,7 +100,7 @@ class BackendTest(unittest.TestCase):
         self.assertEqual(intf.bDescriptorType, usb.util.DESC_TYPE_INTERFACE)
         self.assertEqual(intf.bInterfaceNumber, 0)
         self.assertEqual(intf.bAlternateSetting, 0)
-        self.assertEqual(intf.bNumEndpoints, 6)
+        self.assertEqual(intf.bNumEndpoints, 4)
         self.assertEqual(intf.bInterfaceClass, 0xFF)
         self.assertEqual(intf.bInterfaceSubClass, 0xFF)
         self.assertEqual(intf.bInterfaceProtocol, 0xFF)
@@ -175,7 +175,7 @@ class BackendTest(unittest.TestCase):
                                              1000)
             self.assertEqual(ret,
                              data,
-                             'Failed to read data: ' + str(data))
+                             'Failed to read data: ' + str(data) + ' != ' + str(ret))
 
     def test_reset_device(self):
         self.backend.reset_device(self.handle)

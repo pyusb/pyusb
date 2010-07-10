@@ -1,0 +1,24 @@
+REM ///////////////////////////////////////////////////////////////////////
+REM // MCC18 Compiler Options (see mcc18.exe --help)
+REM ///////////////////////////////////////////////////////////////////////
+SET DisableWarning=2106
+SET WarningLevel=2
+SET IntDir="$(ProjectDir)temp"
+SET TargetProcessor=18F4550
+
+REM ///////////////////////////////////////////////////////////////////////
+REM // Include Directories
+REM ///////////////////////////////////////////////////////////////////////
+SET IncludeDirs=              -I"$(MCC_INCLUDE)"
+SET IncludeDirs=%IncludeDirs% -I"$(ProjectDir)"
+SET IncludeDirs=%IncludeDirs% -I"C:\MCC18\h"
+SET IncludeDirs=%IncludeDirs% -I"..\..\..\Microchip\Include"
+SET IncludeDirs=%IncludeDirs% -I"..\..\..\Microchip\Include\Usb"
+SET IncludeDirs=%IncludeDirs% -I"..\..\..\..\Microchip\Include"
+SET IncludeDirs=%IncludeDirs% -I"..\..\..\..\Microchip\Include\Usb"
+SET IncludeDirs=%IncludeDirs% -I"..\..\"
+
+REM ///////////////////////////////////////////////////////////////////////
+REM // Build all source files (*.c) in the Win32|Release Configuration
+REM ///////////////////////////////////////////////////////////////////////
+.\Utility\MPlabMake.exe -vc="$(ProjectPath)" -IntDir=%IntDir% -args=` -p=%TargetProcessor%  -nw=%DisableWarning% -w=%WarningLevel% %IncludeDirs% `
