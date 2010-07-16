@@ -57,6 +57,7 @@ class BackendTest(unittest.TestCase):
         self.test_release_interface()
         self.test_reset_device()
         self.test_close_device()
+        utils.delay_after_reset()
 
     def test_enumerate_devices(self):
         for d in self.backend.enumerate_devices():
@@ -179,7 +180,6 @@ class BackendTest(unittest.TestCase):
 
     def test_reset_device(self):
         self.backend.reset_device(self.handle)
-        utils.delay_after_reset()
 
     def __write_read(self, write_fn, read_fn, ep_out, ep_in):
         intf = self.backend.get_interface_descriptor(self.dev, 0, 0, 0).bInterfaceNumber
@@ -201,16 +201,13 @@ class BackendTest(unittest.TestCase):
 
 def get_suite():
     suite = unittest.TestSuite()
-    if utils.is_test_hw_present():
-        for m in (libusb10, libusb01, openusb):
-            b = m.get_backend()
-            if b is not None:
-                utils.logger.info('Adding %s(%s) to test suite...', BackendTest.__name__, m.__name__)
-                suite.addTest(BackendTest(b))
-            else:
-                utils.logger.warning('%s(%s) is not available', BackendTest.__name__, m.__name__)
-    else:
-        utils.logger.warning('Test hardware not connected')
+    for m in (libusb10, libusb01, openusb):
+        b = m.get_backend()
+        if b is not None and utils.is_test_hw_present(b):
+            utils.logger.info('Adding %s(%s) to test suite...', BackendTest.__name__, m.__name__)
+            suite.addTest(BackendTest(b))
+        else:
+            utils.logger.warning('%s(%s) is not available', BackendTest.__name__, m.__name__)
     return suite
 
 if __name__ == '__main__':

@@ -79,6 +79,12 @@ class _ResourceManager(object):
             cfg = device[0]
         elif isinstance(config, Configuration):
             cfg = config
+        elif config == 0: # unconfigured state
+            class FakeConfiguration(object):
+                def __init__(self):
+                    self.index = None
+                    self.bConfigurationValue = 0
+            cfg = FakeConfiguration()
         else:
             cfg = util.find_descriptor(device, bConfigurationValue=config)
         self.managed_open()
@@ -551,6 +557,7 @@ class Device(object):
         r"""Reset the device."""
         self._ctx.dispose(self, False)
         self._ctx.backend.reset_device(self._ctx.handle)
+        self._ctx.dispose(self, True)
 
     def write(self, endpoint, data, interface = None, timeout = None):
         r"""Write data to the endpoint.
