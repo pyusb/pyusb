@@ -210,6 +210,8 @@ void USBCBInitEP(void)
 		mBDT_TogglePP(pBdtTxEp2);
 	#endif
 
+    Ctrl_BufferCount = 0;
+
 	#ifdef DUAL_INTERFACE
 		USBEnableEndpoint(USBGEN_EP_NUM_INTF1,USB_OUT_ENABLED|USB_IN_ENABLED|USBGEN_EP_HANDSHAKE_INTF1|USB_DISALLOW_SETUP);
 

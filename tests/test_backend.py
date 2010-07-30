@@ -29,6 +29,7 @@
 import utils
 import unittest
 import array
+import sys
 import devinfo
 import usb.util
 import usb.backend.libusb01 as libusb01
@@ -41,23 +42,30 @@ class BackendTest(unittest.TestCase):
         self.backend = backend
 
     def runTest(self):
-        self.test_enumerate_devices()
-        self.test_get_device_descriptor()
-        self.test_get_configuration_descriptor()
-        self.test_get_interface_descriptor()
-        self.test_get_endpoint_descriptor()
-        self.test_open_device()
-        self.test_set_configuration()
-        self.test_claim_interface()
-        self.test_set_interface_altsetting()
-        self.test_bulk_write_read()
-        self.test_intr_write_read()
-        self.test_iso_write_read()
-        self.test_ctrl_transfer()
+        try:
+            self.test_enumerate_devices()
+            self.test_get_device_descriptor()
+            self.test_get_configuration_descriptor()
+            self.test_get_interface_descriptor()
+            self.test_get_endpoint_descriptor()
+            self.test_open_device()
+            self.test_set_configuration()
+            self.test_claim_interface()
+            self.test_set_interface_altsetting()
+            self.test_bulk_write_read()
+            self.test_intr_write_read()
+            self.test_iso_write_read()
+            self.test_ctrl_transfer()
+        except:
+            # do this to not influence other tests upon error
+            intf = self.backend.get_interface_descriptor(self.dev, 0, 0, 0)
+            self.backend.release_interface(self.handle, intf.bInterfaceNumber)
+            self.backend.close_device(self.handle)
+            raise
         self.test_release_interface()
-        self.test_reset_device()
+        #self.test_reset_device()
         self.test_close_device()
-        utils.delay_after_reset()
+        #utils.delay_after_reset()
 
     def test_enumerate_devices(self):
         for d in self.backend.enumerate_devices():
@@ -124,6 +132,7 @@ class BackendTest(unittest.TestCase):
 
     def test_set_configuration(self):
         cfg = self.backend.get_configuration_descriptor(self.dev, 0)
+        self.backend.set_configuration(self.handle, 0)
         self.backend.set_configuration(self.handle, cfg.bConfigurationValue)
 
     def test_set_interface_altsetting(self):

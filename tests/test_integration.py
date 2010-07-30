@@ -58,7 +58,7 @@ class DeviceTest(unittest.TestCase):
             self.test_set_interface_altsetting()
             self.test_write_read()
             self.test_ctrl_transfer()
-            self.test_reset()
+            #self.test_reset()
         finally:
             usb.util.dispose_resources(self.dev)
 
