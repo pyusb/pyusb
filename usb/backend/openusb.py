@@ -152,7 +152,7 @@ def _load_library():
 def _setup_prototypes(lib):
     # int32_t openusb_init(uint32_t flags , openusb_handle_t *handle);
     lib.openusb_init.argtypes = [c_uint32, POINTER(_openusb_handle)]
-    lib.openusb.restype = c_int32
+    lib.openusb_init.restype = c_int32
 
     # void openusb_fini(openusb_handle_t handle );
     lib.openusb_fini.argtypes = [_openusb_handle]

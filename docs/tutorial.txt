@@ -169,11 +169,10 @@ put their class information in the Interface Descriptor_ instead of the
 Device Descriptor_. So, to really find all printers connected to the
 system, we would need to transverse all configurations, and then
 all interfaces and check if one of the interfaces has its bInterfaceClass
-field equals to 7. "Man, too much work for a 
-`programmer <http://en.wikipedia.org/wiki/Laziness>`_", you might say.
-Yes, I am one two, that's why I have implemented some
-stuff to make our lives a bit easier. First, let's give a look on the
-final code to find all printers connected::
+field equals to 7. If you are a  
+`programmer <http://en.wikipedia.org/wiki/Laziness>`_" like me, you might be wondering
+if there is an easier way to do that. The answer is yes, it does. Firstly, let's
+give a look on the final code to find all printers connected::
 
     import usb.core
     import usb.util

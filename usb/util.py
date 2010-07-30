@@ -51,10 +51,10 @@ ENDPOINT_TYPE_BULK = 0x02
 ENDPOINT_TYPE_INTR = 0x03
 
 # control request type
-CTRL_TYPE_STANDARD = 0
-CTRL_TYPE_CLASS = 1
-CTRL_TYPE_VENDOR = 2
-CTRL_TYPE_RESERVED = 3
+CTRL_TYPE_STANDARD = (0 << 5)
+CTRL_TYPE_CLASS = (1 << 5)
+CTRL_TYPE_VENDOR = (2 << 5)
+CTRL_TYPE_RESERVED = (3 << 5)
 
 # control request recipient
 CTRL_RECIPIENT_DEVICE = 0
@@ -121,7 +121,7 @@ def build_request_type(direction, type, recipient):
 
     Return the bmRequestType value.
     """
-    return recipient | (type << 5) | direction
+    return recipient | type | direction
 
 def find_descriptor(desc, find_all=False, custom_match=None, **args):
     r"""Find an inner descriptor.
