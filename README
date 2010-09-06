@@ -15,7 +15,7 @@ API rich, backend neutral Python USB module easy to use.
 As with most Python modules, PyUSB's documentation is based on Python
 doc strings and can therefore be manipulated by tools such as pydoc.
 
-You can also find a tutorial at: http://pyusb.sourceforge.net/docs/1.0/tutotial.html.
+You can also find a tutorial at: http://pyusb.sourceforge.net/docs/1.0/tutorial.html.
 
 PyUSB is being developed and tested in Linux and Windows, but it should work
 fine in any platform running Python >= 2.3, ctypes and at least one of the

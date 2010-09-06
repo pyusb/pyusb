@@ -61,20 +61,9 @@ class _DeviceDescriptor(object):
         self.bDeviceSubClass = 0xff
         self.bDeviceProtocol = 0xff
 
-class _MyBackend(usb.backend.IBackend):
-    def __init__(self):
-        self.devices = (_DeviceDescriptor(),)
-    def enumerate_devices(self):
-        return range(len(self.devices))
-    def get_device_descriptor(self, dev):
-        return self.devices[dev]
-    def get_configuration_descriptor(self, dev, config):
-        return self.devices[dev].configurations[config]
-
 class FindDescriptorTest(unittest.TestCase):
     def runTest(self):
-        b = _MyBackend()
-        d = usb.core.find(backend = b)
+        d = usb.core.find(idVendor=ID_VENDOR)
 
         self.assertEqual(find_descriptor(d, bConfigurationValue=10), None)
         self.assertNotEqual(find_descriptor(d, bConfigurationValue=1), None)
@@ -85,8 +74,13 @@ class FindDescriptorTest(unittest.TestCase):
         self.assertNotEqual(find_descriptor(d, custom_match = lambda c: c.bConfigurationValue == 1), None)
         self.assertEqual(len(find_descriptor(d, find_all=True, custom_match = lambda c: c.bConfigurationValue == 10)), 0)
         self.assertEqual(len(find_descriptor(d, find_all=True, custom_match = lambda c: c.bConfigurationValue == 1)), 1)
-        self.assertEqual(find_descriptor(d, custom_match = lambda c: c.bConfigurationValue == 10, bLength=18), None)
-        self.assertNotEqual(find_descriptor(d, custom_match = lambda c: c.bConfigurationValue == 1, bLength=18), None)
+        self.assertEqual(find_descriptor(d, custom_match = lambda c: c.bConfigurationValue == 10, bLength=9), None)
+        self.assertNotEqual(find_descriptor(d, custom_match = lambda c: c.bConfigurationValue == 1, bLength=9), None)
+
+        cfg = find_descriptor(d)
+        self.assertTrue(isinstance(cfg, usb.core.Configuration))
+        intf = find_descriptor(cfg)
+        self.assertTrue(isinstance(intf, usb.core.Interface))
 
 class UtilTest(unittest.TestCase):
     def test_endpoint_address(self):

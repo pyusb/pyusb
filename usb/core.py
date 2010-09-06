@@ -766,7 +766,7 @@ def find(find_all=False, backend = None, custom_match = None, **args):
         if dev.bDeviceClass == 7:
             return True
         for cfg in dev:
-            if util.find_descriptor(cfg, bInterfaceClass=7) is not None:
+            if usb.util.find_descriptor(cfg, bInterfaceClass=7) is not None:
                 return True
 
     printers = find(find_all=True, custom_match = is_printer)

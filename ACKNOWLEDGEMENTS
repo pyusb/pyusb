@@ -8,3 +8,9 @@ PyUSB 1.0.0 (alpha 0)
 - Carl Ritson: thanks for your patch to get minimal working of legacy layer.
 - Romain Aviolat: thanks for pointing out a mistake in the tutorial and to report a bug in ctrl_transfer.
 - Xiaofan Chen: thanks for your effort testing PyUSB with libusb 1.0 Windows backend and on FreeBSD.
+
+PyUSB 1.0.0 (alpha 1)
+---------------------
+
+- Xiaofan Chen: for support in mailing list.
+- Poul-Henning Kam: for the documentation patches.
