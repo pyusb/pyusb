@@ -66,14 +66,17 @@ class _ResourceManager(object):
         self._claimed_intf = _interop._set()
         self._alt_set = {}
         self._ep_type_map = {}
+
     def managed_open(self):
         if self.handle is None:
             self.handle = self.backend.open_device(self.dev)
         return self.handle
+
     def managed_close(self):
         if self.handle is not None:
             self.backend.close_device(self.handle)
             self.handle = None
+
     def managed_set_configuration(self, device, config):
         if config is None:
             cfg = device[0]
@@ -97,6 +100,7 @@ class _ResourceManager(object):
         # are not valid anymore
         self._ep_type_map.clear()
         self._alt_set.clear()
+
     def managed_claim_interface(self, device, intf):
         self.managed_open()
         if intf is None:
@@ -109,6 +113,7 @@ class _ResourceManager(object):
         if i not in self._claimed_intf:
             self.backend.claim_interface(self.handle, i)
             self._claimed_intf.add(i)
+
     def managed_release_interface(self, device, intf):
         if intf is None:
             cfg = self.get_active_configuration(device)
@@ -120,6 +125,7 @@ class _ResourceManager(object):
         if i in self._claimed_intf:
             self.backend.release_interface(self.handle, i)
             self._claimed_intf.remove(i)
+
     def managed_set_interface(self, device, intf, alt):
         if intf is None:
             i = self.get_interface(device, intf)
@@ -136,6 +142,7 @@ class _ResourceManager(object):
             alt = i.bAlternateSetting
         self.backend.set_interface_altsetting(self.handle, i.bInterfaceNumber, alt)
         self._alt_set[i.bInterfaceNumber] = alt
+
     def get_interface(self, device, intf):
         # TODO: check the viability of issuing a GET_INTERFACE
         # request when we don't have a alternate setting cached
@@ -152,6 +159,7 @@ class _ResourceManager(object):
                                             bAlternateSetting=self._alt_set[intf])
             else:
                 return util.find_descriptor(cfg, bInterfaceNumber=intf)
+
     def get_active_configuration(self, device):
         # TODO: when we haven't called managed_set_configuration,
         # issue a get_configuration request to discover the current configuration
@@ -162,6 +170,7 @@ class _ResourceManager(object):
             self._active_cfg_index = cfg.index
             return cfg
         return device[self._active_cfg_index]
+
     def get_endpoint_type(self, device, address, intf):
         intf = self.get_interface(device, intf)
         key = (address, intf.bInterfaceNumber, intf.bAlternateSetting)
@@ -169,13 +178,15 @@ class _ResourceManager(object):
             return self._ep_type_map[key]
         except KeyError:
             e = util.find_descriptor(intf, bEndpointAddress=address)
-            type = util.endpoint_type(e.bmAttributes)
-            self._ep_type_map[key] = type
-            return type
+            etype = util.endpoint_type(e.bmAttributes)
+            self._ep_type_map[key] = etype
+            return etype
+
     def release_all_interfaces(self, device):
         claimed = copy.copy(self._claimed_intf)
         for i in claimed:
             self.managed_release_interface(device, i)
+
     def dispose(self, device, close_handle = True):
         self.release_all_interfaces(device)
         if close_handle:
@@ -461,7 +472,7 @@ class Device(object):
     >>> import usb.core
     >>> dev = usb.core.find(idVendor=myVendorId, idProduct=myProductId)
     >>> dev.set_configuration()
-    >>> dev.write(1, 'teste')
+    >>> dev.write(1, 'test')
 
     This sample finds the device of interest (myVendorId and myProductId should be
     replaced by the corresponding values of your device), then configures the device
