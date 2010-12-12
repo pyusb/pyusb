@@ -32,6 +32,7 @@
 # hack we need to do, this makes maintenance easier... ^^
 
 import sys
+import array
 
 __all__ = ['_reduce', '_set', '_next', '_groupby', '_sorted', '_update_wrapper']
 
@@ -121,3 +122,14 @@ except (ImportError, AttributeError):
         wrapper.__module__ = wrapped.__module__
         wrapper.__doc__ = wrapped.__doc__
         wrapper.__dict__ = wrapped.__dict__
+
+def as_array(data=None):
+    if data is None:
+        return array.array('B')
+    try:
+        return array.array('B', data)
+    except TypeError:
+        # When you pass a unicode string, you got a TypeError
+        # if first parameter is not 'u'
+        return array.array('u', data)
+

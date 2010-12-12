@@ -35,6 +35,7 @@ import array
 import sys
 from usb.core import USBError
 from usb._debug import methodtrace
+import usb._interop as _interop
 import logging
 
 __author__ = 'Wander Lairson Costa'
@@ -488,19 +489,19 @@ class _LibUSB(usb.backend.IBackend):
                                 timeout
                             ))
         else:
-            buffer = array.array('B', '\x00' * data_or_wLength)
+            data = _interop.as_array((0,) * data_or_wLength)
             read = int(_check(_lib.usb_control_msg(
                                 dev_handle,
                                 bmRequestType,
                                 bRequest,
                                 wValue,
                                 wIndex,
-                                cast(buffer.buffer_info()[0],
+                                cast(data.buffer_info()[0],
                                      c_char_p),
                                 data_or_wLength,
                                 timeout
                             )))
-            return buffer[:read]
+            return data[:read]
 
     @methodtrace(_logger)
     def reset_device(self, dev_handle):
@@ -512,6 +513,7 @@ class _LibUSB(usb.backend.IBackend):
 
     def __write(self, fn, dev_handle, ep, intf, data, timeout):
         address, length = data.buffer_info()
+        length *= data.itemsize
         return int(_check(fn(
                         dev_handle,
                         ep,
@@ -521,8 +523,9 @@ class _LibUSB(usb.backend.IBackend):
                     )))
 
     def __read(self, fn, dev_handle, ep, intf, size, timeout):
-        buffer = array.array('B', '\x00' * size)
-        address, length = buffer.buffer_info()
+        data = _interop.as_array((0,) * size)
+        address, length = data.buffer_info()
+        length *= data.itemsize
         ret = int(_check(fn(
                     dev_handle,
                     ep,
@@ -530,7 +533,7 @@ class _LibUSB(usb.backend.IBackend):
                     length,
                     timeout
                 )))
-        return buffer[:ret]
+        return data[:ret]
 
 def get_backend():
     global _lib

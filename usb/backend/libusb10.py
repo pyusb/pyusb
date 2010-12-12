@@ -33,6 +33,7 @@ import array
 import sys
 import logging
 from usb._debug import methodtrace
+import usb._interop as _interop
 
 __author__ = 'Wander Lairson Costa'
 
@@ -522,7 +523,7 @@ class _LibUSB(usb.backend.IBackend):
         if usb.util.ctrl_direction(bmRequestType) == usb.util.CTRL_OUT:
             buff = data_or_wLength
         else:
-            buff = array.array('B', data_or_wLength * '\x00')
+            buff = _interop.as_array((0,) * data_or_wLength)
 
         addr, length = buff.buffer_info()
         length *= buff.itemsize
@@ -560,6 +561,7 @@ class _LibUSB(usb.backend.IBackend):
 
     def __write(self, fn, dev_handle, ep, intf, data, timeout):
         address, length = data.buffer_info()
+        length *= data.itemsize
         transferred = c_int()
         _check(fn(dev_handle,
                   ep,
@@ -570,8 +572,9 @@ class _LibUSB(usb.backend.IBackend):
         return transferred.value
 
     def __read(self, fn, dev_handle, ep, intf, size, timeout):
-        buffer = array.array('B', '\x00' * size)
-        address, length = buffer.buffer_info()
+        data = _interop.as_array((0,) * size)
+        address, length = data.buffer_info()
+        length *= data.itemsize
         transferred = c_int()
         _check(fn(dev_handle,
                   ep,
@@ -579,7 +582,7 @@ class _LibUSB(usb.backend.IBackend):
                   length,
                   byref(transferred),
                   timeout))
-        return buffer[:transferred.value]
+        return data[:transferred.value]
 
 def get_backend():
     global _lib, _init

@@ -37,6 +37,7 @@ import sys
 import usb.backend.libusb01 as libusb01
 import usb.backend.libusb10 as libusb10
 import usb.backend.openusb as openusb
+import array
 
 data_list = (utils.get_array_data1(),
              utils.get_array_data2(),
@@ -112,23 +113,26 @@ class DeviceTest(unittest.TestCase):
 
         for ep in ep_list:
             for data in data_list:
+                adata = utils.to_array(data)
+                length = utils.data_len(data)
                 ret = self.dev.write(ep[0], data)
                 self.assertEqual(ret,
-                                 len(data),
+                                 length,
                                  'Failed to write data: ' + \
                                     str(data) + ', in EP = ' + \
                                     str(ep[0])
                                 )
-                ret = utils.to_array(self.dev.read(ep[1], len(data)))
-                self.assertEqual(ret,
-                                 utils.to_array(data),
+                ret = self.dev.read(ep[1], length)
+                self.assertTrue(utils.array_equals(ret, adata),
                                  str(ret) + ' != ' + \
-                                    str(data) + ', in EP = ' + \
+                                    str(adata) + ', in EP = ' + \
                                     str(ep[1])
                                 )
 
     def test_ctrl_transfer(self):
         for data in data_list:
+            length = utils.data_len(data)
+            adata = utils.to_array(data)
             ret = self.dev.ctrl_transfer(
                     0x40,
                     devinfo.CTRL_LOOPBACK_WRITE,
@@ -137,18 +141,17 @@ class DeviceTest(unittest.TestCase):
                     data
                 )
             self.assertEqual(ret,
-                             len(data),
+                             length,
                              'Failed to write data: ' + str(data))
             ret = utils.to_array(self.dev.ctrl_transfer(
                         0xC0,
                         devinfo.CTRL_LOOPBACK_READ,
                         0,
                         0,
-                        len(data)
+                        length
                     ))
-            self.assertEqual(ret,
-                             utils.to_array(data),
-                             str(ret) + ' != ' + str(data))
+            self.assertTrue(utils.array_equals(ret, adata),
+                             str(ret) + ' != ' + str(adata))
 
 class ConfigurationTest(unittest.TestCase):
     def __init__(self, dev):
@@ -220,10 +223,12 @@ class EndpointTest(unittest.TestCase):
         self.assertEqual(self.ep_out.bInterval, 32)
     def test_write_read(self):
         for data in data_list:
+            adata = utils.to_array(data)
             ret = self.ep_out.write(data)
-            self.assertEqual(ret, len(data), 'Failed to write data: ' + str(data))
-            ret = utils.to_array(self.ep_in.read(len(data)))
-            self.assertEqual(ret, utils.to_array(data), str(ret) + ' != ' + str(data))
+            length = utils.data_len(data)
+            self.assertEqual(ret, length, 'Failed to write data: ' + str(data))
+            ret = self.ep_in.read(length)
+            self.assertTrue(utils.array_equals(ret, adata), str(ret) + ' != ' + str(adata))
 
 def get_suite():
     suite = unittest.TestSuite()

@@ -603,7 +603,7 @@ class Device(object):
                 self._ctx.handle,
                 endpoint,
                 intf.bInterfaceNumber,
-                array.array('B', data),
+                _interop.as_array(data),
                 self.__get_timeout(timeout)
             )
 
@@ -665,10 +665,7 @@ class Device(object):
         value is the data payload read, as an array object.
         """
         if util.ctrl_direction(bmRequestType) == util.CTRL_OUT:
-            if data_or_wLength is None:
-                a = array.array('B')
-            else:
-                a = array.array('B', data_or_wLength)
+            a = _interop.as_array(data_or_wLength)
         elif data_or_wLength is None:
             a = 0
         else:

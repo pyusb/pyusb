@@ -166,6 +166,7 @@ class BackendTest(unittest.TestCase):
 
     def test_ctrl_transfer(self):
         for data in (utils.get_array_data1(), utils.get_array_data2()):
+            length = len(data) * data.itemsize
             ret = self.backend.ctrl_transfer(self.handle,
                                              0x40,
                                              devinfo.CTRL_LOOPBACK_WRITE,
@@ -174,14 +175,14 @@ class BackendTest(unittest.TestCase):
                                              data,
                                              1000)
             self.assertEqual(ret,
-                             len(data),
+                             length,
                              'Failed to write data: ' + str(data))
             ret = self.backend.ctrl_transfer(self.handle,
                                              0xC0,
                                              devinfo.CTRL_LOOPBACK_READ,
                                              0,
                                              0,
-                                             len(data),
+                                             length,
                                              1000)
             self.assertEqual(ret,
                              data,
@@ -193,14 +194,15 @@ class BackendTest(unittest.TestCase):
     def __write_read(self, write_fn, read_fn, ep_out, ep_in):
         intf = self.backend.get_interface_descriptor(self.dev, 0, 0, 0).bInterfaceNumber
         for data in (utils.get_array_data1(), utils.get_array_data2()):
+            length = len(data) * data.itemsize
             ret = write_fn(self.handle, ep_out, intf, data, 1000)
             self.assertEqual(ret,
-                             len(data),
+                             length,
                              'Failed to write data: ' + \
                                 str(data) + \
                                 ', in EP = ' + \
                                 str(ep_out))
-            ret = read_fn(self.handle, ep_in, intf, len(data), 1000)
+            ret = read_fn(self.handle, ep_in, intf, length, 1000)
             self.assertEqual(ret,
                              data,
                              'Failed to read data: ' + \

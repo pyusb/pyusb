@@ -28,6 +28,8 @@
 
 import sys
 import os.path
+import operator
+from ctypes import c_ubyte, POINTER, cast
 
 parent_dir = os.path.split(os.getcwd())[0]
 
@@ -41,16 +43,17 @@ import logging
 import devinfo
 import time
 import unittest
+import usb._interop as _interop
 
 logger = logging.getLogger('usb.test')
 
 # data generation functions
 def get_array_data1(length = 10):
-    return array.array('B', range(length))
+    return _interop.as_array(range(length))
 def get_array_data2(length = 10):
     data = list(range(length))
     data.reverse()
-    return array.array('B', data)
+    return _interop.as_array(data)
 def get_list_data1(length = 10):
     return list(range(length))
 def get_list_data2(length = 10):
@@ -64,7 +67,7 @@ def get_str_data2(length = 10):
     data.reverse()
     return ''.join([chr(x) for x in data])
 def to_array(data):
-    return array.array('B', data)
+    return _interop.as_array(data)
 
 def delay_after_reset():
     time.sleep(3) # necessary to wait device reenumeration
@@ -81,3 +84,23 @@ def is_test_hw_present(backend = None):
 def run_tests(suite):
     runner = unittest.TextTestRunner()
     runner.run(suite)
+
+def data_len(data):
+    a = _interop.as_array(data)
+    return len(data) * a.itemsize
+
+def array_equals(a1, a2):
+    if a1.typecode != 'u' and a2.typecode != 'u':
+        return a1 == a2
+    else:
+        # as python3 strings are unicode, loads of trouble,
+        # because we read data from USB devices are byte arrays
+        l1 = len(a1) * a1.itemsize
+        l2 = len(a2) * a2.itemsize
+        if l1 != l2:
+            return False
+        c_ubyte_p = POINTER(c_ubyte)
+        p1 = cast(a1.buffer_info()[0], c_ubyte_p)
+        p2 = cast(a2.buffer_info()[0], c_ubyte_p)
+        # we do a item by item compare we unicode is involved
+        return all(map(operator.eq, p1[:l1], p2[:l2]))
