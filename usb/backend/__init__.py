@@ -186,6 +186,17 @@ class IBackend(object):
         """
         _not_implemented(self.set_configuration)
 
+    def get_configuration(self, dev_handle):
+        r"""Get the current active device configuration.
+
+        This method returns the bConfigurationValue of the currently
+        active configuration. Depending on the backend and the OS,
+        either a cached value may be returned or a control request may
+        be issued. The dev_handle parameter is the value returned by
+        the open_device method.
+        """
+        _not_implemented(self.get_configuration)
+
     def set_interface_altsetting(self, dev_handle, intf, altsetting):
         r"""Set the interface alternate setting.
 

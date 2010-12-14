@@ -207,6 +207,11 @@ def _setup_prototypes(lib):
     lib.openusb_set_configuration.argtypes = [_openusb_dev_handle, c_uint8]
     lib.openusb_set_configuration.restype = c_int32
 
+    # int32_t openusb_get_configuration(openusb_dev_handle_t dev,
+    #                                   uint8_t *cfg);
+    lib.openusb_get_configuration.argtypes = [_openusb_dev_handle, POINTER(c_uint8)]
+    lib.openusb_get_configuration.restype = c_int32
+
     # int32_t openusb_claim_interface(openusb_dev_handle_t dev,
     #                                 uint8_t ifc,
     #                                 openusb_init_flag_t flags);
@@ -482,6 +487,12 @@ class _OpenUSB(usb.backend.IBackend):
     @methodtrace(_logger)
     def set_configuration(self, dev_handle, config_value):
         _check(_lib.openusb_set_configuration(dev_handle, config_value))
+
+    @methodtrace(_logger)
+    def get_configuration(self, dev_handle):
+        config = c_uint8()
+        _check(_lib.openusb_get_configuration(dev_handle, byref(config)))
+        return config.value
 
     @methodtrace(_logger)
     def set_interface_altsetting(self, dev_handle, intf, altsetting):

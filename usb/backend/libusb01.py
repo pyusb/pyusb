@@ -424,6 +424,23 @@ class _LibUSB(usb.backend.IBackend):
         _check(_lib.usb_set_altinterface(dev_handle, altsetting))
 
     @methodtrace(_logger)
+    def get_configuration(self, dev_handle):
+        bmRequestType = usb.util.build_request_type(
+                                usb.util.CTRL_IN,
+                                usb.util.CTRL_TYPE_STANDARD,
+                                usb.util.CTRL_RECIPIENT_DEVICE
+                            )
+        return self.ctrl_transfer(dev_handle,
+                                  bmRequestType,
+                                  0x08,
+                                  0,
+                                  0,
+                                  1,
+                                  100
+                            )[0]
+                                  
+
+    @methodtrace(_logger)
     def claim_interface(self, dev_handle, intf):
         _check(_lib.usb_claim_interface(dev_handle, intf))
 

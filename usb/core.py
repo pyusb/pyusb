@@ -161,12 +161,13 @@ class _ResourceManager(object):
                 return util.find_descriptor(cfg, bInterfaceNumber=intf)
 
     def get_active_configuration(self, device):
-        # TODO: when we haven't called managed_set_configuration,
-        # issue a get_configuration request to discover the current configuration
-        # See patch #283765.
-        # Meanwhile, we just return the first configuration found
         if self._active_cfg_index is None:
-            cfg = device[0]
+            cfg = util.find_descriptor(
+                    device,
+                    bConfigurationValue=self.backend.get_configuration(self.handle)
+                )
+            if cfg is None:
+                raise USBError('Configuration not set')
             self._active_cfg_index = cfg.index
             return cfg
         return device[self._active_cfg_index]

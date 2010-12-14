@@ -212,6 +212,10 @@ def _setup_prototypes(lib):
     #                              int configuration)
     lib.libusb_set_configuration.argtypes = [_libusb_device_handle, c_int]
 
+    # int libusb_get_configuration(libusb_device_handle *dev,
+    #                              int *config)   
+    lib.libusb_get_configuration.argtypes = [_libusb_device_handle, POINTER(c_int)]
+
     # int libusb_claim_interface(libusb_device_handle *dev,
     #                               int interface_number)
     lib.libusb_claim_interface.argtypes = [_libusb_device_handle, c_int]
@@ -450,6 +454,12 @@ class _LibUSB(usb.backend.IBackend):
     @methodtrace(_logger)
     def set_configuration(self, dev_handle, config_value):
         _check(_lib.libusb_set_configuration(dev_handle, config_value))
+
+    @methodtrace(_logger)
+    def get_configuration(self, dev_handle):
+        config = c_int()
+        _check(_lib.libusb_get_configuration(dev_handle, byref(config)))
+        return config.value
 
     @methodtrace(_logger)
     def set_interface_altsetting(self, dev_handle, intf, altsetting):
