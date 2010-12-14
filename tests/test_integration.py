@@ -237,9 +237,7 @@ def get_suite():
         b = m.get_backend()
         if b is None:
             continue
-        dev = usb.core.find(backend=b,
-                            idVendor=devinfo.ID_VENDOR,
-                            idProduct=devinfo.ID_PRODUCT)
+        dev = utils.find_my_device(b)
         if dev is None:
             utils.logger.warning('Test hardware not found for backend %s', m.__name__)
             continue

@@ -73,13 +73,13 @@ def delay_after_reset():
     time.sleep(3) # necessary to wait device reenumeration
 
 # check if our test hardware is present
-def is_test_hw_present(backend = None):
+def find_my_device(backend = None):
     try:
         return usb.core.find(backend=backend,
                              idVendor=devinfo.ID_VENDOR,
-                             idProduct=devinfo.ID_PRODUCT) is not None
-    except:
-        return False
+                             idProduct=devinfo.ID_PRODUCT)
+    except Exception:
+        return None
 
 def run_tests(suite):
     runner = unittest.TextTestRunner()

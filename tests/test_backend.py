@@ -214,7 +214,7 @@ def get_suite():
     suite = unittest.TestSuite()
     for m in (libusb10, libusb01, openusb):
         b = m.get_backend()
-        if b is not None and utils.is_test_hw_present(b):
+        if b is not None and utils.find_my_device(b):
             utils.logger.info('Adding %s(%s) to test suite...', BackendTest.__name__, m.__name__)
             suite.addTest(BackendTest(b))
         else:

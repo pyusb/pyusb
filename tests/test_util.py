@@ -64,6 +64,8 @@ class _DeviceDescriptor(object):
 class FindDescriptorTest(unittest.TestCase):
     def runTest(self):
         d = usb.core.find(idVendor=ID_VENDOR)
+        if d is None:
+            return
 
         self.assertEqual(find_descriptor(d, bConfigurationValue=10), None)
         self.assertNotEqual(find_descriptor(d, bConfigurationValue=1), None)
