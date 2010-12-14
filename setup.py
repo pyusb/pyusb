@@ -41,9 +41,9 @@ setup(
     packages=['usb', 'usb.backend'],
     long_description =
 """
-PyUSB offers easy USB devices communication on Python library.
+PyUSB offers easy USB devices communication in Python.
 It should work without additional code in any environment with
-Python >= 2.3, ctypes and an pre-built usb backend library
+Python >= 2.4, ctypes and an pre-built usb backend library
 (currently, libusb 0.1.x, libusb 1.x, and OpenUSB).
 """
 )

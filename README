@@ -18,7 +18,7 @@ doc strings and can therefore be manipulated by tools such as pydoc.
 You can also find a tutorial at: http://pyusb.sourceforge.net/docs/1.0/tutorial.html.
 
 PyUSB is being developed and tested in Linux and Windows, but it should work
-fine in any platform running Python >= 2.3, ctypes and at least one of the
+fine in any platform running Python >= 2.4, ctypes and at least one of the
 builtin backends.
 
 PyUSB supports libusb 0.1, libusb 1.0 and OpenUSB, but the user does not need
@@ -36,7 +36,7 @@ other flavors of GNU/Linux should be similar.
 
 You will first need to install the following packages:
 
-1) python (PyUSB is useless without it), version >= 2.3
+1) python (PyUSB is useless without it), version >= 2.4
 2) At least one of the supported libraries (libusb 1.0, libusb 0.1 or OpenUSB)
 3) If your Python version is < 2.5, you have to install ctypes as a separate package,
    because these versions of Python does not ship it.
