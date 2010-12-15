@@ -56,7 +56,7 @@ def _set_attr(input, output, fields):
         setattr(output, f, int(getattr(input, f)))
 
 class _ResourceManager(object):
-    def __init__(self, parent, dev, backend):
+    def __init__(self, dev, backend):
         self.backend = backend
         self._active_cfg_index = None
         self.dev = dev
@@ -102,7 +102,7 @@ class _ResourceManager(object):
     def managed_claim_interface(self, device, intf):
         self.managed_open()
         if intf is None:
-            cfg = self.get_active_configuration()
+            cfg = self.get_active_configuration(device)
             i = cfg[(0,0)].bInterfaceNumber
         elif isinstance(intf, Interface):
             i = intf.bInterfaceNumber
@@ -492,7 +492,7 @@ class Device(object):
         of it. The backend parameter is a instance of a backend
         object.
         """
-        self._ctx = _ResourceManager(self, dev, backend)
+        self._ctx = _ResourceManager(dev, backend)
         self.__default_timeout = _DEFAULT_TIMEOUT
 
         desc = backend.get_device_descriptor(dev)

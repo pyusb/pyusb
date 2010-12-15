@@ -29,9 +29,10 @@
 import usb.core as core
 import usb.util as util
 import usb._interop as _interop
-from usb.core import USBError
 
 __author__ = 'Wander Lairson Costa'
+
+USBError = core.USBError
 
 CLASS_AUDIO = 1
 CLASS_COMM = 2
