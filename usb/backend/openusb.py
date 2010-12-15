@@ -29,7 +29,6 @@
 from ctypes import *
 import ctypes.util
 import usb.util
-import sys
 from usb._debug import methodtrace
 import logging
 

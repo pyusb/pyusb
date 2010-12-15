@@ -31,7 +31,6 @@ __author__ = 'Wander Lairson Costa'
 __all__ = ['methodtrace', 'functiontrace']
 
 import logging
-import types
 import usb._interop as _interop
 
 def _trace_function_call(logger, fname, *args, **named_args):
@@ -61,7 +60,7 @@ def functiontrace(logger):
         def do_trace(*args, **named_args):
             # this if is just a optimization to avoid unecessary string formatting
             if logging.DEBUG >= logger.getEffectiveLevel():
-                _trace_function_call(logger, f.__name__, *uargs, **named_args)
+                _trace_function_call(logger, f.__name__, *args, **named_args)
             return f(*args, **named_args)
         _interop._update_wrapper(do_trace, f)
         return do_trace

@@ -37,7 +37,6 @@ parent_dir = os.path.split(os.getcwd())[0]
 if os.path.exists(os.path.join(parent_dir, 'usb')):
     sys.path.insert(0, parent_dir)
 
-import array
 import usb.core
 import logging
 import devinfo

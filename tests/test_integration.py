@@ -33,11 +33,9 @@ import unittest
 import usb.core
 import devinfo
 import usb.util
-import sys
 import usb.backend.libusb01 as libusb01
 import usb.backend.libusb10 as libusb10
 import usb.backend.openusb as openusb
-import array
 
 data_list = (utils.get_array_data1(),
              utils.get_array_data2(),
@@ -102,7 +100,6 @@ class DeviceTest(unittest.TestCase):
 
     def test_set_interface_altsetting(self):
         intf = self.dev.get_active_configuration()[(0,0)]
-        cfg = usb.core.Configuration(self.dev).bConfigurationValue
         self.dev.set_interface_altsetting(intf.bInterfaceNumber, intf.bAlternateSetting)
         self.dev.set_interface_altsetting()
 

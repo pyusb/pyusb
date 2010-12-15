@@ -31,7 +31,6 @@ import ctypes.util
 import os
 import usb.backend
 import usb.util
-import array
 import sys
 from usb.core import USBError
 from usb._debug import methodtrace

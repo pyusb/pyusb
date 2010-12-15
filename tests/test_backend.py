@@ -28,8 +28,6 @@
 
 import utils
 import unittest
-import array
-import sys
 import devinfo
 import usb.util
 import usb.backend.libusb01 as libusb01
