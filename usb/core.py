@@ -559,10 +559,6 @@ class Device(object):
         """
         self._ctx.managed_set_interface(self, interface, alternate_setting)
 
-    def get_interface_altsetting(self, interface = None):
-        r"""Get the active alternate setting of the given interface."""
-        return self._ctx.get_interface(self, interface)
-
     def reset(self):
         r"""Reset the device."""
         self._ctx.dispose(self, False)
