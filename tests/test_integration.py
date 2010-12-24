@@ -26,7 +26,7 @@
 # NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR
 # MODIFICATIONS.
 
-# Integraion tests
+# Integration tests
 
 import utils
 import unittest
