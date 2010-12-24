@@ -48,6 +48,7 @@ class ControlTest(unittest.TestCase):
             self.test_clearset_feature()
             self.test_getset_descriptor()
             self.test_getset_interface()
+            self.test_get_string()
         finally:
             usb.util.dispose_resources(self.dev)
 
@@ -110,6 +111,14 @@ class ControlTest(unittest.TestCase):
                             i.bInterfaceNumber),
                             i.bAlternateSetting
                         )
+
+    # Although get_string is implemented in the util module,
+    # we test it here for convenience
+    def test_get_string(self):
+        manufacturer_str = 'Mxyzp7lk'.encode('utf-16-le').decode('utf-16-le')
+        product_str = 'PyUSB'.encode('utf-16-le').decode('utf-16-le')
+        self.assertEqual(usb.util.get_string(self.dev, len(manufacturer_str), self.dev.iManufacturer), manufacturer_str)
+        self.assertEqual(usb.util.get_string(self.dev, len(product_str), self.dev.iProduct), product_str)
 
 def get_suite():
     suite = unittest.TestSuite()

@@ -203,3 +203,44 @@ def dispose_resources(device):
     will allocate them automatically.
     """
     device._ctx.dispose(device)
+
+def get_string(dev, length, index, langid = None):
+    r"""Retrieve a string descriptor from the device.
+
+    dev is the Device object to which the request will be
+    sent to.
+
+    length is the length of string in number of characters.
+
+    index is the string descriptor index and langid is the Language
+    ID of the descriptor. If langid is omitted, the string descriptor
+    of the first Language ID will be returned.
+
+    The return value is the unicode string present in the descriptor.
+    """
+    from usb.control import get_descriptor
+    if langid is None:
+	# Asking for the zero'th index is special - it returns a string
+	# descriptor that contains all the language IDs supported by the device.
+	# Typically there aren't many - often only one. The language IDs are 16
+	# bit numbers, and they start at the third byte in the descriptor. See
+	# USB 2.0 specification section 9.6.7 for more information.
+        #
+        # Note from libusb 1.0 sources (descriptor.c)
+        buf = get_descriptor(
+                    dev,
+                    1024,
+                    DESC_TYPE_STRING,
+                    0
+                )
+        assert len(buf) >= 4
+        langid = buf[2] | (buf[3] << 8)
+
+    buf = get_descriptor(
+                dev,
+                length * 2 + 2, # string is utf16 + 2 bytes of the descriptor
+                DESC_TYPE_STRING,
+                index,
+                langid
+            )
+    return buf[2:].tostring().decode('utf-16-le')
