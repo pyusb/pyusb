@@ -1,9 +1,29 @@
-=========
+==========
 PyUSB News
 ==========
 
+What's new in PyUSB 1.0.0 (alpha 1)?
+====================================
+
+This release implements more PyUSB 1.0 features towards beta stage. The new
+features implemented include:
+
+- Standard control requests through usb.control module.
+- Request current configuration from device when you do not call
+  set_configuration.
+- get_string function in the usb.util module to get string descriptors.
+- Full 0.4 API emulation.
+- Device is not reset anymore in test cases to avoid problems in systems
+  where it does not work.
+
+Features not implemented
+------------------------
+
+- OpenUSB support.
+- Isochronous transfer.
+
 What's new in PyUSB 1.0.0 (alpha 0)?
-===================================
+===================================-
 
 This is the first PyUSB 1.0 series public release. This is an alpha release, which
 means that most of the features described in the README file and on the website are

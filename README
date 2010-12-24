@@ -59,11 +59,14 @@ Installing PyUSB on Windows
 ===========================
 
 Now that PyUSB is 100% written in Python, you install it on Windows
-in the same way you do on Linux, but libusb for Windows is done
-through libusb-win32 package (libusb 1.0 backend is in progress).
-To install it you do as usual:
+in the same way you do on Linux:
 
 python setup.py install
+
+Remember that you need libusb (1.0 or 0.1) or OpenUSB running on your
+system. For Windows users, libusb 1.0 is still experimental, so it is
+recommended libusb-win32 package. Check the libusb website for updates
+(http://www.libusb.org).
 
 Reporting bugs/Submitting patches
 =================================
