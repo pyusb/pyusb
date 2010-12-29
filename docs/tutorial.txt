@@ -42,9 +42,10 @@ the ``usb`` package. This package has the following modules:
 Content Description
 ------- -----------
 core    The main USB module.
-util    Utility functions
-legacy  The 0.x compatibility layer
-backend A subpackage containing the builtin backends
+util    Utility functions.
+control Standard control requests.
+legacy  The 0.x compatibility layer.
+backend A subpackage containing the builtin backends.
 ======= ===========
 
 For example, to import the ``core`` module, you do as so::
@@ -417,6 +418,13 @@ for the ``write`` method.
 
 As in ``ctrl_transfer``, the ``timeout`` parameter is optional. When the ``timeout``
 is omitted, it is used the ``Device.default_timeout`` property as the operation timeout.
+
+Control yourself
+----------------
+
+Besides the transfers functions, the module ``usb.control`` offers functions which
+implement the standard USB control requests and the ``usb.util`` module has the
+convenience function ``get_string`` specifically to return string descriptors.
 
 Additional Topics
 =================
