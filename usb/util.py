@@ -26,7 +26,21 @@
 # NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR
 # MODIFICATIONS.
 
-r"""usb.util - Utility functions."""
+r"""usb.util - Utility functions.
+
+This module exports:
+
+endpoint_address - return the endpoint absolute address.
+endpoint_direction - return the endpoint transfer direction.
+endpoint_type - return the endpoint type
+ctrl_direction - return the direction of a control transfer
+build_request_type - build a bmRequestType field of a control transfer.
+find_descriptor - find an inner descriptor.
+claim_interface - explicitly claim an interface.
+release_interface - explicitly release an interface.
+dispose_resources - release internal resources allocated by the object.
+get_string - retrieve a string descriptor from the device.
+"""
 
 __author__ = 'Wander Lairson Costa'
 
