@@ -47,7 +47,7 @@ _logger = logging.getLogger('usb.backend.libusb01')
 
 _PC_PATH_MAX = 4
 
-if sys.platform != 'win32':
+if sys.platform != 'win32' and sys.platform != 'cygwin':
     _PATH_MAX = os.pathconf('.', _PC_PATH_MAX)
 else:
     _PATH_MAX = 511
@@ -59,7 +59,7 @@ else:
 class _PackPolicy(object):
     pass
 
-if sys.platform == 'win32':
+if sys.platform == 'win32' or sys.platform == 'cygwin':
     _PackPolicy._pack_ = 1
 
 # Data structures
@@ -164,18 +164,18 @@ _usb_dev_handle = c_void_p
 _lib = None
 
 def _load_library():
-    candidates = ('usb-0.1', 'usb', 'libusb0')
-    for candidate in candidates:
-        libname = ctypes.util.find_library(candidate)
-        if libname is not None: break
+    if sys.platform != 'cygwin':
+        candidates = ('usb-0.1', 'usb', 'libusb0')
+        for candidate in candidates:
+            libname = ctypes.util.find_library(candidate)
+            if libname is not None: break
     else:
         # corner cases
         # cygwin predefines library names with 'cyg' instead of 'lib'
-        if sys.platform == 'cygwin':
-            try:
-                return CDLL('cygusb0.dll')
-            except:
-                _logger.error('Libusb 0 could not be loaded in cygwin', exc_info=True)
+        try:
+            return CDLL('cygusb0.dll')
+        except:
+            _logger.error('Libusb 0 could not be loaded in cygwin', exc_info=True)
 
         raise OSError('USB library could not be found')
     return CDLL(libname)
@@ -214,7 +214,7 @@ def _setup_prototypes(lib):
 
     # int usb_get_descriptor_by_endpoint(usb_dev_handle *udev,
     #                                    int ep,
-    #	                                 unsigned char type,
+    #                                    unsigned char type,
     #                                    unsigned char index,
     #                                    void *buf,
     #                                    int size);
@@ -229,7 +229,7 @@ def _setup_prototypes(lib):
 
     # int usb_get_descriptor(usb_dev_handle *udev,
     #                        unsigned char type,
-    #	                     unsigned char index,
+    #                        unsigned char index,
     #                        void *buf,
     #                        int size);
     lib.usb_get_descriptor.argtypes = [
@@ -295,7 +295,7 @@ def _setup_prototypes(lib):
     # int usb_control_msg(usb_dev_handle *dev,
     #                     int requesttype,
     #                     int request,
-    # 	                  int value,
+    #                     int value,
     #                     int index,
     #                     char *bytes,
     #                     int size,
@@ -369,9 +369,7 @@ class _LibUSB(usb.backend.IBackend):
     def enumerate_devices(self):
         _check(_lib.usb_find_busses())
         _check(_lib.usb_find_devices())
-
         bus = _lib.usb_get_busses()
-
         while bool(bus):
             dev = bus[0].devices
             while bool(dev):
