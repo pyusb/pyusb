@@ -222,8 +222,11 @@ class DeviceHandle(object):
         Arguments:
             interface: interface number or an Interface object.
         """
-        util.claim_interface(self.dev, interface)
-        self.__claimed_interface = interface
+        if_num = interface.interfaceNumber \
+                if isinstance(interface, Interface) else interface
+
+        util.claim_interface(self.dev, if_num)
+        self.__claimed_interface = if_num
 
     def releaseInterface(self):
         r"""Release an interface previously claimed with claimInterface."""
