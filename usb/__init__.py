@@ -75,6 +75,11 @@ def _setup_log():
             def emit(self, record):
                 pass
 
+        # We set the log level to avoid delegation to the
+        # parent log handler (if there is one).
+        # Thanks to Chris Clark to pointing this out.
+        logger.setLevel(logging.CRITICAL + 10)
+
         logger.addHandler(NullHandler())
 
 

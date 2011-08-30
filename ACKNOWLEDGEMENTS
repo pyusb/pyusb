@@ -14,3 +14,8 @@ PyUSB 1.0.0 (alpha 1)
 
 - Xiaofan Chen: for support in mailing list.
 - Poul-Henning Kam: for the documentation patches.
+
+PyUSB 1.0.0 (alpha 2)
+---------------------
+
+- Chris Clark: for the bug report in the log subsystem.
