@@ -160,6 +160,7 @@ class _ResourceManager(object):
 
     def get_active_configuration(self, device):
         if self._active_cfg_index is None:
+            self.managed_open()
             cfg = util.find_descriptor(
                     device,
                     bConfigurationValue=self.backend.get_configuration(self.handle)
