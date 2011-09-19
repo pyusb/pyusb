@@ -560,6 +560,16 @@ class Device(object):
         """
         self._ctx.managed_set_interface(self, interface, alternate_setting)
 
+    def get_bus_number(self):
+        r"""Get the number of the bus that a device is connected to."""
+        self._ctx.managed_open()
+        return self._ctx.backend.get_bus_number(self._ctx.dev)
+
+    def get_device_address(self):
+        r"""Get the address of the device on the bus it is connected to."""
+        self._ctx.managed_open()
+        return self._ctx.backend.get_device_address(self._ctx.dev)
+
     def reset(self):
         r"""Reset the device."""
         self._ctx.dispose(self, False)
