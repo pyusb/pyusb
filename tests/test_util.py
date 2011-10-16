@@ -34,7 +34,7 @@ import usb.backend
 
 class _ConfigurationDescriptor(object):
     def __init__(self, bConfigurationValue):
-        self.bLength = 18
+        self.bLength = 9
         self.bDescriptorType = DESC_TYPE_CONFIG
         self.wTotalLength = 18
         self.bNumInterfaces = 0
@@ -86,11 +86,11 @@ class FindDescriptorTest(unittest.TestCase):
 
 class UtilTest(unittest.TestCase):
     def test_endpoint_address(self):
-        self.assertEqual(endpoint_address(EP_BULK_OUT), 0x01)
-        self.assertEqual(endpoint_address(EP_BULK_IN), 0x01)
+        self.assertEqual(endpoint_address(0x01), 0x01)
+        self.assertEqual(endpoint_address(0x81), 0x01)
     def test_endpoint_direction(self):
-        self.assertEqual(endpoint_direction(EP_BULK_OUT), ENDPOINT_OUT)
-        self.assertEqual(endpoint_direction(EP_BULK_IN), ENDPOINT_IN)
+        self.assertEqual(endpoint_direction(0x01), ENDPOINT_OUT)
+        self.assertEqual(endpoint_direction(0x81), ENDPOINT_IN)
     def test_endpoint_type(self):
         self.assertEqual(endpoint_type(ENDPOINT_TYPE_CTRL), ENDPOINT_TYPE_CTRL)
         self.assertEqual(endpoint_type(ENDPOINT_TYPE_ISO), ENDPOINT_TYPE_ISO)
