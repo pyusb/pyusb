@@ -85,7 +85,7 @@ class BackendTest(unittest.TestCase):
         self.assertEqual(dsc.iProduct, 0x02)
         self.assertEqual(dsc.iSerialNumber, 0x03)
         self.assertEqual(dsc.bNumConfigurations, 0x01)
-        self.assertEqual(dsc.bMaxPacketSize0, 16)
+        self.assertEqual(dsc.bMaxPacketSize0, 8)
         self.assertEqual(dsc.bDeviceClass, 0x00)
         self.assertEqual(dsc.bDeviceSubClass, 0x00)
         self.assertEqual(dsc.bDeviceProtocol, 0x00)
@@ -94,7 +94,7 @@ class BackendTest(unittest.TestCase):
         cfg = self.backend.get_configuration_descriptor(self.dev, 0)
         self.assertEqual(cfg.bLength, 9)
         self.assertEqual(cfg.bDescriptorType, usb.util.DESC_TYPE_CONFIG)
-        self.assertEqual(cfg.wTotalLength, 46)
+        self.assertEqual(cfg.wTotalLength, 78)
         self.assertEqual(cfg.bNumInterfaces, 0x01)
         self.assertEqual(cfg.bConfigurationValue, 0x01)
         self.assertEqual(cfg.iConfiguration, 0x00)
@@ -107,10 +107,10 @@ class BackendTest(unittest.TestCase):
         self.assertEqual(intf.bDescriptorType, usb.util.DESC_TYPE_INTERFACE)
         self.assertEqual(intf.bInterfaceNumber, 0)
         self.assertEqual(intf.bAlternateSetting, 0)
-        self.assertEqual(intf.bNumEndpoints, 4)
-        self.assertEqual(intf.bInterfaceClass, 0xFF)
-        self.assertEqual(intf.bInterfaceSubClass, 0xFF)
-        self.assertEqual(intf.bInterfaceProtocol, 0xFF)
+        self.assertEqual(intf.bNumEndpoints, 2)
+        self.assertEqual(intf.bInterfaceClass, 0x00)
+        self.assertEqual(intf.bInterfaceSubClass, 0x00)
+        self.assertEqual(intf.bInterfaceProtocol, 0x00)
         self.assertEqual(intf.iInterface, 0x00)
 
     def test_get_endpoint_descriptor(self):
@@ -119,8 +119,8 @@ class BackendTest(unittest.TestCase):
         self.assertEqual(ep.bDescriptorType, usb.util.DESC_TYPE_ENDPOINT)
         self.assertEqual(ep.bEndpointAddress, 0x01)
         self.assertEqual(ep.bmAttributes, 0x02)
-        self.assertEqual(ep.wMaxPacketSize, 64)
-        self.assertEqual(ep.bInterval, 32)
+        self.assertEqual(ep.wMaxPacketSize, 16)
+        self.assertEqual(ep.bInterval, 0)
 
     def test_open_device(self):
         self.handle = self.backend.open_device(self.dev)
@@ -148,16 +148,28 @@ class BackendTest(unittest.TestCase):
         self.backend.release_interface(self.handle, intf.bInterfaceNumber)
 
     def test_bulk_write_read(self):
-        self.__write_read(self.backend.bulk_write,
-                          self.backend.bulk_read,
-                          devinfo.EP_BULK_OUT,
-                          devinfo.EP_BULK_IN)
+        self.backend.set_interface_altsetting(
+                self.handle,
+                0,
+                devinfo.INTF_BULK
+            )
+
+        self.__write_read(
+                self.backend.bulk_write,
+                self.backend.bulk_read
+            )
 
     def test_intr_write_read(self):
-        self.__write_read(self.backend.intr_write,
-                          self.backend.intr_read,
-                          devinfo.EP_INTR_OUT,
-                          devinfo.EP_INTR_IN)
+        self.backend.set_interface_altsetting(
+                self.handle,
+                0,
+                devinfo.INTF_INTR
+            )
+
+        self.__write_read(
+                self.backend.intr_write,
+                self.backend.intr_read
+            )
 
     def test_iso_write_read(self):
         pass
@@ -167,7 +179,7 @@ class BackendTest(unittest.TestCase):
             length = len(data) * data.itemsize
             ret = self.backend.ctrl_transfer(self.handle,
                                              0x40,
-                                             devinfo.CTRL_LOOPBACK_WRITE,
+                                             devinfo.PICFW_SET_VENDOR_BUFFER,
                                              0,
                                              0,
                                              data,
@@ -177,7 +189,7 @@ class BackendTest(unittest.TestCase):
                              'Failed to write data: ' + str(data))
             ret = self.backend.ctrl_transfer(self.handle,
                                              0xC0,
-                                             devinfo.CTRL_LOOPBACK_READ,
+                                             devinfo.PICFW_GET_VENDOR_BUFFER,
                                              0,
                                              0,
                                              length,
@@ -189,7 +201,7 @@ class BackendTest(unittest.TestCase):
     def test_reset_device(self):
         self.backend.reset_device(self.handle)
 
-    def __write_read(self, write_fn, read_fn, ep_out, ep_in):
+    def __write_read(self, write_fn, read_fn, ep_out = 0x01, ep_in = 0x81):
         intf = self.backend.get_interface_descriptor(self.dev, 0, 0, 0).bInterfaceNumber
         for data in (utils.get_array_data1(), utils.get_array_data2()):
             length = len(data) * data.itemsize
