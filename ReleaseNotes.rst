@@ -23,7 +23,7 @@ Features not implemented
 - Isochronous transfer.
 
 What's new in PyUSB 1.0.0 (alpha 0)?
-===================================-
+====================================
 
 This is the first PyUSB 1.0 series public release. This is an alpha release, which
 means that most of the features described in the README file and on the website are
