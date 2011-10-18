@@ -19,4 +19,6 @@ PyUSB 1.0.0 (alpha 2)
 ---------------------
 
 - Chris Clark: for the bug report in the log subsystem.
-- Peter Bigot: for the patch that fixes get_active_configuration seg fault.
+- Peter Bigot: for the patch that fixes get_active_configuration seg fault
+               and the patch to add error code to USBError.
+- Travis Robinson and Xiaofan Chen: for let me use their benchmark firmware.
