@@ -36,7 +36,23 @@ import usb._interop as _interop
 
 __author__ = 'Wander Lairson Costa'
 
-__all__ = ['get_backend']
+__all__ = [
+            'get_backend',
+            'LIBUSB_SUCESS',
+            'LIBUSB_ERROR_IO',
+            'LIBUSB_ERROR_INVALID_PARAM',
+            'LIBUSB_ERROR_ACCESS',
+            'LIBUSB_ERROR_NO_DEVICE',
+            'LIBUSB_ERROR_NOT_FOUND',
+            'LIBUSB_ERROR_BUSY',
+            'LIBUSB_ERROR_TIMEOUT',
+            'LIBUSB_ERROR_OVERFLOW',
+            'LIBUSB_ERROR_PIPE',
+            'LIBUSB_ERROR_INTERRUPTED',
+            'LIBUSB_ERROR_NO_MEM',
+            'LIBUSB_ERROR_NOT_SUPPORTED',
+            'LIBUSB_ERROR_OTHER'
+        ]
 
 _logger = logging.getLogger('usb.backend.libusb10')
 
@@ -44,20 +60,20 @@ _logger = logging.getLogger('usb.backend.libusb10')
 
 # return codes
 
-_LIBUSB_SUCCESS = 0
-_LIBUSB_ERROR_IO = -1
-_LIBUSB_ERROR_INVALID_PARAM = -2
-_LIBUSB_ERROR_ACCESS = -3
-_LIBUSB_ERROR_NO_DEVICE = -4
-_LIBUSB_ERROR_NOT_FOUND = -5
-_LIBUSB_ERROR_BUSY = -6
-_LIBUSB_ERROR_TIMEOUT = -7
-_LIBUSB_ERROR_OVERFLOW = -8
-_LIBUSB_ERROR_PIPE = -9
-_LIBUSB_ERROR_INTERRUPTED = -10
-_LIBUSB_ERROR_NO_MEM = -11
-_LIBUSB_ERROR_NOT_SUPPORTED = -12
-_LIBUSB_ERROR_OTHER = -99
+LIBUSB_SUCCESS = 0
+LIBUSB_ERROR_IO = -1
+LIBUSB_ERROR_INVALID_PARAM = -2
+LIBUSB_ERROR_ACCESS = -3
+LIBUSB_ERROR_NO_DEVICE = -4
+LIBUSB_ERROR_NOT_FOUND = -5
+LIBUSB_ERROR_BUSY = -6
+LIBUSB_ERROR_TIMEOUT = -7
+LIBUSB_ERROR_OVERFLOW = -8
+LIBUSB_ERROR_PIPE = -9
+LIBUSB_ERROR_INTERRUPTED = -10
+LIBUSB_ERROR_NO_MEM = -11
+LIBUSB_ERROR_NOT_SUPPORTED = -12
+LIBUSB_ERROR_OTHER = -99
 
 # map return codes to strings
 _str_error = {
