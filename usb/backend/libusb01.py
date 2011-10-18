@@ -361,7 +361,7 @@ def _check(retval):
                 errmsg = os.strerror(-ret)
         else:
             return ret
-    raise USBError(errmsg)
+    raise USBError(ret, errmsg)
 
 # implementation of libusb 0.1.x backend
 class _LibUSB(usb.backend.IBackend):

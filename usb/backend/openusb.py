@@ -379,7 +379,7 @@ def _setup_prototypes(lib):
 def _check(retval):
     if retval.value != 0:
         from usb.core import USBError
-        raise USBError(_lib.openusb_strerror(retval).value)
+        raise USBError(retval.value, _lib.openusb_strerror(retval.value))
     return retval
 
 class _Context(object):
