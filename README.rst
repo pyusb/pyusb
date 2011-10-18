@@ -5,10 +5,10 @@ PyUSB 1.0 - Easy USB access from Python
 Introduction
 ============
 
-The PyUSB module provides Python with easy access to the host
+The PyUSB module provides for Python easy access to the host
 machine's Universal Serial Bus (USB) system.
 
-Until 0.4 version, PyUSB used to be a thin wrapper aroung libusb.
+Until 0.4 version, PyUSB used to be a thin wrapper over libusb.
 With 1.0 version, things changed considerably. Now PyUSB is an
 API rich, backend neutral Python USB module easy to use.
 
@@ -41,27 +41,27 @@ You will first need to install the following packages:
 3) If your Python version is < 2.5, you have to install ctypes as a separate package,
    because these versions of Python does not ship it.
 
-For example, the command
+For example, the command::
 
-sudo apt-get install python libusb
+    $ sudo apt-get install python libusb
 
 should install all these packages on most Debian-based systems with
 access to the proper package repositories.
 
 Once the above packages are installed, you can install PyUSB
-with the command
+with the command::
 
-python setup.py install
+    $ sudo python setup.py install
 
-run as root from within the same directory as this README file.
+Run it as root from within the same directory as this README file.
 
 Installing PyUSB on Windows
 ===========================
 
 Now that PyUSB is 100% written in Python, you install it on Windows
-in the same way you do on Linux:
+in the same way you do on Linux::
 
-python setup.py install
+    python setup.py install
 
 Remember that you need libusb (1.0 or 0.1) or OpenUSB running on your
 system. For Windows users, libusb 1.0 is still experimental, so it is
@@ -71,8 +71,8 @@ recommended libusb-win32 package. Check the libusb website for updates
 Reporting bugs/Submitting patches
 =================================
 
-Some people have been sending me patches and reporting bugs directly
-in my email. Please, do it through SourceForge tracker, I had
-a hardtime tracking their names to put them in the acknowledgments file. ;-)
+Some people have been sending patches and reporting bugs directly
+at my email. Please, do it through Trac, I had a hardtime tracking
+their names to put them in the acknowledgments file. ;-)
 
 PS: this README file was based on the great Josh Lifton's one... ^_^
