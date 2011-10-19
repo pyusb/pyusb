@@ -53,7 +53,8 @@ _DEFAULT_TIMEOUT = 1000
 
 def _set_attr(input, output, fields):
     for f in fields:
-        setattr(output, f, int(getattr(input, f)))
+        if hasattr(input, f):
+            setattr(output, f, int(getattr(input, f)))
 
 class _ResourceManager(object):
     def __init__(self, dev, backend):
@@ -356,6 +357,8 @@ class Interface(object):
                     'bInterfaceSubClass',
                     'bInterfaceProtocol',
                     'iInterface'
+                    'address',
+                    'bus'
                 )
             )
 
