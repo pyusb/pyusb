@@ -33,6 +33,7 @@ import sys
 import logging
 from usb._debug import methodtrace
 import usb._interop as _interop
+import errno
 
 __author__ = 'Wander Lairson Costa'
 
@@ -77,20 +78,38 @@ LIBUSB_ERROR_OTHER = -99
 
 # map return codes to strings
 _str_error = {
-    _LIBUSB_SUCCESS:'Success (no error)',
-    _LIBUSB_ERROR_IO:'Input/output error',
-    _LIBUSB_ERROR_INVALID_PARAM:'Invalid parameter',
-    _LIBUSB_ERROR_ACCESS:'Access denied (insufficient permissions)',
-    _LIBUSB_ERROR_NO_DEVICE:'No such device (it may have been disconnected)',
-    _LIBUSB_ERROR_NOT_FOUND:'Entity not found',
-    _LIBUSB_ERROR_BUSY:'Resource busy',
-    _LIBUSB_ERROR_TIMEOUT:'Operation timed out',
-    _LIBUSB_ERROR_OVERFLOW:'Overflow',
-    _LIBUSB_ERROR_PIPE:'Pipe error',
-    _LIBUSB_ERROR_INTERRUPTED:'System call interrupted (perhaps due to signal)',
-    _LIBUSB_ERROR_NO_MEM:'Insufficient memory',
-    _LIBUSB_ERROR_NOT_SUPPORTED:'Operation not supported or unimplemented on this platform',
-    _LIBUSB_ERROR_OTHER:'Unknown error'
+    LIBUSB_SUCCESS:'Success (no error)',
+    LIBUSB_ERROR_IO:'Input/output error',
+    LIBUSB_ERROR_INVALID_PARAM:'Invalid parameter',
+    LIBUSB_ERROR_ACCESS:'Access denied (insufficient permissions)',
+    LIBUSB_ERROR_NO_DEVICE:'No such device (it may have been disconnected)',
+    LIBUSB_ERROR_NOT_FOUND:'Entity not found',
+    LIBUSB_ERROR_BUSY:'Resource busy',
+    LIBUSB_ERROR_TIMEOUT:'Operation timed out',
+    LIBUSB_ERROR_OVERFLOW:'Overflow',
+    LIBUSB_ERROR_PIPE:'Pipe error',
+    LIBUSB_ERROR_INTERRUPTED:'System call interrupted (perhaps due to signal)',
+    LIBUSB_ERROR_NO_MEM:'Insufficient memory',
+    LIBUSB_ERROR_NOT_SUPPORTED:'Operation not supported or unimplemented on this platform',
+    LIBUSB_ERROR_OTHER:'Unknown error'
+}
+
+# map return code to errno values
+_libusb_errno = {
+    LIBUSB_SUCCESS:None,
+    LIBUSB_ERROR_IO:errno.EIO,
+    LIBUSB_ERROR_INVALID_PARAM:errno.EINVAL,
+    LIBUSB_ERROR_ACCESS:errno.EACCES,
+    LIBUSB_ERROR_NO_DEVICE:errno.ENODEV,
+    LIBUSB_ERROR_NOT_FOUND:errno.ENOENT,
+    LIBUSB_ERROR_BUSY:errno.EBUSY,
+    LIBUSB_ERROR_TIMEOUT:errno.ETIMEDOUT,
+    LIBUSB_ERROR_OVERFLOW:errno.EOVERFLOW,
+    LIBUSB_ERROR_PIPE:errno.EPIPE,
+    LIBUSB_ERROR_INTERRUPTED:errno.EINTR,
+    LIBUSB_ERROR_NO_MEM:errno.ENOMEM,
+    LIBUSB_ERROR_NOT_SUPPORTED:errno.ENOSYS,
+    LIBUSB_ERROR_OTHER:None
 }
 
 # Data structures
@@ -370,7 +389,8 @@ def _check(retval):
     if isinstance(retval, c_int):
         if retval.value < 0:
            from usb.core import USBError
-           raise USBError(retval.value, _str_error[retval.value])
+           ret = retval.value
+           raise USBError(_str_error[ret], ret, _libusb_errno[ret])
     return retval
 
 # wrap a device

@@ -199,8 +199,19 @@ class USBError(IOError):
     r"""Exception class for USB errors.
     
     Backends must raise this exception when USB related errors occur.
+    The backend specific error code is available through the
+    'backend_error_code' member variable.
     """
-    pass
+
+    def __init__(self, strerror, error_code = None, errno = None):
+        r"""Initialize the object.
+
+        This initializes the USBError object. The strerror and errno are passed
+        to the parent object. The error_code parameter is attributed to the
+        backend_error_code member variable.
+        """
+        IOError.__init__(self, strerror, errno)
+        self.backend_error_code = error_code
 
 class Endpoint(object):
     r"""Represent an endpoint object.
