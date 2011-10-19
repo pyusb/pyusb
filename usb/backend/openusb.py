@@ -31,6 +31,7 @@ import ctypes.util
 import usb.util
 from usb._debug import methodtrace
 import logging
+import errno
 
 __author__ = 'Wander Lairson Costa'
 
@@ -105,7 +106,7 @@ OPENUSB_IO_CANCELED = -63
 
 _openusb_errno = {
     OPENUSB_SUCCESS:None,
-    OPENUSB_PLATFORM_FAILURE:,
+    OPENUSB_PLATFORM_FAILURE:None,
     OPENUSB_NO_RESOURCES:errno.ENOMEM,
     OPENUSB_NO_BANDWIDTH:None,
     OPENUSB_NOT_SUPPORTED:errno.ENOSYS,
