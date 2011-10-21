@@ -460,8 +460,8 @@ class _LibUSB(usb.backend.IBackend):
     def get_device_descriptor(self, dev):
         dev_desc = _libusb_device_descriptor()
         _check(_lib.libusb_get_device_descriptor(dev.devid, byref(dev_desc)))
-        dev_desc.bus = lib.libusb_get_bus_number(dev.dev_id)
-        dev_desc.address = libusb.libusb_get_device_address(dev.devid) 
+        dev_desc.bus = _lib.libusb_get_bus_number(dev.devid)
+        dev_desc.address = _lib.libusb_get_device_address(dev.devid) 
         return dev_desc
 
     @methodtrace(_logger)
