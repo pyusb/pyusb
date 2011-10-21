@@ -53,8 +53,7 @@ _DEFAULT_TIMEOUT = 1000
 
 def _set_attr(input, output, fields):
     for f in fields:
-        if hasattr(input, f):
-            setattr(output, f, int(getattr(input, f)))
+        setattr(output, f, int(getattr(input, f)))
 
 class _ResourceManager(object):
     def __init__(self, dev, backend):
@@ -532,6 +531,9 @@ class Device(object):
                     'bNumConfigurations'
                 )
             )
+
+        self.bus = int(desc.bus) if desc.bus is not None else None
+        self.address = int(desc.address) if desc.address is not None else None
 
     def set_configuration(self, configuration = None):
         r"""Set the active configuration.

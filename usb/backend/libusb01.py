@@ -373,6 +373,8 @@ class _LibUSB(usb.backend.IBackend):
         while bool(bus):
             dev = bus[0].devices
             while bool(dev):
+                dev[0].bus = bus[0].location
+                dev[0].address = dev[0].devnum
                 yield dev[0]
                 dev = dev[0].next
             bus = bus[0].next

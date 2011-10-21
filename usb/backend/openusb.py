@@ -534,6 +534,8 @@ class _OpenUSB(usb.backend.IBackend):
                                               None,
                                               0,
                                               byref(desc)))
+        desc.bus = None
+        desc.address = None
         return desc
 
     @methodtrace(_logger)

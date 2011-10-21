@@ -382,6 +382,16 @@ def _setup_prototypes(lib):
                     c_uint
                 ]
 
+    # uint8_t libusb_get_bus_number(libusb_device *dev)
+    lib.libusb_get_bus_number.argtypes = [c_void_p]
+    lib.libusb_get_bus_number.restype = c_uint8
+
+    # uint8_t libusb_get_device_address(libusb_device *dev)
+    lib.libusb_get_device_address.argtypes = [c_void_p]
+    lib.libusb_get_device_address.restype = c_uint8
+
+
+
 # check a libusb function call
 def _check(retval):
     if isinstance(retval, int):
@@ -450,6 +460,8 @@ class _LibUSB(usb.backend.IBackend):
     def get_device_descriptor(self, dev):
         dev_desc = _libusb_device_descriptor()
         _check(_lib.libusb_get_device_descriptor(dev.devid, byref(dev_desc)))
+        dev_desc.bus = lib.libusb_get_bus_number(dev.dev_id)
+        dev_desc.address = libusb.libusb_get_device_address(dev.devid) 
         return dev_desc
 
     @methodtrace(_logger)
