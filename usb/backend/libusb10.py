@@ -229,6 +229,14 @@ def _setup_prototypes(lib):
             c_int
         ]
 
+    # uint8_t libusb_get_bus_number(libusb_device *dev)
+    lib.libusb_get_bus_number.argtypes = [c_void_p]
+    lib.libusb_get_bus_number.restype = c_uint8
+
+    # uint8_t libusb_get_device_address(libusb_device *dev)
+    lib.libusb_get_device_address.argtypes = [c_void_p]
+    lib.libusb_get_device_address.restype = c_uint8
+
     # libusb_device *libusb_ref_device (libusb_device *dev)
     lib.libusb_ref_device.argtypes = [c_void_p]
     lib.libusb_ref_device.restype = c_void_p
@@ -497,6 +505,14 @@ class _LibUSB(usb.backend.IBackend):
     @methodtrace(_logger)
     def close_device(self, dev_handle):
         _lib.libusb_close(dev_handle)
+
+    @methodtrace(_logger)
+    def get_bus_number(self, dev):
+        return _lib.libusb_get_bus_number(dev.devid)
+
+    @methodtrace(_logger)
+    def get_device_address(self, dev):
+        return _lib.libusb_get_device_address(dev.devid)
 
     @methodtrace(_logger)
     def set_configuration(self, dev_handle, config_value):

@@ -176,6 +176,14 @@ class IBackend(object):
         """
         _not_implemented(self.close_device)
 
+    def get_bus_number(self, dev):
+        r"""Get the number of the bus that a device is connected to."""
+        _not_implemented(self.get_bus_number)
+
+    def get_device_address(self, dev):
+        r"""Get the address of the device on the bus it is connected to."""
+        _not_implemented(self.get_device_address)
+
     def set_configuration(self, dev_handle, config_value):
         r"""Set the active device configuration.
 
