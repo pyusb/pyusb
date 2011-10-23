@@ -49,6 +49,8 @@ class _DeviceDescriptor(object):
         self.bDeviceClass = 0xff
         self.bDeviceSubClass = 0xff
         self.bDeviceProtocol = 0xff
+        self.bus = 1
+        self.address = 1
 
 # We are only interested in test usb.find() function, we don't need
 # to implement all IBackend stuff

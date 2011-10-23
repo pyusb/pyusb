@@ -31,12 +31,112 @@ import ctypes.util
 import usb.util
 from usb._debug import methodtrace
 import logging
+import errno
 
 __author__ = 'Wander Lairson Costa'
 
-__all__ = ['get_backend']
+__all__ = [
+            'get_backend'
+            'OPENUSB_SUCCESS'
+            'OPENUSB_PLATFORM_FAILURE'
+            'OPENUSB_NO_RESOURCES'
+            'OPENUSB_NO_BANDWIDTH'
+            'OPENUSB_NOT_SUPPORTED'
+            'OPENUSB_HC_HARDWARE_ERROR'
+            'OPENUSB_INVALID_PERM'
+            'OPENUSB_BUSY'
+            'OPENUSB_BADARG'
+            'OPENUSB_NOACCESS'
+            'OPENUSB_PARSE_ERROR'
+            'OPENUSB_UNKNOWN_DEVICE'
+            'OPENUSB_INVALID_HANDLE'
+            'OPENUSB_SYS_FUNC_FAILURE'
+            'OPENUSB_NULL_LIST'
+            'OPENUSB_CB_CONTINUE'
+            'OPENUSB_CB_TERMINATE'
+            'OPENUSB_IO_STALL'
+            'OPENUSB_IO_CRC_ERROR'
+            'OPENUSB_IO_DEVICE_HUNG'
+            'OPENUSB_IO_REQ_TOO_BIG'
+            'OPENUSB_IO_BIT_STUFFING'
+            'OPENUSB_IO_UNEXPECTED_PID'
+            'OPENUSB_IO_DATA_OVERRUN'
+            'OPENUSB_IO_DATA_UNDERRUN'
+            'OPENUSB_IO_BUFFER_OVERRUN'
+            'OPENUSB_IO_BUFFER_UNDERRUN'
+            'OPENUSB_IO_PID_CHECK_FAILURE'
+            'OPENUSB_IO_DATA_TOGGLE_MISMATCH'
+            'OPENUSB_IO_TIMEOUT'
+            'OPENUSB_IO_CANCELED'
+        ]
 
 _logger = logging.getLogger('usb.backend.openusb')
+
+OPENUSB_SUCCESS = 0
+OPENUSB_PLATFORM_FAILURE = -1
+OPENUSB_NO_RESOURCES = -2
+OPENUSB_NO_BANDWIDTH = -3
+OPENUSB_NOT_SUPPORTED = -4
+OPENUSB_HC_HARDWARE_ERROR = -5
+OPENUSB_INVALID_PERM = -6
+OPENUSB_BUSY = -7
+OPENUSB_BADARG = -8
+OPENUSB_NOACCESS = -9
+OPENUSB_PARSE_ERROR = -10
+OPENUSB_UNKNOWN_DEVICE = -11
+OPENUSB_INVALID_HANDLE = -12
+OPENUSB_SYS_FUNC_FAILURE = -13
+OPENUSB_NULL_LIST = -14
+OPENUSB_CB_CONTINUE = -20
+OPENUSB_CB_TERMINATE = -21
+OPENUSB_IO_STALL = -50
+OPENUSB_IO_CRC_ERROR = -51
+OPENUSB_IO_DEVICE_HUNG = -52
+OPENUSB_IO_REQ_TOO_BIG = -53
+OPENUSB_IO_BIT_STUFFING = -54
+OPENUSB_IO_UNEXPECTED_PID = -55
+OPENUSB_IO_DATA_OVERRUN = -56
+OPENUSB_IO_DATA_UNDERRUN = -57
+OPENUSB_IO_BUFFER_OVERRUN = -58
+OPENUSB_IO_BUFFER_UNDERRUN = -59
+OPENUSB_IO_PID_CHECK_FAILURE = -60
+OPENUSB_IO_DATA_TOGGLE_MISMATCH = -61
+OPENUSB_IO_TIMEOUT = -62
+OPENUSB_IO_CANCELED = -63
+
+_openusb_errno = {
+    OPENUSB_SUCCESS:None,
+    OPENUSB_PLATFORM_FAILURE:None,
+    OPENUSB_NO_RESOURCES:errno.ENOMEM,
+    OPENUSB_NO_BANDWIDTH:None,
+    OPENUSB_NOT_SUPPORTED:errno.ENOSYS,
+    OPENUSB_HC_HARDWARE_ERROR:errno.EIO,
+    OPENUSB_INVALID_PERM:errno.EBADF,
+    OPENUSB_BUSY:errno.EBUSY,
+    OPENUSB_BADARG:errno.EINVAL,
+    OPENUSB_NOACCESS:errno.EACCES,
+    OPENUSB_PARSE_ERROR:None,
+    OPENUSB_UNKNOWN_DEVICE:errno.ENODEV,
+    OPENUSB_INVALID_HANDLE:errno.EINVAL,
+    OPENUSB_SYS_FUNC_FAILURE:None,
+    OPENUSB_NULL_LIST:None,
+    OPENUSB_CB_CONTINUE:None,
+    OPENUSB_CB_TERMINATE:None,
+    OPENUSB_IO_STALL:errno.EIO,
+    OPENUSB_IO_CRC_ERROR:errno.EIO,
+    OPENUSB_IO_DEVICE_HUNG:errno.EIO,
+    OPENUSB_IO_REQ_TOO_BIG:errno.E2BIG,
+    OPENUSB_IO_BIT_STUFFING:None,
+    OPENUSB_IO_UNEXPECTED_PID:errno.ESRCH,
+    OPENUSB_IO_DATA_OVERRUN:errno.EOVERFLOW,
+    OPENUSB_IO_DATA_UNDERRUN:None,
+    OPENUSB_IO_BUFFER_OVERRUN:errno.EOVERFLOW,
+    OPENUSB_IO_BUFFER_UNDERRUN:None,
+    OPENUSB_IO_PID_CHECK_FAILURE:None,
+    OPENUSB_IO_DATA_TOGGLE_MISMATCH:None,
+    OPENUSB_IO_TIMEOUT:errno.ETIMEDOUT,
+    OPENUSB_IO_CANCELED:errno.EINTR
+}
 
 class _usb_endpoint_desc(Structure):
     _fields_ = [('bLength', c_uint8),
@@ -377,9 +477,10 @@ def _setup_prototypes(lib):
     lib.openusb_isoc_xfer.restype = c_int32
 
 def _check(retval):
-    if retval.value != 0:
+    ret = retval.value
+    if ret != 0:
         from usb.core import USBError
-        raise USBError(_lib.openusb_strerror(retval).value)
+        raise USBError(_lib.openusb_strerror(ret), ret, _openusb_errno[ret])
     return retval
 
 class _Context(object):
@@ -433,6 +534,8 @@ class _OpenUSB(usb.backend.IBackend):
                                               None,
                                               0,
                                               byref(desc)))
+        desc.bus = None
+        desc.address = None
         return desc
 
     @methodtrace(_logger)
