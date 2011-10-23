@@ -355,9 +355,7 @@ class Interface(object):
                     'bInterfaceClass',
                     'bInterfaceSubClass',
                     'bInterfaceProtocol',
-                    'iInterface'
-                    'address',
-                    'bus'
+                    'iInterface',
                 )
             )
 
@@ -528,7 +526,9 @@ class Device(object):
                     'iManufacturer',
                     'iProduct',
                     'iSerialNumber',
-                    'bNumConfigurations'
+                    'bNumConfigurations',
+                    'address',
+                    'bus'
                 )
             )
 
