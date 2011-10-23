@@ -72,7 +72,7 @@ class DeviceTest(unittest.TestCase):
         self.assertEqual(self.dev.iProduct, 0x02)
         self.assertEqual(self.dev.iSerialNumber, 0x03)
         self.assertEqual(self.dev.bNumConfigurations, 0x01)
-        self.assertEqual(self.dev.bMaxPacketSize0, 16)
+        self.assertEqual(self.dev.bMaxPacketSize0, 8)
         self.assertEqual(self.dev.bDeviceClass, 0x00)
         self.assertEqual(self.dev.bDeviceSubClass, 0x00)
         self.assertEqual(self.dev.bDeviceProtocol, 0x00)
@@ -108,25 +108,25 @@ class DeviceTest(unittest.TestCase):
         utils.delay_after_reset()
 
     def test_write_read(self):
-        ep_list = ((devinfo.EP_BULK_OUT, devinfo.EP_BULK_IN),
-                   (devinfo.EP_INTR_OUT, devinfo.EP_INTR_IN))
+        altsettings = (0, 1)
 
-        for ep in ep_list:
+        for alt in altsettings:
+            self.dev.set_interface_altsetting(0, alt)
             for data in data_list:
                 adata = utils.to_array(data)
                 length = utils.data_len(data)
-                ret = self.dev.write(ep[0], data)
+                ret = self.dev.write(0x01, data)
                 self.assertEqual(ret,
                                  length,
                                  'Failed to write data: ' + \
-                                    str(data) + ', in EP = ' + \
-                                    str(ep[0])
+                                    str(data) + ', in interface = ' + \
+                                    str(alt)
                                 )
-                ret = self.dev.read(ep[1], length)
+                ret = self.dev.read(0x81, length)
                 self.assertTrue(utils.array_equals(ret, adata),
                                  str(ret) + ' != ' + \
-                                    str(adata) + ', in EP = ' + \
-                                    str(ep[1])
+                                    str(adata) + ', in interface = ' + \
+                                    str(alt)
                                 )
 
     def test_ctrl_transfer(self):
@@ -135,7 +135,7 @@ class DeviceTest(unittest.TestCase):
             adata = utils.to_array(data)
             ret = self.dev.ctrl_transfer(
                     0x40,
-                    devinfo.CTRL_LOOPBACK_WRITE,
+                    devinfo.PICFW_SET_VENDOR_BUFFER,
                     0,
                     0,
                     data
@@ -145,7 +145,7 @@ class DeviceTest(unittest.TestCase):
                              'Failed to write data: ' + str(data))
             ret = utils.to_array(self.dev.ctrl_transfer(
                         0xC0,
-                        devinfo.CTRL_LOOPBACK_READ,
+                        devinfo.PICFW_GET_VENDOR_BUFFER,
                         0,
                         0,
                         length
@@ -166,7 +166,7 @@ class ConfigurationTest(unittest.TestCase):
     def test_attributes(self):
         self.assertEqual(self.cfg.bLength, 9)
         self.assertEqual(self.cfg.bDescriptorType, usb.util.DESC_TYPE_CONFIG)
-        self.assertEqual(self.cfg.wTotalLength, 46)
+        self.assertEqual(self.cfg.wTotalLength, 78)
         self.assertEqual(self.cfg.bNumInterfaces, 0x01)
         self.assertEqual(self.cfg.bConfigurationValue, 0x01)
         self.assertEqual(self.cfg.iConfiguration, 0x00)
@@ -192,10 +192,10 @@ class InterfaceTest(unittest.TestCase):
         self.assertEqual(self.intf.bDescriptorType, usb.util.DESC_TYPE_INTERFACE)
         self.assertEqual(self.intf.bInterfaceNumber, 0)
         self.assertEqual(self.intf.bAlternateSetting, 0)
-        self.assertEqual(self.intf.bNumEndpoints, 4)
-        self.assertEqual(self.intf.bInterfaceClass, 0xFF)
-        self.assertEqual(self.intf.bInterfaceSubClass, 0xFF)
-        self.assertEqual(self.intf.bInterfaceProtocol, 0xFF)
+        self.assertEqual(self.intf.bNumEndpoints, 2)
+        self.assertEqual(self.intf.bInterfaceClass, 0x00)
+        self.assertEqual(self.intf.bInterfaceSubClass, 0x00)
+        self.assertEqual(self.intf.bInterfaceProtocol, 0x00)
         self.assertEqual(self.intf.iInterface, 0x00)
     def test_set_altsetting(self):
         self.intf.set_altsetting()
@@ -219,9 +219,10 @@ class EndpointTest(unittest.TestCase):
         self.assertEqual(self.ep_out.bDescriptorType, usb.util.DESC_TYPE_ENDPOINT)
         self.assertEqual(self.ep_out.bEndpointAddress, 0x01)
         self.assertEqual(self.ep_out.bmAttributes, 0x02)
-        self.assertEqual(self.ep_out.wMaxPacketSize, 64)
-        self.assertEqual(self.ep_out.bInterval, 32)
+        self.assertEqual(self.ep_out.wMaxPacketSize, 16)
+        self.assertEqual(self.ep_out.bInterval, 0)
     def test_write_read(self):
+        self.dev.set_interface_altsetting(0, 0)
         for data in data_list:
             adata = utils.to_array(data)
             ret = self.ep_out.write(data)

@@ -26,17 +26,42 @@
 # NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR
 # MODIFICATIONS.
 
-ID_VENDOR = 0xFFFE
-ID_PRODUCT = 0x0001
+import usb.util
+
+ID_VENDOR = 0x04d8
+ID_PRODUCT = 0xfa2e
 
 # endpoint addresses
-EP_BULK_OUT = 0x01
-EP_BULK_IN = 0x81
-EP_INTR_OUT = 0x02
-EP_INTR_IN = 0x82
-EP_ISO_OUT = 0x03
-EP_ISO_IN = 0x83
+INTF_BULK = 0
+INTF_INTR = 1
+INTF_ISO = 2
 
-# For control transfer test
-CTRL_LOOPBACK_WRITE = 0
-CTRL_LOOPBACK_READ = 1
+# test type
+TEST_NONE = 0
+TEST_PCREAD = 1
+TEST_PCWRITE = 2
+TEST_LOOP = 3
+
+# Vendor requests
+PICFW_SET_TEST = 0x0e
+PICFW_SET_TEST = 0x0f
+PICFW_SET_VENDOR_BUFFER = 0x10
+PICFW_GET_VENDOR_BUFFER = 0x11
+
+def set_test_type(t, dev = None):
+    if dev is None:
+        dev = usb.core.find(idVendor = ID_VENDOR, idProduct = ID_PRODUCT)
+
+    bmRequestType = usb.util.build_request_type(
+                        usb.util.CTRL_OUT,
+                        usb.util.CTRL_TYPE_VENDOR,
+                        usb.util.CTRL_RECIPIENT_INTERFACE
+                    )
+
+    dev.ctrl_transfer(
+        bmRequestType = bmRequestType,
+        bRequest = PICFW_SET_TEST,
+        wValue = t,
+        wIndex = 0
+    )
+
