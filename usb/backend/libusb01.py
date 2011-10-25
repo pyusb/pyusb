@@ -161,6 +161,26 @@ _usb_bus._fields_ = [('next', POINTER(_usb_bus)),
 
 _usb_dev_handle = c_void_p
 
+class _DeviceDescriptor:
+    def __init__(self, dev):
+        desc = dev.descriptor
+        self.bLength = desc.bLength
+        self.bDescriptorType = desc.bDescriptorType
+        self.bcdUSB = desc.bcdUSB
+        self.bDeviceClass = desc.bDeviceClass
+        self.bDeviceSubClass = desc.bDeviceSubClass
+        self.bDeviceProtocol = desc.bDeviceProtocol
+        self.bMaxPacketSize0 = desc.bMaxPacketSize0
+        self.idVendor = desc.idVendor
+        self.idProduct = desc.idProduct
+        self.bcdDevice = desc.bcdDevice
+        self.iManufacturer = desc.iManufacturer
+        self.iProduct = desc.iProduct
+        self.iSerialNumber = desc.iSerialNumber
+        self.bNumConfigurations = desc.bNumConfigurations
+        self.address = dev.devnum
+        self.bus = dev.bus[0].location
+
 _lib = None
 
 def _load_library():
@@ -373,15 +393,13 @@ class _LibUSB(usb.backend.IBackend):
         while bool(bus):
             dev = bus[0].devices
             while bool(dev):
-                dev[0].bus = bus[0].location
-                dev[0].address = dev[0].devnum
                 yield dev[0]
                 dev = dev[0].next
             bus = bus[0].next
 
     @methodtrace(_logger)
     def get_device_descriptor(self, dev):
-        return dev.descriptor
+        return _DeviceDescriptor(dev)
 
     @methodtrace(_logger)
     def get_configuration_descriptor(self, dev, config):
