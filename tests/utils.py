@@ -49,22 +49,33 @@ logger = logging.getLogger('usb.test')
 # data generation functions
 def get_array_data1(length = 8):
     return _interop.as_array(range(length))
+
 def get_array_data2(length = 8):
     data = list(range(length))
     data.reverse()
     return _interop.as_array(data)
+
 def get_list_data1(length = 8):
     return list(range(length))
+
 def get_list_data2(length = 8):
     data = list(range(length))
     data.reverse()
     return data
-def get_str_data1(length = 8):
+
+def get_str_data1(length = 8): 
+    if sys.version_info.major >= 3:
+        # On Python 3, string char is 4 bytes long
+        length = int(length / 4)
     return ''.join([chr(x) for x in range(length)])
+
 def get_str_data2(length = 8):
+    if sys.version_info.major >= 3:
+        length = int(length / 4)
     data = list(range(length))
     data.reverse()
     return ''.join([chr(x) for x in data])
+
 def to_array(data):
     return _interop.as_array(data)
 
