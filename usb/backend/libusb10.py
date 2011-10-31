@@ -97,18 +97,18 @@ _str_error = {
 # map return code to errno values
 _libusb_errno = {
     LIBUSB_SUCCESS:None,
-    LIBUSB_ERROR_IO:errno.EIO,
-    LIBUSB_ERROR_INVALID_PARAM:errno.EINVAL,
-    LIBUSB_ERROR_ACCESS:errno.EACCES,
-    LIBUSB_ERROR_NO_DEVICE:errno.ENODEV,
-    LIBUSB_ERROR_NOT_FOUND:errno.ENOENT,
-    LIBUSB_ERROR_BUSY:errno.EBUSY,
-    LIBUSB_ERROR_TIMEOUT:errno.ETIMEDOUT,
-    LIBUSB_ERROR_OVERFLOW:errno.EOVERFLOW,
-    LIBUSB_ERROR_PIPE:errno.EPIPE,
-    LIBUSB_ERROR_INTERRUPTED:errno.EINTR,
-    LIBUSB_ERROR_NO_MEM:errno.ENOMEM,
-    LIBUSB_ERROR_NOT_SUPPORTED:errno.ENOSYS,
+    LIBUSB_ERROR_IO:errno.__dict__.get('EIO', None),
+    LIBUSB_ERROR_INVALID_PARAM:errno.__dict__.get('EINVAL', None),
+    LIBUSB_ERROR_ACCESS:errno.__dict__.get('EACCES', None),
+    LIBUSB_ERROR_NO_DEVICE:errno.__dict__.get('ENODEV', None),
+    LIBUSB_ERROR_NOT_FOUND:errno.__dict__.get('ENOENT', None),
+    LIBUSB_ERROR_BUSY:errno.__dict__.get('EBUSY', None),
+    LIBUSB_ERROR_TIMEOUT:errno.__dict__.get('ETIMEDOUT', None),
+    LIBUSB_ERROR_OVERFLOW:errno.__dict__.get('EOVERFLOW', None),
+    LIBUSB_ERROR_PIPE:errno.__dict__.get('EPIPE', None),
+    LIBUSB_ERROR_INTERRUPTED:errno.__dict__.get('EINTR', None),
+    LIBUSB_ERROR_NO_MEM:errno.__dict__.get('ENOMEM', None),
+    LIBUSB_ERROR_NOT_SUPPORTED:errno.__dict__.get('ENOSYS', None),
     LIBUSB_ERROR_OTHER:None
 }
 
