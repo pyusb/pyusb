@@ -558,12 +558,16 @@ class _LibUSB(usb.backend.IBackend):
                            size,
                            timeout)
 
-# TODO: implement isochronous
-#    @methodtrace(_logger)
-#    def iso_write(self, dev_handle, ep, intf, data, timeout):
-#       pass
+    @methodtrace(_logger)
+    def iso_write(self, dev_handle, ep, intf, data, timeout):
+        return self.__write(_lib.libusb_isochronous_transfer,
+                            dev_handle,
+                            ep,
+                            intf,
+                            data,
+                            timeout)
 
-
+# TODO: implement isochronous read.
 #    @methodtrace(_logger)
 #    def iso_read(self, dev_handle, ep, intf, size, timeout):
 #        pass
