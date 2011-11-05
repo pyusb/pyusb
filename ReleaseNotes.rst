@@ -2,6 +2,24 @@
 PyUSB News
 ==========
 
+What's new in PyUSB 1.0.0 (alpha 2)?
+====================================
+
+- Test firmware now lives in its own respository (https://github.com/walac/bmfw).
+- ``USBError`` now has the property ``backend_error_code`` that tells the
+  backend specific error.
+- ``errno`` value in ``USBError`` is translated according to the backend error.
+- Now ``Device`` class has the ``bus`` and ``address`` attributes to
+  differentiate identical devices.
+- Optimization when log is disabled (by Emmanuel Blot).
+- Several other minor fixes and improvaments (check ChangeLog file).
+
+Features not implemented
+------------------------
+
+- OpenUSB support.
+- Isochronous transfer.
+
 What's new in PyUSB 1.0.0 (alpha 1)?
 ====================================
 
