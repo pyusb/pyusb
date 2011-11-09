@@ -1,6 +1,12 @@
 This is a list of people who has contributed to PyUSB 1.0 development.
 If I forgot you, please email me.
 
+PyUSB 1.0.0 (alpha 3)
+---------------------
+
+- David Halter: for the isochronous writing implementation for the libusb10
+  backend.
+
 PyUSB 1.0.0 (alpha 2)
 ---------------------
 
