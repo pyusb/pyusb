@@ -301,7 +301,7 @@ class IBackend(object):
         """
         _not_implemented(self.iso_write)
 
-    def iso_read(self, dev_handle, ep, intf, size, timeout):
+    def iso_read(self, dev_handle, ep, intf, size, timeout, devid=None):
         r"""Perform an isochronous read.
 
         dev_handle is the value returned by the open_device() method.
