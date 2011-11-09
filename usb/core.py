@@ -611,13 +611,23 @@ class Device(object):
         fn = fn_map[self._ctx.get_endpoint_type(self, endpoint, intf)]
         self._ctx.managed_claim_interface(self, intf)
 
-        return fn(
-                self._ctx.handle,
-                endpoint,
-                intf.bInterfaceNumber,
-                _interop.as_array(data),
-                self.__get_timeout(timeout)
-            )
+        if fn == backend.iso_write:
+            return fn(
+                    self._ctx.handle,
+                    endpoint,
+                    intf.bInterfaceNumber,
+                    _interop.as_array(data),
+                    self.__get_timeout(timeout),
+                    self._ctx.dev.devid
+                )
+        else:
+            return fn(
+                    self._ctx.handle,
+                    endpoint,
+                    intf.bInterfaceNumber,
+                    _interop.as_array(data),
+                    self.__get_timeout(timeout)
+                )
 
     def read(self, endpoint, size, interface = None, timeout = None):
         r"""Read data from the endpoint.

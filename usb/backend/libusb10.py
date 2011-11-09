@@ -1,8 +1,8 @@
-# Copyright (C) 2009-2011 Wander Lairson Costa 
-# 
+# Copyright (C) 2009-2011 Wander Lairson Costa
+#
 # The following terms apply to all files associated
 # with the software unless explicitly disclaimed in individual files.
-# 
+#
 # The authors hereby grant permission to use, copy, modify, distribute,
 # and license this software and its documentation for any purpose, provided
 # that existing copyright notices are retained in all copies and that this
@@ -12,13 +12,13 @@
 # and need not follow the licensing terms described here, provided that
 # the new terms are clearly indicated on the first page of each file where
 # they apply.
-# 
+#
 # IN NO EVENT SHALL THE AUTHORS OR DISTRIBUTORS BE LIABLE TO ANY PARTY
 # FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES
 # ARISING OUT OF THE USE OF THIS SOFTWARE, ITS DOCUMENTATION, OR ANY
 # DERIVATIVES THEREOF, EVEN IF THE AUTHORS HAVE BEEN ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
-# 
+#
 # THE AUTHORS AND DISTRIBUTORS SPECIFICALLY DISCLAIM ANY WARRANTIES,
 # INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY,
 # FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT.  THIS SOFTWARE
@@ -59,6 +59,16 @@ _logger = logging.getLogger('usb.backend.libusb10')
 
 # libusb.h
 
+# transfer_type codes
+# Control endpoint
+LIBUSB_TRANSFER_TYPE_CONTROL = 0,
+# Isochronous endpoint
+LIBUSB_TRANSFER_TYPE_ISOCHRONOUS = 1
+# Bulk endpoint
+LIBUSB_TRANSFER_TYPE_BULK = 2
+# Interrupt endpoint
+LIBUSB_TRANSFER_TYPE_INTERRUPT = 3
+
 # return codes
 
 LIBUSB_SUCCESS = 0
@@ -96,7 +106,7 @@ _str_error = {
 
 # map return code to errno values
 _libusb_errno = {
-    LIBUSB_SUCCESS:None,
+    0:None,
     LIBUSB_ERROR_IO:errno.__dict__.get('EIO', None),
     LIBUSB_ERROR_INVALID_PARAM:errno.__dict__.get('EINVAL', None),
     LIBUSB_ERROR_ACCESS:errno.__dict__.get('EACCES', None),
@@ -112,6 +122,29 @@ _libusb_errno = {
     LIBUSB_ERROR_OTHER:None
 }
 
+# Transfer status codes:
+# Note that this does not indicate
+# that the entire amount of requested data was transferred.
+LIBUSB_TRANSFER_COMPLETED = 0
+LIBUSB_TRANSFER_ERROR = 1
+LIBUSB_TRANSFER_TIMED_OUT = 2
+LIBUSB_TRANSFER_CANCELLED = 3
+LIBUSB_TRANSFER_STALL = 4
+LIBUSB_TRANSFER_NO_DEVICE = 5
+LIBUSB_TRANSFER_OVERFLOW = 6
+
+# map return codes to strings
+_str_transfer_error = {
+    LIBUSB_TRANSFER_COMPLETED:'Success (no error)',
+    LIBUSB_TRANSFER_ERROR:'Transfer failed',
+    LIBUSB_TRANSFER_TIMED_OUT:'Transfer timed out',
+    LIBUSB_TRANSFER_CANCELLED:'Transfer was cancelled',
+    LIBUSB_TRANSFER_STALL:'For bulk/interrupt endpoints: halt condition '\
+                          'detected (endpoint stalled). For control '\
+                          'endpoints: control request not supported.',
+    LIBUSB_TRANSFER_NO_DEVICE:'Device was disconnected',
+    LIBUSB_TRANSFER_OVERFLOW:'Device sent more data than requested'
+}
 # Data structures
 
 class _libusb_endpoint_descriptor(Structure):
@@ -173,10 +206,41 @@ class _libusb_device_descriptor(Structure):
                 ('iSerialNumber', c_uint8),
                 ('bNumConfigurations', c_uint8)]
 
-_lib = None
-_init = None
+
+# Isochronous packet descriptor.
+class _libusb_iso_packet_descriptor(Structure):
+    _fields_ = [('length', c_uint),
+                ('actual_length', c_uint),
+                ('status', c_int)] # enum libusb_transfer_status
 
 _libusb_device_handle = c_void_p
+
+class _libusb_transfer(Structure):
+    pass
+_libusb_transfer_p = POINTER(_libusb_transfer)
+
+_libusb_transfer_cb_fn_p = CFUNCTYPE(None, _libusb_transfer_p)
+
+_libusb_transfer._fields_ = [('dev_handle', _libusb_device_handle),
+                             ('flags', c_uint8),
+                             ('endpoint', c_uint8),
+                             ('type', c_uint8),
+                             ('timeout', c_uint),
+                             ('status', c_int), # enum libusb_transfer_status
+                             ('length', c_int),
+                             ('actual_length', c_int),
+                             ('callback', _libusb_transfer_cb_fn_p),
+                             ('user_data', py_object),
+                             ('buffer', c_void_p),
+                             ('num_iso_packets', c_int),
+                             ('iso_packet_desc', _libusb_iso_packet_descriptor)
+]
+
+# needed for isochronous transfer (global var)
+callback_done = False
+
+_lib = None
+_init = None
 
 def _load_library():
     if sys.platform != 'cygwin':
@@ -247,7 +311,7 @@ def _setup_prototypes(lib):
     lib.libusb_set_configuration.argtypes = [_libusb_device_handle, c_int]
 
     # int libusb_get_configuration(libusb_device_handle *dev,
-    #                              int *config)   
+    #                              int *config)
     lib.libusb_get_configuration.argtypes = [_libusb_device_handle, POINTER(c_int)]
 
     # int libusb_claim_interface(libusb_device_handle *dev,
@@ -340,7 +404,7 @@ def _setup_prototypes(lib):
     lib.libusb_control_transfer.argtypes = [
             _libusb_device_handle,
             c_uint8,
-            c_uint8, 
+            c_uint8,
             c_uint16,
             c_uint16,
             POINTER(c_ubyte),
@@ -367,10 +431,10 @@ def _setup_prototypes(lib):
 
     # int libusb_interrupt_transfer(
     #               libusb_device_handle *dev_handle,
-    #	            unsigned char endpoint,
+    #               unsigned char endpoint,
     #               unsigned char *data,
     #               int length,
-    #	            int *actual_length,
+    #               int *actual_length,
     #               unsigned int timeout
     #           );
     lib.libusb_interrupt_transfer.argtypes = [
@@ -382,6 +446,84 @@ def _setup_prototypes(lib):
                     c_uint
                 ]
 
+    # libusb_transfer* libusb_alloc_transfer(int iso_packets);
+    lib.libusb_alloc_transfer.argtypes = [c_int]
+    lib.libusb_alloc_transfer.restype = POINTER(_libusb_transfer)
+
+    # int libusb_submit_transfer(struct libusb_transfer *transfer);
+    lib.libusb_submit_transfer.argtypes = [POINTER(_libusb_transfer)]
+
+    # void libusb_set_iso_packet_lengths(
+    #               libusb_transfer* transfer,
+    #               unsigned int length
+    #           );
+    def libusb_set_iso_packet_lengths(transfer_p, length):
+        r"""
+        I don't know why this function is not callable from here.
+        It is a helper function (docs), but still I cannot explain that.
+        This would be the normal (expected) definition:
+
+        lib.libusb_set_iso_packet_lengths.argtypes = [
+                        POINTER(_libusb_transfer),
+                        c_int
+                    ]
+        """
+        def _get_iso_packet_list(transfer):
+            list_type = _libusb_iso_packet_descriptor * transfer.num_iso_packets
+            return list_type.from_address(addressof(transfer.iso_packet_desc))
+
+        transfer = transfer_p.contents
+        for iso_packet_desc in _get_iso_packet_list(transfer):
+            iso_packet_desc.length = length
+    lib.libusb_set_iso_packet_lengths = libusb_set_iso_packet_lengths
+
+    #int libusb_get_max_iso_packet_size(libusb_device* dev,
+    #                                   unsigned char endpoint);
+    lib.libusb_get_max_iso_packet_size.argtypes = [c_void_p,
+                                                   c_ubyte]
+
+    # void libusb_fill_iso_transfer(
+    #               struct libusb_transfer* transfer,
+    #               libusb_device_handle*  dev_handle,
+    #               unsigned char endpoint,
+    #               unsigned char* buffer,
+    #               int length,
+    #               int num_iso_packets,
+    #               libusb_transfer_cb_fn   callback,
+    #               void * user_data,
+    #               unsigned int timeout
+    #           );
+    def libusb_fill_iso_transfer(_libusb_transfer_p, dev_handle, endpoint, buffer, length,
+                                 num_iso_packets, callback, user_data, timeout):
+        r"""
+        I don't know why this function is not callable from here.
+        It is a helper function (docs), but still I cannot explain that.
+        This would be the normal (expected) definition:
+
+        lib.libusb_fill_iso_transfer.argtypes = [
+                       _libusb_transfer,
+                       _libusb_device_handle,
+                       c_ubyte,
+                       POINTER(c_ubyte),
+                       c_int,
+                       c_int,
+                       _libusb_transfer_cb_fn_p,
+                       c_void_p,
+                       c_uint
+                   ]
+        """
+        transfer = _libusb_transfer_p.contents
+        transfer.dev_handle = dev_handle
+        transfer.endpoint = endpoint
+        transfer.type = LIBUSB_TRANSFER_TYPE_ISOCHRONOUS
+        transfer.timeout = timeout
+        transfer.buffer = cast(buffer, c_void_p)
+        transfer.length = length
+        transfer.num_iso_packets = num_iso_packets
+        transfer.user_data = user_data
+        transfer.callback = callback
+    lib.libusb_fill_iso_transfer = libusb_fill_iso_transfer
+
     # uint8_t libusb_get_bus_number(libusb_device *dev)
     lib.libusb_get_bus_number.argtypes = [c_void_p]
     lib.libusb_get_bus_number.restype = c_uint8
@@ -390,6 +532,8 @@ def _setup_prototypes(lib):
     lib.libusb_get_device_address.argtypes = [c_void_p]
     lib.libusb_get_device_address.restype = c_uint8
 
+    #int libusb_handle_events(libusb_context *ctx);
+    lib.libusb_handle_events.argtypes = [c_void_p]
 
 
 # check a libusb function call
@@ -461,7 +605,7 @@ class _LibUSB(usb.backend.IBackend):
         dev_desc = _libusb_device_descriptor()
         _check(_lib.libusb_get_device_descriptor(dev.devid, byref(dev_desc)))
         dev_desc.bus = _lib.libusb_get_bus_number(dev.devid)
-        dev_desc.address = _lib.libusb_get_device_address(dev.devid) 
+        dev_desc.address = _lib.libusb_get_device_address(dev.devid)
         return dev_desc
 
     @methodtrace(_logger)
@@ -558,12 +702,43 @@ class _LibUSB(usb.backend.IBackend):
                            size,
                            timeout)
 
-# TODO: implement isochronous
-#    @methodtrace(_logger)
-#    def iso_write(self, dev_handle, ep, intf, data, timeout):
-#       pass
+    @methodtrace(_logger)
+    def iso_write(self, dev_handle, ep, intf, data, timeout, devid):
+        def callback(libusb_transfer):
+            global callback_done
+            if libusb_transfer.contents.status == LIBUSB_TRANSFER_COMPLETED:
+                callback_done = True
+            else:
+                raise usb.USBError('Data wasn''t transmitted: ' +
+                                   _str_transfer_error[libusb_transfer.contents.status])
 
+        address, length = data.buffer_info()
+        length *= data.itemsize
 
+        packet_length = _lib.libusb_get_max_iso_packet_size(devid, ep)
+        import math
+        packet_count = int(math.ceil(float(length) / packet_length))
+
+        transfer = _lib.libusb_alloc_transfer(packet_count)
+        _lib.libusb_fill_iso_transfer(transfer,
+                                      dev_handle,
+                                      ep,
+                                      cast(address, POINTER(c_ubyte)),
+                                      length,
+                                      packet_count,
+                                      _libusb_transfer_cb_fn_p(callback),
+                                      None,
+                                      timeout)
+        _lib.libusb_set_iso_packet_lengths(transfer, packet_length)
+        _check(_lib.libusb_submit_transfer(transfer))
+        global callback_done
+        callback_done = False
+        while not callback_done:
+            _check(_lib.libusb_handle_events(None))
+
+        return length
+
+# TODO: implement isochronous read.
 #    @methodtrace(_logger)
 #    def iso_read(self, dev_handle, ep, intf, size, timeout):
 #        pass
