@@ -6,8 +6,9 @@ PyUSB 1.0.0 (alpha 2)
 
 - Chris Clark: for the bug report in the log subsystem.
 - Emmanuel Blot: for the patch which improves performance when debug is disabled.
-- Peter Bigot: for the patch that fixes get_active_configuration seg fault
-               and the patch to add error code to USBError.
+- Peter Bigot: for the patch that fixes get_active_configuration seg fault,
+               the patch to add error code to USBError and the patch to fix
+               parameter order in the USBError.
 - Travis Robinson and Xiaofan Chen: for let me use their benchmark firmware.
 - Poul-Henning Kamp: for the suggestion of ``bus`` and ``address`` attributes.
 
