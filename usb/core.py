@@ -210,7 +210,7 @@ class USBError(IOError):
         to the parent object. The error_code parameter is attributed to the
         backend_error_code member variable.
         """
-        IOError.__init__(self, strerror, errno)
+        IOError.__init__(self, errno, strerror)
         self.backend_error_code = error_code
 
 class Endpoint(object):
