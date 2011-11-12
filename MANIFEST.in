@@ -1,3 +1,3 @@
 include LICENSE TODO ACKNOWLEDGEMENTS ChangeLog NEWS
-recursive-include docs *.txt
+recursive-include docs *.rst
 recursive-include tests *.py

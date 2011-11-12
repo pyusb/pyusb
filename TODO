@@ -1,3 +1,19 @@
+1.0.0-a2:
+    * Validate it on platforms other than Windows and Linux.
+    * Finish implementation and test OpenUSB backend.
+    * Samples.
+    * Improve documentation.
+    * Implement isochronous transfers.
+    * Test, test and test.
+
+1.0.0-a1:
+    * Validate it on platforms other than Windows and Linux.
+    * Finish implementation and test OpenUSB backend.
+    * Samples.
+    * Improve documentation.
+    * Implement isochronous transfers.
+    * Test, test and test.
+
 1.0.0-a0:
     * Implement standard control requests API.
     * Finish implementation of legacy compatibility layer.
@@ -11,10 +27,3 @@
     * Upgrade PIC test firmware to use 2.6a version Microchip USB stack.
     * Test, test and test.
 
-1.0.0-a1:
-    * Validate it on platforms other than Windows and Linux.
-    * Finish implementation and test OpenUSB backend.
-    * Samples.
-    * Improve documentation.
-    * Implement isochronous transfers.
-    * Test, test and test.
