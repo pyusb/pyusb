@@ -1,3 +1,2 @@
-include LICENSE TODO ACKNOWLEDGEMENTS ChangeLog NEWS
+include LICENSE TODO ACKNOWLEDGEMENTS ChangeLog README.rst ReleaseNotes.rst
 recursive-include docs *.rst
-recursive-include tests *.py
