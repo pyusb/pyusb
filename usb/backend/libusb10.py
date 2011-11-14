@@ -152,6 +152,18 @@ _str_transfer_error = {
     LIBUSB_TRANSFER_NO_DEVICE:'Device was disconnected',
     LIBUSB_TRANSFER_OVERFLOW:'Device sent more data than requested'
 }
+
+# map transfer codes to errno codes
+_transfer_errno = {
+    LIBUSB_TRANSFER_COMPLETED:0,
+    LIBUSB_TRANSFER_ERROR:errno.__dict__.get('EIO', None),
+    LIBUSB_TRANSFER_TIMED_OUT:errno.__dict__.get('ETIMEDOUT', None),
+    LIBUSB_TRANSFER_CANCELLED:errno.__dict__.get('EAGAIN', None),
+    LIBUSB_TRANSFER_STALL:errno.__dict__.get('EIO', None),
+    LIBUSB_TRANSFER_NO_DEVICE:errno.__dict__.get('ENODEV', None),
+    LIBUSB_TRANSFER_OVERFLOW:errno.__dict__.get('EOVERFLOW', None)
+}
+
 # Data structures
 
 class _libusb_endpoint_descriptor(Structure):
@@ -712,8 +724,10 @@ class _LibUSB(usb.backend.IBackend):
             if libusb_transfer.contents.status == LIBUSB_TRANSFER_COMPLETED:
                 callback_done = True
             else:
-                raise usb.USBError('Data was not transmitted: ' +
-                                   _str_transfer_error[libusb_transfer.contents.status])
+                status = libusb_transfer.contents.status
+                raise usb.USBError(_str_transfer_error[status],
+                                   status,
+                                   _transfer_errno[status])
 
         address, length = data.buffer_info()
         length *= data.itemsize
