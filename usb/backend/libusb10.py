@@ -53,6 +53,13 @@ __all__ = [
             'LIBUSB_ERROR_NO_MEM',
             'LIBUSB_ERROR_NOT_SUPPORTED',
             'LIBUSB_ERROR_OTHER'
+            'LIBUSB_TRANSFER_COMPLETED',
+            'LIBUSB_TRANSFER_ERROR',
+            'LIBUSB_TRANSFER_TIMED_OUT',
+            'LIBUSB_TRANSFER_CANCELLED',
+            'LIBUSB_TRANSFER_STALL',
+            'LIBUSB_TRANSFER_NO_DEVICE',
+            'LIBUSB_TRANSFER_OVERFLOW'
         ]
 
 _logger = logging.getLogger('usb.backend.libusb10')
