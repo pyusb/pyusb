@@ -68,13 +68,13 @@ _logger = logging.getLogger('usb.backend.libusb10')
 
 # transfer_type codes
 # Control endpoint
-LIBUSB_TRANSFER_TYPE_CONTROL = 0,
+_LIBUSB_TRANSFER_TYPE_CONTROL = 0,
 # Isochronous endpoint
-LIBUSB_TRANSFER_TYPE_ISOCHRONOUS = 1
+_LIBUSB_TRANSFER_TYPE_ISOCHRONOUS = 1
 # Bulk endpoint
-LIBUSB_TRANSFER_TYPE_BULK = 2
+_LIBUSB_TRANSFER_TYPE_BULK = 2
 # Interrupt endpoint
-LIBUSB_TRANSFER_TYPE_INTERRUPT = 3
+_LIBUSB_TRANSFER_TYPE_INTERRUPT = 3
 
 # return codes
 
@@ -518,7 +518,7 @@ def _setup_prototypes(lib):
         transfer = _libusb_transfer_p.contents
         transfer.dev_handle = dev_handle
         transfer.endpoint = endpoint
-        transfer.type = LIBUSB_TRANSFER_TYPE_ISOCHRONOUS
+        transfer.type = _LIBUSB_TRANSFER_TYPE_ISOCHRONOUS
         transfer.timeout = timeout
         transfer.buffer = cast(buffer, c_void_p)
         transfer.length = length
