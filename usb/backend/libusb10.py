@@ -458,10 +458,8 @@ def _setup_prototypes(lib):
     #               unsigned int length
     #           );
     def libusb_set_iso_packet_lengths(transfer_p, length):
-        r"""
-        I don't know why this function is not callable from here.
-        It is a helper function (docs), but still I cannot explain that.
-        This would be the normal (expected) definition:
+        r"""This function is inline in the libusb.h file, so we must implement
+            it.
 
         lib.libusb_set_iso_packet_lengths.argtypes = [
                         POINTER(_libusb_transfer),
@@ -495,10 +493,8 @@ def _setup_prototypes(lib):
     #           );
     def libusb_fill_iso_transfer(_libusb_transfer_p, dev_handle, endpoint, buffer, length,
                                  num_iso_packets, callback, user_data, timeout):
-        r"""
-        I don't know why this function is not callable from here.
-        It is a helper function (docs), but still I cannot explain that.
-        This would be the normal (expected) definition:
+        r"""This function is inline in the libusb.h file, so we must implement
+            it.
 
         lib.libusb_fill_iso_transfer.argtypes = [
                        _libusb_transfer,
@@ -709,7 +705,7 @@ class _LibUSB(usb.backend.IBackend):
             if libusb_transfer.contents.status == LIBUSB_TRANSFER_COMPLETED:
                 callback_done = True
             else:
-                raise usb.USBError('Data wasn''t transmitted: ' +
+                raise usb.USBError('Data was not transmitted: ' +
                                    _str_transfer_error[libusb_transfer.contents.status])
 
         address, length = data.buffer_info()
