@@ -256,9 +256,6 @@ _libusb_transfer._fields_ = [('dev_handle', _libusb_device_handle),
                              ('iso_packet_desc', _libusb_iso_packet_descriptor)
 ]
 
-# needed for isochronous transfer (global var)
-callback_done = False
-
 _lib = None
 _init = None
 
@@ -725,11 +722,12 @@ class _LibUSB(usb.backend.IBackend):
     @methodtrace(_logger)
     def iso_write(self, dev_handle, ep, intf, data, timeout):
         def callback(libusb_transfer):
-            global callback_done
             if libusb_transfer.contents.status == LIBUSB_TRANSFER_COMPLETED:
-                callback_done = True
+                callback_done = cast(libusb_transfer.contents.user_data,
+                                     POINTER(c_int))
+                callback_done.contents.value = 1
             else:
-                status = libusb_transfer.contents.status
+                status = int(libusb_transfer.contents.status)
                 raise usb.USBError(_str_transfer_error[status],
                                    status,
                                    _transfer_errno[status])
@@ -741,6 +739,7 @@ class _LibUSB(usb.backend.IBackend):
         packet_count = int(math.ceil(float(length) / packet_length))
 
         transfer = _lib.libusb_alloc_transfer(packet_count)
+        callback_done = c_int(0)
         _lib.libusb_fill_iso_transfer(transfer,
                                       dev_handle.handle,
                                       ep,
@@ -748,13 +747,11 @@ class _LibUSB(usb.backend.IBackend):
                                       length,
                                       packet_count,
                                       _libusb_transfer_cb_fn_p(callback),
-                                      None,
+                                      byref(callback_done),
                                       timeout)
         _lib.libusb_set_iso_packet_lengths(transfer, packet_length)
         _check(_lib.libusb_submit_transfer(transfer))
-        global callback_done
-        callback_done = False
-        while not callback_done:
+        while not callback_done.value:
             _check(_lib.libusb_handle_events(None))
 
         return length
