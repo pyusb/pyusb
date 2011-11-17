@@ -467,6 +467,9 @@ def _setup_prototypes(lib):
     lib.libusb_alloc_transfer.argtypes = [c_int]
     lib.libusb_alloc_transfer.restype = POINTER(_libusb_transfer)
 
+    # void libusb_free_transfer(struct libusb_transfer *transfer)
+    lib.libusb_free_transfer.argtypes = [POINTER(_libusb_transfer)]
+
     # int libusb_submit_transfer(struct libusb_transfer *transfer);
     lib.libusb_submit_transfer.argtypes = [POINTER(_libusb_transfer)]
 
@@ -547,6 +550,7 @@ def _setup_prototypes(lib):
 
     #int libusb_handle_events(libusb_context *ctx);
     lib.libusb_handle_events.argtypes = [c_void_p]
+
 
 
 # check a libusb function call
@@ -753,6 +757,8 @@ class _LibUSB(usb.backend.IBackend):
         _check(_lib.libusb_submit_transfer(transfer))
         while not callback_done.value:
             _check(_lib.libusb_handle_events(None))
+
+        _lib.libusb_free_transfer(transfer)
 
         return length
 
