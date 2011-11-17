@@ -34,6 +34,7 @@ import logging
 from usb._debug import methodtrace
 import usb._interop as _interop
 import errno
+import math
 
 __author__ = 'Wander Lairson Costa'
 
@@ -737,7 +738,6 @@ class _LibUSB(usb.backend.IBackend):
         length *= data.itemsize
 
         packet_length = _lib.libusb_get_max_iso_packet_size(dev_handle.devid, ep)
-        import math
         packet_count = int(math.ceil(float(length) / packet_length))
 
         transfer = _lib.libusb_alloc_transfer(packet_count)
