@@ -64,13 +64,13 @@ def get_list_data2(length = 8):
     return data
 
 def get_str_data1(length = 8): 
-    if sys.version_info.major >= 3:
+    if sys.version_info[0] >= 3:
         # On Python 3, string char is 4 bytes long
         length = int(length / 4)
     return ''.join([chr(x) for x in range(length)])
 
 def get_str_data2(length = 8):
-    if sys.version_info.major >= 3:
+    if sys.version_info[0] >= 3:
         length = int(length / 4)
     data = list(range(length))
     data.reverse()
