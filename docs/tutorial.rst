@@ -75,7 +75,7 @@ found::
 
     # get an endpoint instance
     cfg = dev.get_active_configuration()
-    interface_number = cfg[0].bInterfaceNumber
+    interface_number = cfg[(0,0)].bInterfaceNumber
     alternate_settting = usb.control.get_interface(interface_number)
     intf = usb.util.find_descriptor(
         cfg, bInterfaceNumber = interface_number,
