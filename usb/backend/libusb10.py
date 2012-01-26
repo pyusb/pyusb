@@ -367,10 +367,10 @@ def _setup_prototypes(lib):
 
     # int libusb_interrupt_transfer(
     #               libusb_device_handle *dev_handle,
-    #	            unsigned char endpoint,
+    #               unsigned char endpoint,
     #               unsigned char *data,
     #               int length,
-    #	            int *actual_length,
+    #               int *actual_length,
     #               unsigned int timeout
     #           );
     lib.libusb_interrupt_transfer.argtypes = [
@@ -620,12 +620,16 @@ class _LibUSB(usb.backend.IBackend):
         address, length = data.buffer_info()
         length *= data.itemsize
         transferred = c_int()
-        _check(fn(dev_handle,
+        retval = fn(dev_handle,
                   ep,
                   cast(address, POINTER(c_ubyte)),
                   length,
                   byref(transferred),
-                  timeout))
+                  timeout)
+        # do not assume LIBUSB_ERROR_TIMEOUT means no I/O.
+        if not (transferred.value and retval == LIBUSB_ERROR_TIMEOUT):
+            _check(retval)
+
         return transferred.value
 
     def __read(self, fn, dev_handle, ep, intf, size, timeout):
@@ -633,12 +637,15 @@ class _LibUSB(usb.backend.IBackend):
         address, length = data.buffer_info()
         length *= data.itemsize
         transferred = c_int()
-        _check(fn(dev_handle,
+        retval = fn(dev_handle,
                   ep,
                   cast(address, POINTER(c_ubyte)),
                   length,
                   byref(transferred),
-                  timeout))
+                  timeout)
+        # do not assume LIBUSB_ERROR_TIMEOUT means no I/O.
+        if not (transferred.value and retval == LIBUSB_ERROR_TIMEOUT):
+            _check(retval)
         return data[:transferred.value]
 
 def get_backend():
