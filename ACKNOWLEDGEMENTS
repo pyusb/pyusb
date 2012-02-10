@@ -7,6 +7,8 @@ PyUSB 1.0.0 (alpha 3)
 - Robert von Burg: for the bug reports about Python versions compatibility and
                    kernel driver functions.
 - James Rowe: for patches to the tutorial file.
+- Braiden Kindt: for the patch fixing bug when less than o number of requested
+                 bytes are read.
 
 PyUSB 1.0.0 (alpha 2)
 ---------------------
