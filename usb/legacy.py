@@ -222,8 +222,10 @@ class DeviceHandle(object):
         Arguments:
             interface: interface number or an Interface object.
         """
-        if_num = interface.interfaceNumber \
-                if isinstance(interface, Interface) else interface
+        if isinstance(interface, Interface):
+            if_num = interface.interfaceNumber
+        else:
+            if_num = interface
 
         util.claim_interface(self.dev, if_num)
         self.__claimed_interface = if_num

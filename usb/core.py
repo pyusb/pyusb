@@ -532,8 +532,15 @@ class Device(object):
                 )
             )
 
-        self.bus = int(desc.bus) if desc.bus is not None else None
-        self.address = int(desc.address) if desc.address is not None else None
+        if desc.bus is not None:
+            self.bus = int(desc.bus)
+        else:
+            self.bus = None
+
+        if desc.address is not None:
+            self.address = int(desc.address)
+        else:
+            self.address = None
 
     def set_configuration(self, configuration = None):
         r"""Set the active configuration.
