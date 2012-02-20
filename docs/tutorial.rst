@@ -76,7 +76,7 @@ found::
     # get an endpoint instance
     cfg = dev.get_active_configuration()
     interface_number = cfg[(0,0)].bInterfaceNumber
-    alternate_settting = usb.control.get_interface(interface_number)
+    alternate_setting = usb.control.get_interface(dev, interface_number)
     intf = usb.util.find_descriptor(
         cfg, bInterfaceNumber = interface_number,
         bAlternateSetting = alternate_setting
@@ -119,15 +119,15 @@ What's wrong?
 -------------
 
 Every function in PyUSB raises an exception in case of an error. Besides the `Python
-standard exceptions <http://docs.python.org/library/exceptions.html>`_, PyUSB defines
+standard exceptions <http://docs.python.org/library/exceptions.html>`__, PyUSB defines
 the ``usb.core.USBError`` for USB related errors.
 
 You can also use the PyUSB log funcionality. It uses the `logging 
-<http://docs.python.org/library/logging.html>`_ module. To enable it, define
+<http://docs.python.org/library/logging.html>`__ module. To enable it, define
 the environment variable ``PYUSB_DEBUG_LEVEL`` with one of the following level
 names: ``critical``, ``error``, ``warning``, ``info`` or ``debug``.
 
-By default the messages are sent to `sys.stderr <http://docs.python.org/library/sys.html>`_.
+By default the messages are sent to `sys.stderr <http://docs.python.org/library/sys.html>`__.
 If you want to, you can redirect log messages to a file by defining the ``PYUSB_LOG_FILENAME``
 environment variable. If its value is a valid file path, messages will be written to it,
 otherwise it will be sent to ``sys.stderr``.
@@ -179,7 +179,7 @@ Device Descriptor_. So, to really find all printers connected to the
 system, we would need to transverse all configurations, and then
 all interfaces and check if one of the interfaces has its bInterfaceClass
 field equals to 7. If you are a  
-`programmer <http://en.wikipedia.org/wiki/Laziness>`_" like me, you might be wondering
+`programmer <http://en.wikipedia.org/wiki/Laziness>`__ like me, you might be wondering
 if there is an easier way to do that. The answer is yes, it does. Firstly, let's
 give a look on the final code to find all printers connected::
 
@@ -455,7 +455,7 @@ Behind every great abstraction, there's a great implementation
 
 On early days, there was only libusb_. Then came libusb 1.0, and now we had libusb 0.1 and 1.0.
 After, they created OpenUSB_, and now we live at the
-`Tower of Babel <http://en.wikipedia.org/wiki/Tower_of_Babel>`_ of the USB libraries [#]_.
+`Tower of Babel <http://en.wikipedia.org/wiki/Tower_of_Babel>`__ of the USB libraries [#]_.
 How does PyUSB deal with it? Well, PyUSB is a democratic library, you may choose whatever
 library you want. Actually, you can write your own USB library from scratch and tell
 PyUSB to use it.
@@ -487,7 +487,7 @@ and ``release_interface`` functions. ``claim_interface`` will claim the specifie
 if the device has not done it yet. If the device already claimed the interface, it does nothing.
 In a similar way, ``release_interface`` will release the specified interface if it is claimed.
 If the interface is not claimed, it does nothing. You can use manual interface claim to solve
-the `configuration selection problem <http://libusb.sourceforge.net/api-1.0/caveats.html>`_
+the `configuration selection problem <http://libusb.sourceforge.net/api-1.0/caveats.html>`__
 described in the libusb_ documentation.
 
 If you want to free all resources allocated by the device object (including interfaces claimed),
