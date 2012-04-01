@@ -335,7 +335,7 @@ class Bus(object):
     r"""Bus object."""
     def __init__(self):
         self.dirname = ''
-        self.localtion = 0
+        self.location = 0
         self.devices = [Device(d) for d in core.find(find_all=True)]
 
 def busses():
