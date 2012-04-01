@@ -303,7 +303,11 @@ class Device(object):
         self.deviceClass = dev.bDeviceClass
         self.deviceSubClass = dev.bDeviceSubClass
         self.deviceProtocol = dev.bDeviceProtocol
-        self.deviceVersion = dev.bcdDevice
+        self.deviceVersion = str((dev.bcdDevice >> 12) & 0xf) + \
+                            str((dev.bcdDevice >> 8) & 0xf) + \
+                            '.' + \
+                            str((dev.bcdDevice >> 4) & 0xf) + \
+                            str(dev.bcdDevice & 0xf)
         self.devnum = None
         self.filename = ''
         self.iManufacturer = dev.iManufacturer
@@ -312,7 +316,11 @@ class Device(object):
         self.idProduct = dev.idProduct
         self.idVendor = dev.idVendor
         self.maxPacketSize = dev.bMaxPacketSize0
-        self.usbVersion = dev.bcdUSB
+        self.usbVersion = str((dev.bcdUSB >> 12) & 0xf) + \
+                         str((dev.bcdUSB >> 8) & 0xf) + \
+                         '.' + \
+                         str((dev.bcdUSB >> 4) & 0xf) + \
+                         str(dev.bcdUSB & 0xf)
         self.configurations = [Configuration(c) for c in dev]
         self.dev = dev
 
