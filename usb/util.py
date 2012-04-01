@@ -224,7 +224,7 @@ def get_string(dev, length, index, langid = None):
     dev is the Device object to which the request will be
     sent to.
 
-    length is the length of string in number of characters.
+    length is the maximum length of the string in number of characters.
 
     index is the string descriptor index and langid is the Language
     ID of the descriptor. If langid is omitted, the string descriptor
@@ -257,4 +257,4 @@ def get_string(dev, length, index, langid = None):
                 index,
                 langid
             )
-    return buf[2:].tostring().decode('utf-16-le')
+    return buf[2:buf[0]].tostring().decode('utf-16-le')
