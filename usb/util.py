@@ -243,7 +243,7 @@ def get_string(dev, length, index, langid = None):
         # Note from libusb 1.0 sources (descriptor.c)
         buf = get_descriptor(
                     dev,
-                    1024,
+                    254,
                     DESC_TYPE_STRING,
                     0
                 )
