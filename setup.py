@@ -30,9 +30,11 @@
 
 from distutils.core import setup
 
+from usb.meta import __version__ as product_version_str
+
 setup(
     name='pyusb',
-    version='1.0.0a2',
+    version=product_version_str,
     description='Python USB access module',
     author='Wander Lairson Costa',
     author_email='wander.lairson@gmail.com',
