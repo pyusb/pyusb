@@ -43,6 +43,11 @@ import os
 
 __author__ = 'Wander Lairson Costa'
 
+# Use Semantic Versioning, http://semver.org/
+version_info = (1, 0, 0, 'a2')
+__version__ = '%d.%d.%d%s' % version_info
+
+
 __all__ = ['legacy', 'core', 'backend', 'util']
 
 
@@ -90,5 +95,3 @@ _setup_log()
 # We import all 'legacy' module symbols to provide compatility
 # with applications that use 0.x versions.
 from usb.legacy import *
-
-from usb.meta import *
