@@ -35,7 +35,7 @@ import usb
 
 setup(
     name='pyusb',
-    version=usb.version_info,
+    version=usb.__version__,
     description='Python USB access module',
     author='Wander Lairson Costa',
     author_email='wander.lairson@gmail.com',
