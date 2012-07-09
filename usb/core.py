@@ -843,11 +843,11 @@ def find(find_all=False, backend = None, custom_match = None, **args):
                 yield d
 
     if backend is None:
-        import usb.backend.libusb10 as libusb10
+        import usb.backend.libusb1 as libusb1
         import usb.backend.libusb01 as libusb01
         import usb.backend.openusb as openusb
 
-        for m in (libusb10, openusb, libusb01):
+        for m in (libusb1, openusb, libusb01):
             backend = m.get_backend()
             if backend is not None:
                 _logger.info('find(): using backend "%s"', m.__name__)

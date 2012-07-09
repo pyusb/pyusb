@@ -31,7 +31,7 @@ import unittest
 import devinfo
 import usb.util
 import usb.backend.libusb01 as libusb01
-import usb.backend.libusb10 as libusb10
+import usb.backend.libusb1 as libusb1
 import usb.backend.openusb as openusb
 
 class BackendTest(unittest.TestCase):
@@ -222,7 +222,7 @@ class BackendTest(unittest.TestCase):
 
 def get_suite():
     suite = unittest.TestSuite()
-    for m in (libusb10, libusb01, openusb):
+    for m in (libusb1, libusb01, openusb):
         b = m.get_backend()
         if b is not None and utils.find_my_device(b):
             utils.logger.info('Adding %s(%s) to test suite...', BackendTest.__name__, m.__name__)

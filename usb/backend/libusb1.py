@@ -55,7 +55,7 @@ __all__ = [
             'LIBUSB_ERROR_OTHER'
         ]
 
-_logger = logging.getLogger('usb.backend.libusb10')
+_logger = logging.getLogger('usb.backend.libusb1')
 
 # libusb.h
 

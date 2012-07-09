@@ -34,7 +34,7 @@ import usb.core
 import devinfo
 import usb.util
 import usb.backend.libusb01 as libusb01
-import usb.backend.libusb10 as libusb10
+import usb.backend.libusb1 as libusb1
 import usb.backend.openusb as openusb
 
 data_list = (utils.get_array_data1(),
@@ -234,7 +234,7 @@ class EndpointTest(unittest.TestCase):
 def get_suite():
     suite = unittest.TestSuite()
     test_cases = (DeviceTest, ConfigurationTest, InterfaceTest, EndpointTest)
-    for m in (libusb10, libusb01, openusb):
+    for m in (libusb1, libusb01, openusb):
         b = m.get_backend()
         if b is None:
             continue

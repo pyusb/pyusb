@@ -33,7 +33,7 @@ import usb.util
 import usb.core
 import usb.control
 import usb.backend.libusb01 as libusb01
-import usb.backend.libusb10 as libusb10
+import usb.backend.libusb1 as libusb1
 import usb.backend.openusb as openusb
 
 class ControlTest(unittest.TestCase):
@@ -122,7 +122,7 @@ class ControlTest(unittest.TestCase):
 
 def get_suite():
     suite = unittest.TestSuite()
-    for m in (libusb10, libusb01, openusb):
+    for m in (libusb1, libusb01, openusb):
         b = m.get_backend()
         if b is None:
             continue
