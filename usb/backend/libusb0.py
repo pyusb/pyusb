@@ -41,7 +41,7 @@ __author__ = 'Wander Lairson Costa'
 
 __all__ = ['get_backend']
 
-_logger = logging.getLogger('usb.backend.libusb01')
+_logger = logging.getLogger('usb.backend.libusb0')
 
 # usb.h
 
