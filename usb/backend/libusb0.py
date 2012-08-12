@@ -47,10 +47,12 @@ _logger = logging.getLogger('usb.backend.libusb0')
 
 _PC_PATH_MAX = 4
 
-if sys.platform != 'win32' and sys.platform != 'cygwin':
-    _PATH_MAX = os.pathconf('.', _PC_PATH_MAX)
-else:
+if sys.platform.startswith('freebsd'):
+    _PATH_MAX = 1024
+elif sys.platform == 'win32' or sys.platform == 'cygwin':
     _PATH_MAX = 511
+else:
+    _PATH_MAX = os.pathconf('.', _PC_PATH_MAX)
 
 # libusb-win32 makes all structures packed, while
 # default libusb only does for some structures
