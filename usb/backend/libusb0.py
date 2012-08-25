@@ -47,8 +47,8 @@ _logger = logging.getLogger('usb.backend.libusb0')
 
 _PC_PATH_MAX = 4
 
-if sys.platform.find('bsd') or sys.platform.find('mac') != -1 or \
-        sys.platform.find('darwin'):
+if sys.platform.find('bsd') != -1 or sys.platform.find('mac') != -1 or \
+        sys.platform.find('darwin') != -1:
     _PATH_MAX = 1024
 elif sys.platform == 'win32' or sys.platform == 'cygwin':
     _PATH_MAX = 511
