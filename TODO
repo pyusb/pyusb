@@ -1,3 +1,10 @@
+1.0.0-a3:
+    * Finish implementation and test OpenUSB backend.
+    * Samples.
+    * Improve documentation.
+    * Implement isochronous transfers.
+    * Test, test and test.
+
 1.0.0-a2:
     * Validate it on platforms other than Windows and Linux.
     * Finish implementation and test OpenUSB backend.
