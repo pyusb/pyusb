@@ -2,6 +2,18 @@
 PyUSB News
 ==========
 
+What's new in PyUSB 1.0.0 (alpha 3)?
+====================================
+
+**WARNING**: this release renames the libusb 1.0 and libusb 0.1 backends. If
+your code makes direct access to this backends, you will have to change it.
+
+- Fixed several legacy module bugs (by Tormod Volden).
+- Fixed libusb0 backend for BSDs and Mac OSX.
+- Fixed data loss when less the requested number of bytes were read (by
+  Braiden Kindt).
+- Documentation fixes.
+
 What's new in PyUSB 1.0.0 (alpha 2)?
 ====================================
 
