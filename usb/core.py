@@ -528,7 +528,8 @@ class Device(object):
                     'iSerialNumber',
                     'bNumConfigurations',
                     'address',
-                    'bus'
+                    'bus',
+                    'port_number'
                 )
             )
 
@@ -542,6 +543,11 @@ class Device(object):
         else:
             self.address = None
 
+        if desc.port_number is not None:
+            self.port_number = int(desc.port_number)
+        else:
+            self.port_number = None
+            
     def set_configuration(self, configuration = None):
         r"""Set the active configuration.
         
