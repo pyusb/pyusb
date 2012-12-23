@@ -183,7 +183,8 @@ class _DeviceDescriptor:
         self.bNumConfigurations = desc.bNumConfigurations
         self.address = dev.devnum
         self.bus = dev.bus[0].location
-
+        
+        self.port_number = None
 _lib = None
 
 def _load_library():
