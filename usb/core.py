@@ -836,8 +836,7 @@ def find(find_all=False, backend = None, custom_match = None, **args):
     def device_iter(k, v):
         for dev in backend.enumerate_devices():
             d = Device(dev, backend)
-            if (custom_match is None or custom_match(d)) and \
-                _interop._reduce(
+            if  _interop._reduce(
                         lambda a, b: a and b,
                         map(
                             operator.eq,
@@ -845,7 +844,7 @@ def find(find_all=False, backend = None, custom_match = None, **args):
                             map(lambda i: getattr(d, i), k)
                         ),
                         True
-                    ):
+                    ) and (custom_match is None or custom_match(d)):
                 yield d
 
     if backend is None:
