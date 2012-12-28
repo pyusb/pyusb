@@ -394,7 +394,7 @@ def _setup_prototypes(lib):
         lib.libusb_get_port_number.argtypes = [c_void_p]
         lib.libusb_get_port_number.restype = c_uint8
     except AttributeError:
-	pass
+        pass
 
 # check a libusb function call
 def _check(retval):
@@ -467,10 +467,10 @@ class _LibUSB(usb.backend.IBackend):
         dev_desc.bus = _lib.libusb_get_bus_number(dev.devid)
         dev_desc.address = _lib.libusb_get_device_address(dev.devid)
 	#Only available i newer versions of libusb
-	try:
-        	dev_desc.port_number = _lib.libusb_get_port_number(dev.devid)
-	except AttributeError:
-		dev_desc.port_number = None
+        try:
+            dev_desc.port_number = _lib.libusb_get_port_number(dev.devid)
+        except AttributeError:
+            dev_desc.port_number = None
         return dev_desc
 
     @methodtrace(_logger)
