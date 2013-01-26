@@ -32,7 +32,7 @@ Installing PyUSB on GNU/Linux Systems
 =====================================
 
 These instructions are for Debian-based systems.  Instructions for
-other flavors of GNU/Linux should be similar.  
+other flavors of GNU/Linux should be similar.
 
 You will first need to install the following packages:
 
@@ -72,7 +72,8 @@ Reporting bugs/Submitting patches
 =================================
 
 Some people have been sending patches and reporting bugs directly
-at my email. Please, do it through Trac, I had a hardtime tracking
+at my email. Please, do it through
+`github <https://github.com/walac/pyusb>`_, I had a hardtime tracking
 their names to put them in the acknowledgments file. ;-)
 
 PS: this README file was based on the great Josh Lifton's one... ^_^
