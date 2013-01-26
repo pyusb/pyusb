@@ -131,8 +131,7 @@ def as_array(data=None):
     except TypeError:
         # When you pass a unicode string or a character sequence,
         # you get a TypeError if first parameter does not match
-        try:
-            return array.array('c', data)
-        except TypeError:
-            return array.array('u', data)
+        a = array.array('B')
+        a.fromstring(data)
+        return a
 
