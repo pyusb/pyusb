@@ -125,12 +125,12 @@ class _ResourceManager(object):
             self._claimed_intf.remove(i)
 
     def managed_set_interface(self, device, intf, alt):
-        if intf is None:
-            i = self.get_interface(device, intf)
-        elif isinstance(intf, Interface):
+        if isinstance(intf, Interface):
             i = intf
         else:
             cfg = self.get_active_configuration(device)
+            if intf is None:
+                intf = cfg[(0,0)].bInterfaceNumber
             if alt is not None:
                 i = util.find_descriptor(cfg, bInterfaceNumber=intf, bAlternateSetting=alt)
             else:
@@ -144,13 +144,12 @@ class _ResourceManager(object):
     def get_interface(self, device, intf):
         # TODO: check the viability of issuing a GET_INTERFACE
         # request when we don't have a alternate setting cached
-        if intf is None:
-            cfg = self.get_active_configuration(device)
-            return cfg[(0,0)]
-        elif isinstance(intf, Interface):
+        if isinstance(intf, Interface):
             return intf
         else:
             cfg = self.get_active_configuration(device)
+            if intf is None:
+                intf = cfg[(0,0)].bInterfaceNumber
             if intf in self._alt_set:
                 return util.find_descriptor(cfg,
                                             bInterfaceNumber=intf,
