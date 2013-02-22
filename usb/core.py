@@ -590,6 +590,7 @@ class Device(object):
 
     def reset(self):
         r"""Reset the device."""
+        self._ctx.managed_open()
         self._ctx.dispose(self, False)
         self._ctx.backend.reset_device(self._ctx.handle)
         self._ctx.dispose(self, True)
