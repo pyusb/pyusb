@@ -32,6 +32,7 @@ import usb.util
 from usb._debug import methodtrace
 import logging
 import errno
+import sys
 
 __author__ = 'Wander Lairson Costa'
 
@@ -243,7 +244,12 @@ _lib = None
 _ctx = None
 
 def _load_library():
-    libname = ctypes.util.find_library('openusb')
+    candidate = 'openusb'
+    # Workaround for CPython 3.3 issue#16283 / pyusb #14
+    if sys.platform == 'win32':
+        candidate = candidate + '.dll'
+
+    libname = ctypes.util.find_library(candidate)
     if libname is None:
         raise OSError('USB library could not be found')
     return CDLL(libname)

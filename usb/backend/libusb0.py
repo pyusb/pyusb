@@ -191,6 +191,10 @@ def _load_library():
     if sys.platform != 'cygwin':
         candidates = ('usb-0.1', 'usb', 'libusb0')
         for candidate in candidates:
+            # Workaround for CPython 3.3 issue#16283 / pyusb #14
+            if sys.platform == 'win32':
+                candidate = candidate + '.dll'
+
             libname = ctypes.util.find_library(candidate)
             if libname is not None: break
     else:
