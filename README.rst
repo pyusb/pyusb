@@ -63,6 +63,10 @@ in the same way you do on Linux::
 
     python setup.py install
 
+If you get some kind of "command not found" error, make sure to add
+the Python install directory to your PATH environment variable or
+give the complete path to the Python interpreter.
+
 Remember that you need libusb (1.0 or 0.1) or OpenUSB running on your
 system. For Windows users, libusb 1.0 is still experimental, so it is
 recommended libusb-win32 package. Check the libusb website for updates
