@@ -8,6 +8,7 @@ PyUSB 1.0.0 (alpha 4)
 - Simon Norberg: several bug fixes.
 - iThompson: fixed tab errors in Python 3.3.
 - Harry Bock: workaround for Python 3.3 bug.
+- ponty: tox support.
 
 PyUSB 1.0.0 (alpha 3)
 ---------------------
