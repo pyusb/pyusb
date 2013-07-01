@@ -299,6 +299,19 @@ class Endpoint(object):
         """
         return self.device.read(self.bEndpointAddress, size, self.interface, timeout)
 
+    def readinto(self, buffer, timeout = None):
+        r"""Read data from the endpoint into a specified buffer.
+        
+        The parameter buffer should be an array.array of the proper size and
+        timeout is the time limit of the operation. The transfer type and
+        endpoint address are automatically inferred.
+
+        The method returns an array.array object with the data read.
+
+        For details, see the Device.readinto() method.
+        """
+        return self.device.readinto(self.bEndpointAddress, buffer, self.interface, timeout)
+
 class Interface(object):
     r"""Represent an interface object.
 
@@ -663,9 +676,49 @@ class Device(object):
                 self._ctx.handle,
                 endpoint,
                 intf.bInterfaceNumber,
+                None,
                 size,
                 self.__get_timeout(timeout)
             )
+
+    def readinto(self, endpoint, buffer, interface = None, timeout = None):
+        r"""Read data from the endpoint into a specified buffer.
+
+        This method is used to receive data from the device. The endpoint
+        parameter corresponds to the bEndpointAddress member whose endpoint you
+        want to communicate with. The buffer parameter should point to an
+        array.array buffer large enough to contain the data. The size parameter
+        indicates the number of bytes to read.  The interface parameter is the
+        bInterfaceNumber field of the interface descriptor which contains the
+        endpoint. If you do not provide one, the first one found will be used,
+        as explained in the set_interface_altsetting() method. The sizek
+        parameters tells how many bytes you want to read.
+
+        The timeout is specified in miliseconds.
+
+        The method returns the number of bytes actually read.
+        """
+        backend = self._ctx.backend
+
+        fn_map = {
+                    util.ENDPOINT_TYPE_BULK:backend.bulk_read,
+                    util.ENDPOINT_TYPE_INTR:backend.intr_read,
+                    util.ENDPOINT_TYPE_ISO:backend.iso_read,
+                }
+
+        intf = self._ctx.get_interface(self, interface)
+        fn = fn_map[self._ctx.get_endpoint_type(self, endpoint, intf)]
+        self._ctx.managed_claim_interface(self, intf)
+
+        return fn(
+                self._ctx.handle,
+                endpoint,
+                intf.bInterfaceNumber,
+                buffer,
+                len(buffer),
+                self.__get_timeout(timeout)
+            )
+
 
 
     def ctrl_transfer(self, bmRequestType, bRequest, wValue=0, wIndex=0,

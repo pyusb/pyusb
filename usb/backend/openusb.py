@@ -625,14 +625,23 @@ class _OpenUSB(usb.backend.IBackend):
         return request.transfered_bytes.value
 
     @methodtrace(_logger)
-    def bulk_read(self, dev_handle, ep, intf, size, timeout):
+    def bulk_read(self, dev_handle, ep, intf, data, size, timeout):
+        read_into = (data != None)
         request = _openusb_bulk_request()
-        buffer = array.array('B', '\x00' * size)
+
+        if not read_into:
+            data = array.array('B', '\x00' * size)
+
         memset(byref(request), 0, sizeof(request))
-        request.payload, request.length = buffer.buffer_info()
+        request.payload = data.buffer_info()[0]
+        request.length = size
         request.timeout = timeout
         _check(_lib.openusb_bulk_xfer(dev_handle, intf, ep, byref(request)))
-        return buffer[:request.transfered_bytes.value]
+
+        if read_into:
+            return request.transfered_bytes.value
+        else:
+            return buffer[:request.transfered_bytes.value]
 
     @methodtrace(_logger)
     def intr_write(self, dev_handle, ep, intf, data, timeout):
@@ -645,15 +654,24 @@ class _OpenUSB(usb.backend.IBackend):
         return request.transfered_bytes.value
 
     @methodtrace(_logger)
-    def intr_read(self, dev_handle, ep, intf, size, timeout):
+    def intr_read(self, dev_handle, ep, intf, data, size, timeout):
+        read_into = (data != None)
         request = _openusb_intr_request()
-        buffer = array.array('B', '\x00' * size)
+
+        if not read_into:
+            data = array.array('B', '\x00' * size)
+
         memset(byref(request), 0, sizeof(request))
-        payload, request.length = buffer.buffer_info()
+        payload = data.buffer_info()[0]
+        request.length = size
         request.payload = cast(payload, POINTER(c_uint8))
         request.timeout = timeout
         _check(_lib.openusb_intr_xfer(dev_handle, intf, ep, byref(request)))
-        return buffer[:request.transfered_bytes.value]
+
+        if read_into:
+            return request.transfered_bytes.value
+        else:
+            return buffer[:request.transfered_bytes.value]
 
 # TODO: implement isochronous
 #    @methodtrace(_logger)

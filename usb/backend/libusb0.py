@@ -482,11 +482,12 @@ class _LibUSB(usb.backend.IBackend):
                             data, timeout)
 
     @methodtrace(_logger)
-    def bulk_read(self, dev_handle, ep, intf, size, timeout):
+    def bulk_read(self, dev_handle, ep, intf, data, size, timeout):
         return self.__read(_lib.usb_bulk_read,
                            dev_handle,
                            ep,
                            intf,
+                           data,
                            size,
                            timeout)
 
@@ -500,11 +501,12 @@ class _LibUSB(usb.backend.IBackend):
                             timeout)
 
     @methodtrace(_logger)
-    def intr_read(self, dev_handle, ep, intf, size, timeout):
+    def intr_read(self, dev_handle, ep, intf, data, size, timeout):
         return self.__read(_lib.usb_interrupt_read,
                            dev_handle,
                            ep,
                            intf,
+                           data,
                            size,
                            timeout)
 
@@ -564,8 +566,10 @@ class _LibUSB(usb.backend.IBackend):
                         timeout
                     )))
 
-    def __read(self, fn, dev_handle, ep, intf, size, timeout):
-        data = _interop.as_array((0,) * size)
+    def __read(self, fn, dev_handle, ep, intf, data, size, timeout):
+        read_into = (data != None)
+        if not read_into:
+            data = _interop.as_array((0,) * size)
         address, length = data.buffer_info()
         length *= data.itemsize
         ret = int(_check(fn(
@@ -575,7 +579,10 @@ class _LibUSB(usb.backend.IBackend):
                     length,
                     timeout
                 )))
-        return data[:ret]
+        if read_into:
+            return ret
+        else:
+            return data[:ret]
 
 def get_backend():
     global _lib

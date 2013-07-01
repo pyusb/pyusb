@@ -544,11 +544,12 @@ class _LibUSB(usb.backend.IBackend):
                             timeout)
 
     @methodtrace(_logger)
-    def bulk_read(self, dev_handle, ep, intf, size, timeout):
+    def bulk_read(self, dev_handle, ep, intf, data, size, timeout):
         return self.__read(_lib.libusb_bulk_transfer,
                            dev_handle,
                            ep,
                            intf,
+                           data,
                            size,
                            timeout)
 
@@ -562,11 +563,12 @@ class _LibUSB(usb.backend.IBackend):
                             timeout)
 
     @methodtrace(_logger)
-    def intr_read(self, dev_handle, ep, intf, size, timeout):
+    def intr_read(self, dev_handle, ep, intf, data, size, timeout):
         return self.__read(_lib.libusb_interrupt_transfer,
                            dev_handle,
                            ep,
                            intf,
+                           data,
                            size,
                            timeout)
 
@@ -644,8 +646,10 @@ class _LibUSB(usb.backend.IBackend):
 
         return transferred.value
 
-    def __read(self, fn, dev_handle, ep, intf, size, timeout):
-        data = _interop.as_array((0,) * size)
+    def __read(self, fn, dev_handle, ep, intf, data, size, timeout):
+        read_into = (data != None)
+        if not read_into:
+            data = _interop.as_array((0,) * size)
         address, length = data.buffer_info()
         length *= data.itemsize
         transferred = c_int()
@@ -658,7 +662,11 @@ class _LibUSB(usb.backend.IBackend):
         # do not assume LIBUSB_ERROR_TIMEOUT means no I/O.
         if not (transferred.value and retval == LIBUSB_ERROR_TIMEOUT):
             _check(retval)
-        return data[:transferred.value]
+
+        if read_into:
+            return transferred.value
+        else:
+            return data[:transferred.value]
 
 def get_backend():
     global _lib, _init
