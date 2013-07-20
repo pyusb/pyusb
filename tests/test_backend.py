@@ -1,8 +1,8 @@
-# Copyright (C) 2009-2011 Wander Lairson Costa 
-# 
+# Copyright (C) 2009-2011 Wander Lairson Costa
+#
 # The following terms apply to all files associated
 # with the software unless explicitly disclaimed in individual files.
-# 
+#
 # The authors hereby grant permission to use, copy, modify, distribute,
 # and license this software and its documentation for any purpose, provided
 # that existing copyright notices are retained in all copies and that this
@@ -12,13 +12,13 @@
 # and need not follow the licensing terms described here, provided that
 # the new terms are clearly indicated on the first page of each file where
 # they apply.
-# 
+#
 # IN NO EVENT SHALL THE AUTHORS OR DISTRIBUTORS BE LIABLE TO ANY PARTY
 # FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES
 # ARISING OUT OF THE USE OF THIS SOFTWARE, ITS DOCUMENTATION, OR ANY
 # DERIVATIVES THEREOF, EVEN IF THE AUTHORS HAVE BEEN ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
-# 
+#
 # THE AUTHORS AND DISTRIBUTORS SPECIFICALLY DISCLAIM ANY WARRANTIES,
 # INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY,
 # FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT.  THIS SOFTWARE
@@ -156,7 +156,8 @@ class BackendTest(unittest.TestCase):
 
         self.__write_read(
                 self.backend.bulk_write,
-                self.backend.bulk_read
+                self.backend.bulk_read,
+                devinfo.EP_BULK
             )
 
     def test_intr_write_read(self):
@@ -168,7 +169,8 @@ class BackendTest(unittest.TestCase):
 
         self.__write_read(
                 self.backend.intr_write,
-                self.backend.intr_read
+                self.backend.intr_read,
+                devinfo.EP_INTR
             )
 
     def test_iso_write_read(self):
@@ -201,24 +203,24 @@ class BackendTest(unittest.TestCase):
     def test_reset_device(self):
         self.backend.reset_device(self.handle)
 
-    def __write_read(self, write_fn, read_fn, ep_out = 0x01, ep_in = 0x81):
+    def __write_read(self, write_fn, read_fn, ep):
         intf = self.backend.get_interface_descriptor(self.dev, 0, 0, 0).bInterfaceNumber
         for data in (utils.get_array_data1(), utils.get_array_data2()):
             length = len(data) * data.itemsize
-            ret = write_fn(self.handle, ep_out, intf, data, 1000)
+            ret = write_fn(self.handle, ep, intf, data, 1000)
             self.assertEqual(ret,
                              length,
                              'Failed to write data: ' + \
                                 str(data) + \
                                 ', in EP = ' + \
-                                str(ep_out))
-            ret = read_fn(self.handle, ep_in, intf, length, 1000)
+                                str(ep))
+            ret = read_fn(self.handle, ep | usb.util.ENDPOINT_IN, intf, length, 1000)
             self.assertEqual(ret,
                              data,
                              'Failed to read data: ' + \
                                 str(data) + \
                                 ', in EP = ' + \
-                                str(ep_in))
+                                str(ep))
 
 def get_suite():
     suite = unittest.TestSuite()

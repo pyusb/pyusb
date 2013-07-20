@@ -1,8 +1,8 @@
-# Copyright (C) 2009-2011 Wander Lairson Costa 
-# 
+# Copyright (C) 2009-2011 Wander Lairson Costa
+#
 # The following terms apply to all files associated
 # with the software unless explicitly disclaimed in individual files.
-# 
+#
 # The authors hereby grant permission to use, copy, modify, distribute,
 # and license this software and its documentation for any purpose, provided
 # that existing copyright notices are retained in all copies and that this
@@ -12,13 +12,13 @@
 # and need not follow the licensing terms described here, provided that
 # the new terms are clearly indicated on the first page of each file where
 # they apply.
-# 
+#
 # IN NO EVENT SHALL THE AUTHORS OR DISTRIBUTORS BE LIABLE TO ANY PARTY
 # FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES
 # ARISING OUT OF THE USE OF THIS SOFTWARE, ITS DOCUMENTATION, OR ANY
 # DERIVATIVES THEREOF, EVEN IF THE AUTHORS HAVE BEEN ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
-# 
+#
 # THE AUTHORS AND DISTRIBUTORS SPECIFICALLY DISCLAIM ANY WARRANTIES,
 # INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY,
 # FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT.  THIS SOFTWARE
@@ -109,20 +109,21 @@ class DeviceTest(unittest.TestCase):
 
     def test_write_read(self):
         altsettings = (0, 1)
+        eps = (devinfo.EP_BULK, devinfo.EP_INTR)
 
         for alt in altsettings:
             self.dev.set_interface_altsetting(0, alt)
             for data in data_list:
                 adata = utils.to_array(data)
                 length = utils.data_len(data)
-                ret = self.dev.write(0x01, data)
+                ret = self.dev.write(eps[alt], data)
                 self.assertEqual(ret,
                                  length,
                                  'Failed to write data: ' + \
                                     str(data) + ', in interface = ' + \
                                     str(alt)
                                 )
-                ret = self.dev.read(0x81, length)
+                ret = self.dev.read(eps[alt] | usb.util.ENDPOINT_IN, length)
                 self.assertTrue(utils.array_equals(ret, adata),
                                  str(ret) + ' != ' + \
                                     str(adata) + ', in interface = ' + \
