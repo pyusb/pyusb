@@ -1,8 +1,8 @@
-# Copyright (C) 2009-2011 Wander Lairson Costa 
-# 
+# Copyright (C) 2009-2011 Wander Lairson Costa
+#
 # The following terms apply to all files associated
 # with the software unless explicitly disclaimed in individual files.
-# 
+#
 # The authors hereby grant permission to use, copy, modify, distribute,
 # and license this software and its documentation for any purpose, provided
 # that existing copyright notices are retained in all copies and that this
@@ -12,13 +12,13 @@
 # and need not follow the licensing terms described here, provided that
 # the new terms are clearly indicated on the first page of each file where
 # they apply.
-# 
+#
 # IN NO EVENT SHALL THE AUTHORS OR DISTRIBUTORS BE LIABLE TO ANY PARTY
 # FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES
 # ARISING OUT OF THE USE OF THIS SOFTWARE, ITS DOCUMENTATION, OR ANY
 # DERIVATIVES THEREOF, EVEN IF THE AUTHORS HAVE BEEN ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
-# 
+#
 # THE AUTHORS AND DISTRIBUTORS SPECIFICALLY DISCLAIM ANY WARRANTIES,
 # INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY,
 # FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT.  THIS SOFTWARE
@@ -183,7 +183,7 @@ class _DeviceDescriptor:
         self.bNumConfigurations = desc.bNumConfigurations
         self.address = dev.devnum
         self.bus = dev.bus[0].location
-        
+
         self.port_number = None
 _lib = None
 
@@ -463,7 +463,7 @@ class _LibUSB(usb.backend.IBackend):
                                   1,
                                   100
                             )[0]
-                                  
+
 
     @methodtrace(_logger)
     def claim_interface(self, dev_handle, intf):
@@ -565,7 +565,7 @@ class _LibUSB(usb.backend.IBackend):
                     )))
 
     def __read(self, fn, dev_handle, ep, intf, size, timeout):
-        data = _interop.as_array((0,) * size)
+        data = _interop.as_array('\x00' * size)
         address, length = data.buffer_info()
         length *= data.itemsize
         ret = int(_check(fn(
