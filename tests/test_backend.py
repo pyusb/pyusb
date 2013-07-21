@@ -174,7 +174,17 @@ class BackendTest(unittest.TestCase):
             )
 
     def test_iso_write_read(self):
-        pass
+        self.backend.set_interface_altsetting(
+                self.handle,
+                0,
+                devinfo.INTF_ISO
+            )
+
+        self.__write_read(
+                self.backend.iso_write,
+                self.backend.iso_read,
+                devinfo.EP_ISO
+            )
 
     def test_ctrl_transfer(self):
         for data in (utils.get_array_data1(), utils.get_array_data2()):
@@ -207,14 +217,24 @@ class BackendTest(unittest.TestCase):
         intf = self.backend.get_interface_descriptor(self.dev, 0, 0, 0).bInterfaceNumber
         for data in (utils.get_array_data1(), utils.get_array_data2()):
             length = len(data) * data.itemsize
-            ret = write_fn(self.handle, ep, intf, data, 1000)
+
+            try:
+                ret = write_fn(self.handle, ep, intf, data, 1000)
+            except NotImplementedError:
+                return
+
             self.assertEqual(ret,
                              length,
                              'Failed to write data: ' + \
                                 str(data) + \
                                 ', in EP = ' + \
                                 str(ep))
-            ret = read_fn(self.handle, ep | usb.util.ENDPOINT_IN, intf, length, 1000)
+
+            try:
+                ret = read_fn(self.handle, ep | usb.util.ENDPOINT_IN, intf, length, 1000)
+            except NotImplementedError:
+                return
+
             self.assertEqual(ret,
                              data,
                              'Failed to read data: ' + \
