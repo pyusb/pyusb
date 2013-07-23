@@ -35,6 +35,7 @@ from usb._debug import methodtrace
 import usb._interop as _interop
 import errno
 import math
+from usb.core import USBError
 
 __author__ = 'Wander Lairson Costa'
 
@@ -567,7 +568,6 @@ def _check(retval):
         retval = c_int(retval)
     if isinstance(retval, c_int):
         if retval.value < 0:
-           from usb.core import USBError
            ret = retval.value
            raise USBError(_str_error[ret], ret, _libusb_errno[ret])
     return retval
