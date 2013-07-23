@@ -600,9 +600,10 @@ class _ConfigDescriptor(object):
 # initialize and finalize the library
 class _Initializer(object):
     def __init__(self):
-        _check(_lib.libusb_init(None))
+        self.ctx = c_void_p()
+        _check(_lib.libusb_init(byref(self.ctx)))
     def __del__(self):
-        _lib.libusb_exit(None)
+        _lib.libusb_exit(self.ctx)
 
 
 # iterator for libusb devices
