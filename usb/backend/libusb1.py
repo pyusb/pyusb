@@ -599,11 +599,12 @@ class _ConfigDescriptor(object):
 
 # initialize and finalize the library
 class _Initializer(object):
-    def __init__(self):
+    def __init__(self, lib):
+        self.lib = lib
         self.ctx = c_void_p()
-        _check(_lib.libusb_init(byref(self.ctx)))
+        _check(self.lib.libusb_init(byref(self.ctx)))
     def __del__(self):
-        _lib.libusb_exit(self.ctx)
+        self.lib.libusb_exit(self.ctx)
 
 
 # iterator for libusb devices
@@ -890,7 +891,7 @@ def get_backend():
         if _lib is None:
             _lib = _load_library()
             _setup_prototypes(_lib)
-            _init = _Initializer()
+            _init = _Initializer(_lib)
         return _LibUSB()
     except Exception:
         _logger.error('Error loading libusb 1.0 backend', exc_info=True)
