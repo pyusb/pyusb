@@ -197,7 +197,7 @@ class BackendTest(unittest.TestCase):
                                              1000)
             self.assertEqual(ret,
                              length,
-                             'Failed to write data: ' + str(data))
+                             'Failed to write data: ' + str(data) + ', ' + str(length) + ' != ' + str(ret))
             ret = self.backend.ctrl_transfer(self.handle,
                                              0xC0,
                                              devinfo.PICFW_GET_VENDOR_BUFFER,
