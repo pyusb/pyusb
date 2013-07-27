@@ -90,13 +90,9 @@ class DeviceTest(unittest.TestCase):
 
     def test_set_configuration(self):
         cfg = self.dev[0].bConfigurationValue
-        self.dev.set_configuration(0)
         self.dev.set_configuration(cfg)
         self.dev.set_configuration()
         self.assertEqual(cfg, self.dev.get_active_configuration().bConfigurationValue)
-        self.dev.set_configuration(0)
-        self.assertRaises(usb.core.USBError, self.dev.get_active_configuration)
-        self.dev.set_configuration()
 
     def test_set_interface_altsetting(self):
         intf = self.dev.get_active_configuration()[(0,0)]

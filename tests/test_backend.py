@@ -130,7 +130,6 @@ class BackendTest(unittest.TestCase):
 
     def test_set_configuration(self):
         cfg = self.backend.get_configuration_descriptor(self.dev, 0)
-        self.backend.set_configuration(self.handle, 0)
         self.backend.set_configuration(self.handle, cfg.bConfigurationValue)
 
     def test_set_interface_altsetting(self):
