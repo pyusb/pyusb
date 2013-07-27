@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Copyright (C) 2009-2011 Wander Lairson Costa
+# Copyright (C) 2009-2013 Wander Lairson Costa
 #
 # The following terms apply to all files associated
 # with the software unless explicitly disclaimed in individual files.
