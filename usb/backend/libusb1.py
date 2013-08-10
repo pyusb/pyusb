@@ -609,10 +609,10 @@ class _Initializer(object):
 
 # iterator for libusb devices
 class _DevIterator(object):
-    def __init__(self):
+    def __init__(self, ctx):
         self.dev_list = POINTER(c_void_p)()
         self.num_devs = _check(_lib.libusb_get_device_list(
-                                    None,
+                                    ctx,
                                     byref(self.dev_list))
                                 ).value
     def __iter__(self):
@@ -651,12 +651,12 @@ class _IsoTransferHandler(object):
     def __del__(self):
         _lib.libusb_free_transfer(self.transfer)
 
-    def submit(self):
+    def submit(self, ctx = None):
         self.__callback_done = 0
         _check(_lib.libusb_submit_transfer(self.transfer))
 
         while not self.__callback_done:
-            _check(_lib.libusb_handle_events(None))
+            _check(_lib.libusb_handle_events(ctx))
 
         return self.__compute_size_transf_data()
 
@@ -683,8 +683,13 @@ class _IsoTransferHandler(object):
 # implementation of libusb 1.0 backend
 class _LibUSB(usb.backend.IBackend):
     @methodtrace(_logger)
+    def __init__(self, ctx):
+        usb.backend.IBackend.__init__()
+        self.ctx = ctx
+
+    @methodtrace(_logger)
     def enumerate_devices(self):
-        return _DevIterator()
+        return _DevIterator(self.ctx)
 
     @methodtrace(_logger)
     def get_device_descriptor(self, dev):
@@ -796,13 +801,13 @@ class _LibUSB(usb.backend.IBackend):
     @methodtrace(_logger)
     def iso_write(self, dev_handle, ep, intf, data, timeout):
         handler = _IsoTransferHandler(dev_handle, ep, data, timeout)
-        return handler.submit()
+        return handler.submit(self.ctx)
 
     @methodtrace(_logger)
     def iso_read(self, dev_handle, ep, intf, size, timeout):
         data = _interop.as_array('\x00' * size)
         handler = _IsoTransferHandler(dev_handle, ep, data, timeout)
-        return data[:handler.submit()]
+        return data[:handler.submit(self.ctx)]
 
     @methodtrace(_logger)
     def ctrl_transfer(self,
@@ -892,7 +897,7 @@ def get_backend():
             _lib = _load_library()
             _setup_prototypes(_lib)
             _init = _Initializer(_lib)
-        return _LibUSB()
+        return _LibUSB(_init.ctx)
     except Exception:
         _logger.error('Error loading libusb 1.0 backend', exc_info=True)
         return None
