@@ -262,7 +262,6 @@ def _get_iso_packet_list(transfer):
     return list_type.from_address(addressof(transfer.iso_packet_desc))
 
 _lib = None
-_init = None
 
 def _load_library():
     if sys.platform != 'cygwin':
@@ -597,15 +596,6 @@ class _ConfigDescriptor(object):
     def __getattr__(self, name):
         return getattr(self.desc.contents, name)
 
-# initialize and finalize the library
-class _Initializer(object):
-    def __init__(self, lib):
-        self.lib = lib
-        self.ctx = c_void_p()
-        _check(self.lib.libusb_init(byref(self.ctx)))
-    def __del__(self):
-        self.lib.libusb_exit(self.ctx)
-
 
 # iterator for libusb devices
 class _DevIterator(object):
@@ -683,9 +673,16 @@ class _IsoTransferHandler(object):
 # implementation of libusb 1.0 backend
 class _LibUSB(usb.backend.IBackend):
     @methodtrace(_logger)
-    def __init__(self, ctx):
-        usb.backend.IBackend.__init__()
-        self.ctx = ctx
+    def __init__(self, lib):
+        usb.backend.IBackend.__init__(self)
+        self.lib = lib
+        self.ctx = c_void_p()
+        _check(self.lib.libusb_init(byref(self.ctx)))
+
+    @methodtrace(_logger)
+    def __del__(self):
+        self.lib.libusb_exit(self.ctx)
+
 
     @methodtrace(_logger)
     def enumerate_devices(self):
@@ -694,13 +691,13 @@ class _LibUSB(usb.backend.IBackend):
     @methodtrace(_logger)
     def get_device_descriptor(self, dev):
         dev_desc = _libusb_device_descriptor()
-        _check(_lib.libusb_get_device_descriptor(dev.devid, byref(dev_desc)))
-        dev_desc.bus = _lib.libusb_get_bus_number(dev.devid)
-        dev_desc.address = _lib.libusb_get_device_address(dev.devid)
+        _check(self.lib.libusb_get_device_descriptor(dev.devid, byref(dev_desc)))
+        dev_desc.bus = self.lib.libusb_get_bus_number(dev.devid)
+        dev_desc.address = self.lib.libusb_get_device_address(dev.devid)
 
 	#Only available i newer versions of libusb
         try:
-            dev_desc.port_number = _lib.libusb_get_port_number(dev.devid)
+            dev_desc.port_number = self.lib.libusb_get_port_number(dev.devid)
         except AttributeError:
             dev_desc.port_number = None
 
@@ -709,8 +706,9 @@ class _LibUSB(usb.backend.IBackend):
     @methodtrace(_logger)
     def get_configuration_descriptor(self, dev, config):
         cfg = POINTER(_libusb_config_descriptor)()
-        _check(_lib.libusb_get_config_descriptor(dev.devid,
-                                                 config, byref(cfg)))
+        _check(self.lib.libusb_get_config_descriptor(
+                dev.devid,
+                config, byref(cfg)))
         return _ConfigDescriptor(cfg)
 
     @methodtrace(_logger)
@@ -736,35 +734,36 @@ class _LibUSB(usb.backend.IBackend):
 
     @methodtrace(_logger)
     def close_device(self, dev_handle):
-        _lib.libusb_close(dev_handle.handle)
+        self.lib.libusb_close(dev_handle.handle)
 
     @methodtrace(_logger)
     def set_configuration(self, dev_handle, config_value):
-        _check(_lib.libusb_set_configuration(dev_handle.handle, config_value))
+        _check(self.lib.libusb_set_configuration(dev_handle.handle, config_value))
 
     @methodtrace(_logger)
     def get_configuration(self, dev_handle):
         config = c_int()
-        _check(_lib.libusb_get_configuration(dev_handle.handle, byref(config)))
+        _check(self.lib.libusb_get_configuration(dev_handle.handle, byref(config)))
         return config.value
 
     @methodtrace(_logger)
     def set_interface_altsetting(self, dev_handle, intf, altsetting):
-        _check(_lib.libusb_set_interface_alt_setting(dev_handle.handle,
-                                                     intf,
-                                                     altsetting))
+        _check(self.lib.libusb_set_interface_alt_setting(
+                                dev_handle.handle,
+                                intf,
+                                altsetting))
 
     @methodtrace(_logger)
     def claim_interface(self, dev_handle, intf):
-        _check(_lib.libusb_claim_interface(dev_handle.handle, intf))
+        _check(self.lib.libusb_claim_interface(dev_handle.handle, intf))
 
     @methodtrace(_logger)
     def release_interface(self, dev_handle, intf):
-        _check(_lib.libusb_release_interface(dev_handle.handle, intf))
+        _check(self.lib.libusb_release_interface(dev_handle.handle, intf))
 
     @methodtrace(_logger)
     def bulk_write(self, dev_handle, ep, intf, data, timeout):
-        return self.__write(_lib.libusb_bulk_transfer,
+        return self.__write(self.lib.libusb_bulk_transfer,
                             dev_handle,
                             ep,
                             intf,
@@ -773,7 +772,7 @@ class _LibUSB(usb.backend.IBackend):
 
     @methodtrace(_logger)
     def bulk_read(self, dev_handle, ep, intf, size, timeout):
-        return self.__read(_lib.libusb_bulk_transfer,
+        return self.__read(self.lib.libusb_bulk_transfer,
                            dev_handle,
                            ep,
                            intf,
@@ -782,7 +781,7 @@ class _LibUSB(usb.backend.IBackend):
 
     @methodtrace(_logger)
     def intr_write(self, dev_handle, ep, intf, data, timeout):
-        return self.__write(_lib.libusb_interrupt_transfer,
+        return self.__write(self.lib.libusb_interrupt_transfer,
                             dev_handle,
                             ep,
                             intf,
@@ -791,7 +790,7 @@ class _LibUSB(usb.backend.IBackend):
 
     @methodtrace(_logger)
     def intr_read(self, dev_handle, ep, intf, size, timeout):
-        return self.__read(_lib.libusb_interrupt_transfer,
+        return self.__read(self.lib.libusb_interrupt_transfer,
                            dev_handle,
                            ep,
                            intf,
@@ -826,15 +825,15 @@ class _LibUSB(usb.backend.IBackend):
         addr, length = buff.buffer_info()
         length *= buff.itemsize
 
-        ret = _check(_lib.libusb_control_transfer(dev_handle.handle,
-                                                  bmRequestType,
-                                                  bRequest,
-                                                  wValue,
-                                                  wIndex,
-                                                  cast(addr,
-                                                       POINTER(c_ubyte)),
-                                                  length,
-                                                  timeout))
+        ret = _check(self.lib.libusb_control_transfer(
+                                        dev_handle.handle,
+                                        bmRequestType,
+                                        bRequest,
+                                        wValue,
+                                        wIndex,
+                                        cast(addr, POINTER(c_ubyte)),
+                                        length,
+                                        timeout))
 
         if usb.util.ctrl_direction(bmRequestType) == usb.util.CTRL_OUT:
             return ret.value
@@ -843,20 +842,20 @@ class _LibUSB(usb.backend.IBackend):
 
     @methodtrace(_logger)
     def reset_device(self, dev_handle):
-        _check(_lib.libusb_reset_device(dev_handle.handle))
+        _check(self.lib.libusb_reset_device(dev_handle.handle))
 
     @methodtrace(_logger)
     def is_kernel_driver_active(self, dev_handle, intf):
-        return bool(_check(_lib.libusb_kernel_driver_active(dev_handle.handle,
+        return bool(_check(self.lib.libusb_kernel_driver_active(dev_handle.handle,
                         intf)))
 
     @methodtrace(_logger)
     def detach_kernel_driver(self, dev_handle, intf):
-        _check(_lib.libusb_detach_kernel_driver(dev_handle.handle, intf))
+        _check(self.lib.libusb_detach_kernel_driver(dev_handle.handle, intf))
 
     @methodtrace(_logger)
     def attach_kernel_driver(self, dev_handle, intf):
-        _check(_lib.libusb_attach_kernel_driver(dev_handle.handle, intf))
+        _check(self.lib.libusb_attach_kernel_driver(dev_handle.handle, intf))
 
     def __write(self, fn, dev_handle, ep, intf, data, timeout):
         address, length = data.buffer_info()
@@ -891,13 +890,12 @@ class _LibUSB(usb.backend.IBackend):
         return data[:transferred.value]
 
 def get_backend():
-    global _lib, _init
+    global _lib
     try:
         if _lib is None:
             _lib = _load_library()
             _setup_prototypes(_lib)
-            _init = _Initializer(_lib)
-        return _LibUSB(_init.ctx)
+        return _LibUSB(_lib)
     except Exception:
         _logger.error('Error loading libusb 1.0 backend', exc_info=True)
         return None
