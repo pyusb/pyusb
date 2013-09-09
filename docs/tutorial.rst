@@ -5,7 +5,7 @@ Programming with PyUSB 1.0
 Let me introduce myself
 =======================
 
-PyUSB 1.0 is a Python_ library allowing easy USB_ access. It has the following features:
+PyUSB 1.0 is a Python_ library allowing easy USB_ access. PyUSB provides several features:
 
 100% written in Python:
     Unlike the 0.x version, which is written in C, 1.0 version is written in Python.
@@ -36,7 +36,7 @@ Who's who
 ---------
 
 First of all, let's give an overview on the PyUSB modules. PyUSB modules are under
-the ``usb`` package. This package has the following modules:
+the ``usb`` package, with the following modules:
 
 ======= ===========
 Content Description
@@ -48,7 +48,7 @@ legacy  The 0.x compatibility layer.
 backend A subpackage containing the builtin backends.
 ======= ===========
 
-For example, to import the ``core`` module, you do as so::
+For example, to import the ``core`` module, type the following::
 
     >>> import usb.core
     >>> dev = usb.core.find()
@@ -105,7 +105,7 @@ have defaults for most common devices. In this case, the configuration set is
 the first one found.
 
 Then, we look for the endpoint we are interested. We search it inside the first
-interface we have. After finding the endpoint, we send data to it.
+interface we have. After finding the endpoint, we send the data to it.
 
 If we know the endpoint address in advance, we could just call the ``write`` function
 from the device object::
@@ -113,7 +113,7 @@ from the device object::
     dev.write(1, 'test', 0)
 
 Here we write the string 'test' at endpoint address *1* of the interface number *0*.
-All these functions will be detailed in the next sections.
+All these functions will be detailed in the following sections.
 
 What's wrong?
 -------------
@@ -138,7 +138,7 @@ Where are you?
 The ``find()`` function in the ``core`` module is used to
 find and enumerate devices connected to the system. For example, let's
 say that our device has a vendor id equals to 0xfffe and product id
-equals to 0x0001. If we would like to find it, we would do so::
+equals to 0x0001. If we would like to find it, we proceed in this way::
 
     import usb.core
 
@@ -156,7 +156,7 @@ This is far easy::
     if usb.core.find(bDeviceClass=7) is None:
         raise ValueError('No printer found')
 
-The 7 is the code for the printer class according to the USB standard.
+The 7 is the code for the printer class according to the USB spec.
 Hey, wait, what if I want to enumerate all printers present? No problem::
 
     # this is not the whole history yet...
@@ -169,8 +169,8 @@ Hey, wait, what if I want to enumerate all printers present? No problem::
 What happened? Well, it is time for a little explanation... ``find``
 has a parameter called ``find_all`` that defaults to False. When it is
 false [#]_, ``find`` will return the first device found that matches the
-specified criteria (more on it soon). If you give it a true value,
-``find`` instead will return a list with all devices matching the criteria.
+specified criteria (more on that soon). If you give it a *true* value,
+``find`` will instead return a list with all devices matching the criteria.
 That's it! Simple, doesn't it?
 
 Finished? No! I have not told you the whole history: many devices actually
@@ -285,7 +285,7 @@ alternate setttings of the interface 1, we do so::
     import usb.util
     alt = usb.util.find_descriptor(cfg, find_all=True, bInterfaceNumber=1)
 
-Note that ``find_descriptor`` is in the ``usb.util`` module. It also
+Notice that ``find_descriptor`` is in the ``usb.util`` module. It also
 accepts the early described ``custom_match`` parameter.
 
 Dealing with multiple identical devices
@@ -305,21 +305,21 @@ How am I supposed to work?
 --------------------------
 
 USB devices after connected must be configured through a few standard requests.
-When I got started to study USB_ spec, I found myself confused with descriptors,
+When I started to study USB_ spec, I found myself confused with descriptors,
 configurations, interfaces, alternate settings, transfer types and all this
 stuff... And worst, you cannot simply ignore them, a device does not work
 without setting a configuration, even if it has just one! PyUSB tries to
 make your life as easy as possible. For example, after getting your device
 object, one of the first things you need to do before communicating with it
-is issueing a ``set_configuration`` request. The parameter for this request
-is the ``bConfigurationValue`` of the configuration you are interested in.
+is issuing a ``set_configuration`` request. The parameter for this request
+is the ``bConfigurationValue`` of the configuration you are interested on.
 Most devices has no more than one configuration, and tracking the configuration
-value to use is annoying (although most code I have seem simply hardcode it).
+value to use is annoying (although most code I have seem simply hardcodes it).
 Therefore, in PyUSB, you can just issue a ``set_configuration`` call with no
-parameters. In this case, it will set the first configuration found (if your
+arguments. In this case, it will set the first configuration found (if your
 device has just one, you don't need to worry about the configuration value
 at all). For example, let's imagine you have a device with one configuration descriptor
-with its bConfigurationValue field equals to 5 [#]_, the following ways bellow will
+with its bConfigurationValue field equals to 5 [#]_, the following calls bellow will
 work equally::
 
     >>> dev.set_configuration(5)
@@ -337,18 +337,18 @@ configuration may have more than one interface, and you can use all interfaces a
 same time. You better understand this concept if you think of an interface as a logical
 device. For example, let's imagine a multifunction printer, which is at the same time a
 printer and a scanner. To keep things simple (or at least as simple as we can), let's
-consider it has just one configuration. As we have a printer and a scanner, the configuration
+consider that it has just one configuration. As we have a printer and a scanner, the configuration
 has two interfaces, one for the printer and one for the scanner. A device with more than
 one interface is called a composite device. When you connect your multifunction printer
 to your computer, the Operating System would load two different drivers: one for each 
 "logical" peripheral you have [#]_.
 
-And about the alternate setting? Good you have asked. An interface has one or
+What about the alternate setting? Good you asked. An interface has one or
 more alternate settings. An interface with just one alternate setting is considered
 to not having an alternate settting [#]_. Alternate settings are for interfaces which
 configurations are for devices, i.e, for each interface, you can have only one alternate
 setting active. For example, USB spec says that a device cannot
-have a isochronous endpoint in its primary alternate setting [#]_, so a streaming device
+have an isochronous endpoint in its primary alternate setting [#]_, so a streaming device
 must have at least two alternate setttings, with the second one having the isochronous
 endpoint(s). But as opposed to configurations, interfaces with just one alternate
 setting don't need to be set [#]_. You select an interface alternate setting
@@ -359,10 +359,10 @@ through the ``set_interface_altsetting`` function::
 .. warning::
     The USB spec says that a device is allowed to return an error in case it
     receives a SET_INTERFACE request for an interface that has no additional
-    alternate settings. So, if you are not sure if the interface has more
+    alternate settings. So, if you are not sure if either the interface has more
     than one alternate setting or it accepts a SET_INTERFACE request,
     the safesty way is to call ``set_interface_altsetting`` inside an
-    try-except block, like so::
+    try-except block, like this::
 
         try:
             dev.set_interface_altsetting(...)
@@ -383,12 +383,12 @@ from ``bInterfaceNumber`` and ``bAlternateSetting`` fields. Example::
 Talk to me, honey
 -----------------
 
-Now it's time to we learn how to communicate with USB devices. USB has four
+Now it's time for we to learn how to communicate with USB devices. USB has four
 flavors of transfers: bulk, interrupt, isochronous and control. I don't intend
 to explain the purpose of each transfer and the differences among them. Therefore,
 I assume you know at least the basics of the USB transfers.
 
-Control transfer is the unique transfer that has structured data described in the
+Control transfer is the only transfer that has structured data described in the
 spec, the others just send and receive raw data from USB point of view. Because of it,
 you have a different function to deal with control transfers,
 all the other transfers are managed by the same functions.
@@ -433,8 +433,8 @@ a loopback pipe in the endpoint 1::
 
 The first, third and fourth parameters are equal for both methods, they are the endpoint
 address, interface number and timeout, respectivelly. The second parameter is the data
-payload (write) or the number of bytes to read (read). The return of the ``read``
-function is an instance of the array_ object or the number of bytes written
+payload (write) or the number of bytes to read (read). The returned data if either
+an instance of the array_ object for the ``read`` method or the number of bytes written
 for the ``write`` method.
 
 As in ``ctrl_transfer``, the ``timeout`` parameter is optional. When the ``timeout``
@@ -462,21 +462,21 @@ PyUSB to use it.
 
 The ``find`` function has one more parameter that I haven't told you. It is the ``backend``
 parameter. If you don't supply it, it will be used one of the builtin backends. A backend
-is a object derived from ``usb.backend.IBackend``, responsible to implement the operating
+is a object inherited from ``usb.backend.IBackend``, responsible to implement the operating
 system specific USB stuff. As you might guess, the builtins are libusb 0.1, libusb 1.0 and
 OpenUSB backends. 
 
 You can create you own backend and use it. Just inherit from ``IBackend`` and implement
-the methods necessary. You might want to give a look at ``backend`` package documentation
-to learn how to do that.
+the methods necessary. You might want to give a look at the ``usb.backend`` package
+documentation to learn how to do that.
 
 Don't be selfish
 ----------------
 
 Python has what we say *automatic memory management*. This means that the virtual machine
-will take care about when to release objects from the memory. Under the hoods, PyUSB manages
-all low level resource management it needs to work (interface claiming, device handles, etc.)
-internally and most of users don't need to worry about that. But, because of the nonderterminisc
+will decide when to release objects from the memory. Under the hoods, PyUSB manages
+all low level resources it needs to work (interface claiming, device handles, etc.)
+and most of the users don't need to worry about that. But, because of the nonderterminisc
 nature of automatic object destruction of Python, users cannot predict when the resources
 allocated will be released. Some applications need to allocate and free the resources deterministically.
 For these kind of applications, the ``usb.util`` module has a set of functions to deal with resource
@@ -495,14 +495,14 @@ you can use the ``dispose_resources`` function. It releases all resources alloca
 device object (but not the device hardware itself) in the state it was at the time when the ``find`` 
 function returned.
 
-Oldschool rules
----------------
+Old school rules
+----------------
 
 If you wrote an application using the old PyUSB API (0.whatever), you may be asking yourself
 if you need to update your code to use the new API. Well, you should, but you don't need to. PyUSB
 1.0 comes with the ``usb.legacy`` compatibility module. It implements the older API above the
 new API. "So, do I have just to replace my ``import usb`` statement with ``import usb.legacy as
-usb`` to get my application working?", you ask. The answer is yes, it will, but you don't have
+usb`` to get my application working?", you ask. The answer is yes, it will work, but you don't have
 to. If you run your application untouched it will just work, because the ``import usb`` statement
 will import all public symbols from ``usb.legacy``. If you face a problem, probably you found a bug.
 
@@ -511,13 +511,6 @@ Help me, please
 
 If you need help, **do not email me**, the mailing list is there for this. Subscribe instructions
 can be found at the PyUSB_ website.
-
-What do you think about it?
----------------------------
-
-At alpha stage, users of PyUSB are invited to give their opinion about the PyUSB API.
-If you think a feature is hard to use and you have a better idea, open a new thread
-in the mailing list so we can discuss about that.
 
 .. [#] When I say True or False (capitalized), I mean the respectivelly values of the
        Python language. And when I say true and false, I mean any expression in Python
