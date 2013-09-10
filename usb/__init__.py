@@ -54,7 +54,7 @@ __all__ = ['legacy', 'core', 'backend', 'util']
 def _setup_log():
     from usb import _debug
     logger = logging.getLogger('usb')
-    debug_level = os.getenv('PYUSB_DEBUG_LEVEL')
+    debug_level = os.getenv('PYUSB_DEBUG')
 
     if debug_level is not None:
         _debug.enable_tracing(True)

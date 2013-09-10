@@ -124,7 +124,7 @@ the ``usb.core.USBError`` for USB related errors.
 
 You can also use the PyUSB log funcionality. It uses the `logging 
 <http://docs.python.org/library/logging.html>`__ module. To enable it, define
-the environment variable ``PYUSB_DEBUG_LEVEL`` with one of the following level
+the environment variable ``PYUSB_DEBUG`` with one of the following level
 names: ``critical``, ``error``, ``warning``, ``info`` or ``debug``.
 
 By default the messages are sent to `sys.stderr <http://docs.python.org/library/sys.html>`__.
