@@ -333,12 +333,14 @@ class Device(object):
 
 class Bus(object):
     r"""Bus object."""
-    def __init__(self):
+    def __init__(self, devices):
         self.dirname = ''
         self.location = 0
-        self.devices = [Device(d) for d in core.find(find_all=True)]
+        self.devices = [Device(d) for d in devices]
 
 def busses():
     r"""Return a tuple with the usb busses."""
-    return (Bus(),)
+    return (Bus(g) for k, g in _interop._groupby(
+            _interop._sorted(core.find(find_all=True), key=lambda d: d.bus),
+            lambda d: d.bus))
 
