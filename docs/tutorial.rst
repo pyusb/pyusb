@@ -122,7 +122,7 @@ Every function in PyUSB raises an exception in case of an error. Besides the `Py
 standard exceptions <http://docs.python.org/library/exceptions.html>`__, PyUSB defines
 the ``usb.core.USBError`` for USB related errors.
 
-You can also use the PyUSB log funcionality. It uses the `logging 
+You can also use the PyUSB log funcionality. It uses the `logging
 <http://docs.python.org/library/logging.html>`__ module. To enable it, define
 the environment variable ``PYUSB_DEBUG`` with one of the following level
 names: ``critical``, ``error``, ``warning``, ``info`` or ``debug``.
@@ -178,7 +178,7 @@ put their class information in the Interface Descriptor_ instead of the
 Device Descriptor_. So, to really find all printers connected to the
 system, we would need to transverse all configurations, and then
 all interfaces and check if one of the interfaces has its bInterfaceClass
-field equals to 7. If you are a  
+field equals to 7. If you are a
 `programmer <http://en.wikipedia.org/wiki/Laziness>`__ like me, you might be wondering
 if there is an easier way to do that. The answer is yes, it does. Firstly, let's
 give a look on the final code to find all printers connected::
@@ -340,7 +340,7 @@ printer and a scanner. To keep things simple (or at least as simple as we can), 
 consider that it has just one configuration. As we have a printer and a scanner, the configuration
 has two interfaces, one for the printer and one for the scanner. A device with more than
 one interface is called a composite device. When you connect your multifunction printer
-to your computer, the Operating System would load two different drivers: one for each 
+to your computer, the Operating System would load two different drivers: one for each
 "logical" peripheral you have [#]_.
 
 What about the alternate setting? Good you asked. An interface has one or
@@ -418,7 +418,7 @@ The data payload can be any sequence type that can be used as a parameter for th
 of an IN transfer).  There is one last optional parameter specifying the timeout of the operation.
 If you don't supply it, a default timeout will be used (more on that later). In an OUT transfer,
 the return value is the number of bytes really sent to the device. In an IN transfer, the return
-value is an array_ object with the data read. 
+value is an array_ object with the data read.
 
 For the other transfers, you use the methods ``write`` and ``read``, respectivelly, to
 write and read data. You don't need to worry about the transfer type, it is automatically
@@ -432,7 +432,7 @@ a loopback pipe in the endpoint 1::
     >>> assert sret == msg
 
 The first, third and fourth parameters are equal for both methods, they are the endpoint
-address, interface number and timeout, respectivelly. The second parameter is the data
+address, interface number [#]_ and timeout, respectivelly. The second parameter is the data
 payload (write) or the number of bytes to read (read). The returned data if either
 an instance of the array_ object for the ``read`` method or the number of bytes written
 for the ``write`` method.
@@ -464,7 +464,7 @@ The ``find`` function has one more parameter that I haven't told you. It is the 
 parameter. If you don't supply it, it will be used one of the builtin backends. A backend
 is a object inherited from ``usb.backend.IBackend``, responsible to implement the operating
 system specific USB stuff. As you might guess, the builtins are libusb 0.1, libusb 1.0 and
-OpenUSB backends. 
+OpenUSB backends.
 
 You can create you own backend and use it. Just inherit from ``IBackend`` and implement
 the methods necessary. You might want to give a look at the ``usb.backend`` package
@@ -492,7 +492,7 @@ described in the libusb_ documentation.
 
 If you want to free all resources allocated by the device object (including interfaces claimed),
 you can use the ``dispose_resources`` function. It releases all resources allocated and put the
-device object (but not the device hardware itself) in the state it was at the time when the ``find`` 
+device object (but not the device hardware itself) in the state it was at the time when the ``find``
 function returned.
 
 Old school rules
@@ -534,6 +534,9 @@ can be found at the PyUSB_ website.
 
 .. [#] In PyUSB, control transfers are only issued in the endpoint 0. It's very very very
        rare a device having an alternate control endpoint (I've never seem such device).
+
+.. [#] The interface number parameter is not used for most backends, and often can be
+       safely ignored.
 
 .. [#] It's just a joke, don't take it serious. Many choices is better than no choice.
 

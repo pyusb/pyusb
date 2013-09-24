@@ -1,8 +1,8 @@
-# Copyright (C) 2009-2013 Wander Lairson Costa 
-# 
+# Copyright (C) 2009-2013 Wander Lairson Costa
+#
 # The following terms apply to all files associated
 # with the software unless explicitly disclaimed in individual files.
-# 
+#
 # The authors hereby grant permission to use, copy, modify, distribute,
 # and license this software and its documentation for any purpose, provided
 # that existing copyright notices are retained in all copies and that this
@@ -12,13 +12,13 @@
 # and need not follow the licensing terms described here, provided that
 # the new terms are clearly indicated on the first page of each file where
 # they apply.
-# 
+#
 # IN NO EVENT SHALL THE AUTHORS OR DISTRIBUTORS BE LIABLE TO ANY PARTY
 # FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES
 # ARISING OUT OF THE USE OF THIS SOFTWARE, ITS DOCUMENTATION, OR ANY
 # DERIVATIVES THEREOF, EVEN IF THE AUTHORS HAVE BEEN ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
-# 
+#
 # THE AUTHORS AND DISTRIBUTORS SPECIFICALLY DISCLAIM ANY WARRANTIES,
 # INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY,
 # FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT.  THIS SOFTWARE
@@ -196,7 +196,7 @@ class _ResourceManager(object):
 
 class USBError(IOError):
     r"""Exception class for USB errors.
-    
+
     Backends must raise this exception when USB related errors occur.
     The backend specific error code is available through the
     'backend_error_code' member variable.
@@ -275,7 +275,7 @@ class Endpoint(object):
 
     def write(self, data, timeout = None):
         r"""Write data to the endpoint.
-        
+
         The parameter data contains the data to be sent to the endpoint and
         timeout is the time limit of the operation. The transfer type and
         endpoint address are automatically inferred.
@@ -288,7 +288,7 @@ class Endpoint(object):
 
     def read(self, size, timeout = None):
         r"""Read data from the endpoint.
-        
+
         The parameter size is the number of bytes to read and timeout is the
         time limit of the operation.The transfer type and endpoint address
         are automatically inferred.
@@ -387,7 +387,7 @@ class Interface(object):
 
 class Configuration(object):
     r"""Represent a configuration object.
- 
+
     This class contains all fields of the Configuration Descriptor
     according to the USB Specification. You may access them as class
     properties.  For example, to access the field bConfigurationValue
@@ -460,7 +460,7 @@ class Configuration(object):
 
 class Device(object):
     r"""Device object.
-    
+
     This class contains all fields of the Device Descriptor according
     to the USB Specification. You may access them as class properties.
     For example, to access the field bDescriptorType of the device
@@ -546,10 +546,10 @@ class Device(object):
             self.port_number = int(desc.port_number)
         else:
             self.port_number = None
-            
+
     def set_configuration(self, configuration = None):
         r"""Set the active configuration.
-        
+
         The configuration parameter is the bConfigurationValue field of the
         configuration you want to set as active. If you call this method
         without parameter, it will use the first configuration found.
@@ -564,7 +564,7 @@ class Device(object):
 
     def set_interface_altsetting(self, interface = None, alternate_setting = None):
         r"""Set the alternate setting for an interface.
- 
+
         When you want to use an interface and it has more than one alternate setting,
         you should call this method to select the alternate setting you would like
         to use. If you call the method without one or the two parameters, it will
@@ -603,7 +603,8 @@ class Device(object):
         communicate with. The interface parameter is the bInterfaceNumber field
         of the interface descriptor which contains the endpoint. If you do not
         provide one, the first one found will be used, as explained in the
-        set_interface_altsetting() method.
+        set_interface_altsetting() method. The bInterfaceNumber parameter is
+        not used for most backends, and often can be ignored.
 
         The data parameter should be a sequence like type convertible to
         array type (see array module).
@@ -640,8 +641,10 @@ class Device(object):
         communicate with. The interface parameter is the bInterfaceNumber field
         of the interface descriptor which contains the endpoint. If you do not
         provide one, the first one found will be used, as explained in the
-        set_interface_altsetting() method. The size parameters tells how many
-        bytes you want to read.
+        set_interface_altsetting() method. The bInterfaceNumber parameter is
+        not used for most backends, and often can be ignored.
+
+        The size parameter tells how many bytes you want to read.
 
         The timeout is specified in miliseconds.
 
@@ -861,7 +864,7 @@ def find(find_all=False, backend = None, custom_match = None, **args):
             raise ValueError('No backend available')
 
     k, v = args.keys(), args.values()
-    
+
     if find_all:
         return [d for d in device_iter(k, v)]
     else:
