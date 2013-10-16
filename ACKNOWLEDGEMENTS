@@ -1,7 +1,7 @@
 This is a list of people who has contributed to PyUSB 1.0 development.
 If I forgot you, please email me.
 
-PyUSB 1.0.0 (alpha 4)
+PyUSB 1.0.0 (beta 1)
 ---------------------
 
 - Stefano Di Martino: the port number patch.
@@ -11,6 +11,8 @@ PyUSB 1.0.0 (alpha 4)
 - ponty: tox support.
 - Chris Clark: version information patch.
 - themperek: improve read speed.
+- David Halter: for the isochronous writing implementation for the libusb10
+  backend.
 
 PyUSB 1.0.0 (alpha 3)
 ---------------------
@@ -21,8 +23,6 @@ PyUSB 1.0.0 (alpha 3)
 - Braiden Kindt: for the patch fixing bug when less than o number of requested
                  bytes are read.
 - Tormod Volden: for his several patches for legacy module.
-- David Halter: for the isochronous writing implementation for the libusb10
-  backend.
 
 PyUSB 1.0.0 (alpha 2)
 ---------------------

@@ -2,6 +2,31 @@
 PyUSB News
 ==========
 
+What's new in PyUSB 1.0.0 (beta 1)?
+===================================
+
+- Isochronous transfer for libusb 1.0 (by David Halter).
+- Experimental OpenUSB support.
+- Documentation update.
+- ``PYUSB_DEBUG_LEVEL`` environment variable is now called ``PYUSB_DEBUG``.
+- Legacy module nwo groups according to their *bus*.
+- Version information available for apps (by Chris Clark).
+- Faster read operation (by themperek).
+- Tox support (by ponty).
+- Support for port number info (by Stefano Di Martino).
+- Several bug fixes (please, check the Changelog file).
+
+Known issues
+============
+
+- OpenUSB backend hangs on some control transfers.
+
+TODO
+====
+
+- More tests with legacy module.
+- Isochronous transfers for libusb-win32.
+
 What's new in PyUSB 1.0.0 (alpha 3)?
 ====================================
 
