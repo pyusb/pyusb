@@ -27,7 +27,6 @@
 # MODIFICATIONS.
 
 from ctypes import *
-import ctypes.util
 import usb.util
 import sys
 import logging
@@ -36,6 +35,7 @@ import usb._interop as _interop
 import errno
 import math
 from usb.core import USBError
+import usb.libloader
 
 __author__ = 'Wander Lairson Costa'
 
@@ -263,35 +263,18 @@ def _get_iso_packet_list(transfer):
 
 _lib = None
 
-def _load_library():
-    if sys.platform != 'cygwin':
-        candidates = ('usb-1.0', 'libusb-1.0', 'usb')
-        for candidate in candidates:
-            if sys.platform == 'win32':
-                candidate = candidate + '.dll'
-
-            libname = ctypes.util.find_library(candidate)
-            if libname is not None: break
-    else:
-        # corner cases
-        # cygwin predefines library names with 'cyg' instead of 'lib'
-        try:
-            return CDLL('cygusb-1.0.dll')
-        except Exception:
-            _logger.error('Libusb 1.0 could not be loaded in cygwin', exc_info=True)
-
-        raise OSError('USB library could not be found')
+def _load_library(find_library=None):
     # Windows backend uses stdcall calling convention
-    if sys.platform == 'win32':
-        l = WinDLL(libname)
-    else:
-        l = CDLL(libname)
+    #
     # On FreeBSD 8/9, libusb 1.0 and libusb 0.1 are in the same shared
     # object libusb.so, so if we found libusb library name, we must assure
     # it is 1.0 version. We just try to get some symbol from 1.0 version
-    if not hasattr(l, 'libusb_init'):
-        raise OSError('USB library could not be found')
-    return l
+    return usb.libloader.load_locate_library(
+                ('usb-1.0', 'libusb-1.0', 'usb'),
+                'cygusb-1.0.dll', 'Libusb 1',
+                win_cls=(WinDLL if sys.platform == 'win32' else None),
+                find_library=find_library, check_symbols=('libusb_init',)
+    )
 
 def _setup_prototypes(lib):
     # void libusb_set_debug (libusb_context *ctx, int level)
@@ -889,13 +872,17 @@ class _LibUSB(usb.backend.IBackend):
             _check(retval)
         return data[:transferred.value]
 
-def get_backend():
+def get_backend(find_library=None):
     global _lib
     try:
         if _lib is None:
-            _lib = _load_library()
+            _lib = _load_library(find_library=find_library)
             _setup_prototypes(_lib)
         return _LibUSB(_lib)
+    except usb.libloader.LibaryException:
+        # exception already logged (if any)
+        _logger.error('Error loading libusb 1.0 backend', exc_info=False)
+        return None
     except Exception:
         _logger.error('Error loading libusb 1.0 backend', exc_info=True)
         return None

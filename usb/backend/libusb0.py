@@ -27,7 +27,6 @@
 # MODIFICATIONS.
 
 from ctypes import *
-import ctypes.util
 import os
 import usb.backend
 import usb.util
@@ -36,6 +35,7 @@ from usb.core import USBError
 from usb._debug import methodtrace
 import usb._interop as _interop
 import logging
+import usb.libloader
 
 __author__ = 'Wander Lairson Costa'
 
@@ -187,26 +187,12 @@ class _DeviceDescriptor:
         self.port_number = None
 _lib = None
 
-def _load_library():
-    if sys.platform != 'cygwin':
-        candidates = ('usb-0.1', 'usb', 'libusb0')
-        for candidate in candidates:
-            # Workaround for CPython 3.3 issue#16283 / pyusb #14
-            if sys.platform == 'win32':
-                candidate = candidate + '.dll'
-
-            libname = ctypes.util.find_library(candidate)
-            if libname is not None: break
-    else:
-        # corner cases
-        # cygwin predefines library names with 'cyg' instead of 'lib'
-        try:
-            return CDLL('cygusb0.dll')
-        except:
-            _logger.error('Libusb 0 could not be loaded in cygwin', exc_info=True)
-
-        raise OSError('USB library could not be found')
-    return CDLL(libname)
+def _load_library(find_library=None):
+    return usb.libloader.load_locate_library(
+                ('usb-0.1', 'usb', 'libusb0'),
+                'cygusb0.dll', 'Libusb 0',
+                find_library=find_library
+    )
 
 def _setup_prototypes(lib):
     # usb_dev_handle *usb_open(struct usb_device *dev);
@@ -577,14 +563,18 @@ class _LibUSB(usb.backend.IBackend):
                 )))
         return data[:ret]
 
-def get_backend():
+def get_backend(find_library=None):
     global _lib
     try:
         if _lib is None:
-            _lib = _load_library()
+            _lib = _load_library(find_library)
             _setup_prototypes(_lib)
             _lib.usb_init()
         return _LibUSB()
+    except usb.libloader.LibaryException:
+        # exception already logged (if any)
+        _logger.error('Error loading libusb 0.1 backend', exc_info=False)
+        return None
     except Exception:
         _logger.error('Error loading libusb 0.1 backend', exc_info=True)
         return None

@@ -34,6 +34,7 @@ import logging
 import errno
 import sys
 import usb._interop as _interop
+import usb.libloader
 
 __author__ = 'Wander Lairson Costa'
 
@@ -245,16 +246,13 @@ _openusb_dev_handle = c_uint64
 _lib = None
 _ctx = None
 
-def _load_library():
-    candidate = 'openusb'
-    # Workaround for CPython 3.3 issue#16283 / pyusb #14
-    if sys.platform == 'win32':
-        candidate = candidate + '.dll'
-
-    libname = ctypes.util.find_library(candidate)
-    if libname is None:
-        raise OSError('USB library could not be found')
-    return CDLL(libname)
+def _load_library(find_library=None):
+    # FIXME: cygwin name is "openusb"?
+    #        (that's what the original _load_library() function
+    #         would have searched for)
+    return usb.libloader.load_locate_library(
+        ('openusb',), 'openusb', "OpenUSB library", find_library=find_library
+    )
 
 def _setup_prototypes(lib):
     # int32_t openusb_init(uint32_t flags , openusb_handle_t *handle);
@@ -708,14 +706,18 @@ class _OpenUSB(usb.backend.IBackend):
     def reset_device(self, dev_handle):
         _check(_lib.openusb_reset(dev_handle))
 
-def get_backend():
+def get_backend(find_library=None):
     try:
         global _lib, _ctx
         if _lib is None:
-            _lib = _load_library()
+            _lib = _load_library(find_library)
             _setup_prototypes(_lib)
             _ctx = _Context()
         return _OpenUSB()
+    except usb.libloader.LibaryException:
+        # exception already logged (if any)
+        _logger.error('Error loading OpenUSB backend', exc_info=False)
+        return None
     except Exception:
         _logger.error('Error loading OpenUSB backend', exc_info=True)
         return None
