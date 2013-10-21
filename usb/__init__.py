@@ -48,7 +48,7 @@ version_info = (1, 0, 0, 'b1')
 __version__ = '%d.%d.%d%s' % version_info
 
 
-__all__ = ['legacy', 'core', 'backend', 'util']
+__all__ = ['legacy', 'core', 'backend', 'util', 'libloader']
 
 
 def _setup_log():
