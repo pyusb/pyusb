@@ -122,7 +122,7 @@ Every function in PyUSB raises an exception in case of an error. Besides the `Py
 standard exceptions <http://docs.python.org/library/exceptions.html>`__, PyUSB defines
 the ``usb.core.USBError`` for USB related errors.
 
-You can also use the PyUSB log funcionality. It uses the `logging
+You can also use the PyUSB log functionality. It uses the `logging
 <http://docs.python.org/library/logging.html>`__ module. To enable it, define
 the environment variable ``PYUSB_DEBUG`` with one of the following level
 names: ``critical``, ``error``, ``warning``, ``info`` or ``debug``.
@@ -137,8 +137,8 @@ Where are you?
 
 The ``find()`` function in the ``core`` module is used to
 find and enumerate devices connected to the system. For example, let's
-say that our device has a vendor id equals to 0xfffe and product id
-equals to 0x0001. If we would like to find it, we proceed in this way::
+say that our device has a vendor ID equal to `0xfffe` and product ID
+equals to `0x0001`. If we would like to find it, we proceed in this way::
 
     import usb.core
 
@@ -146,11 +146,11 @@ equals to 0x0001. If we would like to find it, we proceed in this way::
     if dev is None:
         raise ValueError('Our device is not connected')
 
-Just it, the function will return an ``usb.core.Device`` object representing
+That's it, the function will return an ``usb.core.Device`` object representing
 our device. If the device is not found, it returns ``None``. Actually, you
 can use any field of the Device Descriptor_ you desire. For example, what
-if we would like to discover if there is an USB printer connected to the system?
-This is far easy::
+if we would like to discover if there is a USB printer connected to the system?
+This is very easy::
 
     # actually this is not the whole history, keep reading
     if usb.core.find(bDeviceClass=7) is None:
@@ -171,16 +171,16 @@ has a parameter called ``find_all`` that defaults to False. When it is
 false [#]_, ``find`` will return the first device found that matches the
 specified criteria (more on that soon). If you give it a *true* value,
 ``find`` will instead return a list with all devices matching the criteria.
-That's it! Simple, doesn't it?
+That's it! Simple, isn't it?
 
 Finished? No! I have not told you the whole history: many devices actually
 put their class information in the Interface Descriptor_ instead of the
 Device Descriptor_. So, to really find all printers connected to the
 system, we would need to transverse all configurations, and then
-all interfaces and check if one of the interfaces has its bInterfaceClass
-field equals to 7. If you are a
+all interfaces and check if one of the interfaces has its `bInterfaceClass`
+field equal to 7. If you are a
 `programmer <http://en.wikipedia.org/wiki/Laziness>`__ like me, you might be wondering
-if there is an easier way to do that. The answer is yes, it does. Firstly, let's
+if there is an easier way to do that. The answer is yes, there is. First, let's
 give a look on the final code to find all printers connected::
 
     import usb.core
@@ -216,7 +216,7 @@ device. You can also combine ``custom_match`` with device fields if you want::
     # find all printers that belongs to our vendor:
     printers = usb.core.find(find_all=1, custom_match=find_class(7), idVendor=0xfffe)
 
-Here we are only interested in the printers of the 0xfffe vendor.
+Here we are only interested in the printers of the `0xfffe` vendor.
 
 Describe yourself
 -----------------
@@ -256,7 +256,7 @@ as attributes the fields of the respective descriptor. Let's see an example::
                                  str(ep.bEndpointAddress) + \
                                  '\n')
 
-You can also use the subscript operator to access the descriptors randomly, like that::
+You can also use the subscript operator to access the descriptors randomly, like this::
 
     >>> # access the second configuration
     >>> cfg = dev[1]
@@ -265,14 +265,14 @@ You can also use the subscript operator to access the descriptors randomly, like
     >>> # third endpoint
     >>> ep = intf[2]
 
-As you can see, the index is zero based. But wait! There is something weird in the way
+As you can see, the index is zero-based. But wait! There is something weird in the way
 I access an interface... Yes, you are right, the subscript operator in the Configuration
 accepts a sequence of two items, with the first one being the index of the Interface and
 the second one, the alternate setting. So, to access the first interface, but its second
 alternate setting, we write ``cfg[(0,1)]``.
 
-Now it's time to we learn a powerfull way to find descriptors, the ``find_descriptor``
-utility function. We have already seem it in the printer finding example.
+Now it's time to we learn a powerful way to find descriptors, the ``find_descriptor``
+utility function. We have already seen it in the printer finding example.
 ``find_descriptor`` works in almost the same way as ``find``, with two exceptions:
 
 * ``find_descriptor`` receives as its first parameter the parent descriptor that you
@@ -280,7 +280,7 @@ utility function. We have already seem it in the printer finding example.
 * There is no ``backend`` [#]_ parameter.
 
 For example, if we have a configuration descriptor ``cfg`` and want to find all
-alternate setttings of the interface 1, we do so::
+alternate settings of the interface 1, we do so::
 
     import usb.util
     alt = usb.util.find_descriptor(cfg, find_all=True, bInterfaceNumber=1)
@@ -294,7 +294,7 @@ Dealing with multiple identical devices
 Sometimes you may have two identical devices connected to the computer. How
 can you differentiate them? ``Device`` objects come with two additional
 attributes which are not part of the USB Spec, but are very useful: ``bus`` and
-``address`` attributes. First of all, it is worth to say that these attributes
+``address`` attributes. First of all, it is worth it to say that these attributes
 come from the backend and a backend is free to not support them, in which case
 they are set to ``None``. That said, these attributes represent the bus number
 and bus address of the device and, as you might already have imagined, can be
@@ -304,7 +304,7 @@ attributes.
 How am I supposed to work?
 --------------------------
 
-USB devices after connected must be configured through a few standard requests.
+USB devices after connection must be configured through a few standard requests.
 When I started to study USB_ spec, I found myself confused with descriptors,
 configurations, interfaces, alternate settings, transfer types and all this
 stuff... And worst, you cannot simply ignore them, a device does not work
@@ -313,13 +313,13 @@ make your life as easy as possible. For example, after getting your device
 object, one of the first things you need to do before communicating with it
 is issuing a ``set_configuration`` request. The parameter for this request
 is the ``bConfigurationValue`` of the configuration you are interested on.
-Most devices has no more than one configuration, and tracking the configuration
-value to use is annoying (although most code I have seem simply hardcodes it).
+Most devices have no more than one configuration, and tracking the configuration
+value to use is annoying (although most code I have seen simply hardcodes it).
 Therefore, in PyUSB, you can just issue a ``set_configuration`` call with no
 arguments. In this case, it will set the first configuration found (if your
 device has just one, you don't need to worry about the configuration value
 at all). For example, let's imagine you have a device with one configuration descriptor
-with its bConfigurationValue field equals to 5 [#]_, the following calls bellow will
+with its `bConfigurationValue` field equals to 5 [#]_, the following calls below will
 work equally::
 
     >>> dev.set_configuration(5)
@@ -345,11 +345,11 @@ to your computer, the Operating System would load two different drivers: one for
 
 What about the alternate setting? Good you asked. An interface has one or
 more alternate settings. An interface with just one alternate setting is considered
-to not having an alternate settting [#]_. Alternate settings are for interfaces which
+to not having an alternate setting [#]_. Alternate settings are for interfaces what
 configurations are for devices, i.e, for each interface, you can have only one alternate
 setting active. For example, USB spec says that a device cannot
 have an isochronous endpoint in its primary alternate setting [#]_, so a streaming device
-must have at least two alternate setttings, with the second one having the isochronous
+must have at least two alternate settings, with the second one having the isochronous
 endpoint(s). But as opposed to configurations, interfaces with just one alternate
 setting don't need to be set [#]_. You select an interface alternate setting
 through the ``set_interface_altsetting`` function::
@@ -361,7 +361,7 @@ through the ``set_interface_altsetting`` function::
     receives a SET_INTERFACE request for an interface that has no additional
     alternate settings. So, if you are not sure if either the interface has more
     than one alternate setting or it accepts a SET_INTERFACE request,
-    the safesty way is to call ``set_interface_altsetting`` inside an
+    the safest way is to call ``set_interface_altsetting`` inside an
     try-except block, like this::
 
         try:
@@ -383,7 +383,7 @@ from ``bInterfaceNumber`` and ``bAlternateSetting`` fields. Example::
 Talk to me, honey
 -----------------
 
-Now it's time for we to learn how to communicate with USB devices. USB has four
+Now it's time for us to learn how to communicate with USB devices. USB has four
 flavors of transfers: bulk, interrupt, isochronous and control. I don't intend
 to explain the purpose of each transfer and the differences among them. Therefore,
 I assume you know at least the basics of the USB transfers.
@@ -420,7 +420,7 @@ If you don't supply it, a default timeout will be used (more on that later). In 
 the return value is the number of bytes really sent to the device. In an IN transfer, the return
 value is an array_ object with the data read.
 
-For the other transfers, you use the methods ``write`` and ``read``, respectivelly, to
+For the other transfers, you use the methods ``write`` and ``read``, respectively, to
 write and read data. You don't need to worry about the transfer type, it is automatically
 determined from the endpoint address. Here is our loopback example assuming the we have
 a loopback pipe in the endpoint 1::
@@ -432,7 +432,7 @@ a loopback pipe in the endpoint 1::
     >>> assert sret == msg
 
 The first, third and fourth parameters are equal for both methods, they are the endpoint
-address, interface number [#]_ and timeout, respectivelly. The second parameter is the data
+address, interface number [#]_ and timeout, respectively. The second parameter is the data
 payload (write) or the number of bytes to read (read). The returned data if either
 an instance of the array_ object for the ``read`` method or the number of bytes written
 for the ``write`` method.
@@ -453,10 +453,10 @@ Additional Topics
 Behind every great abstraction, there's a great implementation
 --------------------------------------------------------------
 
-On early days, there was only libusb_. Then came libusb 1.0, and now we had libusb 0.1 and 1.0.
+In the early days, there was only libusb_. Then came libusb 1.0, and now we had libusb 0.1 and 1.0.
 After, they created OpenUSB_, and now we live at the
 `Tower of Babel <http://en.wikipedia.org/wiki/Tower_of_Babel>`__ of the USB libraries [#]_.
-How does PyUSB deal with it? Well, PyUSB is a democratic library, you may choose whatever
+How does PyUSB deal with it? Well, PyUSB is a democratic library, you may choose whichever
 library you want. Actually, you can write your own USB library from scratch and tell
 PyUSB to use it.
 
@@ -473,10 +473,10 @@ documentation to learn how to do that.
 Don't be selfish
 ----------------
 
-Python has what we say *automatic memory management*. This means that the virtual machine
-will decide when to release objects from the memory. Under the hoods, PyUSB manages
+Python has what we call *automatic memory management*. This means that the virtual machine
+will decide when to release objects from the memory. Under the hood, PyUSB manages
 all low level resources it needs to work (interface claiming, device handles, etc.)
-and most of the users don't need to worry about that. But, because of the nonderterminisc
+and most of the users don't need to worry about that. But, because of the nondeterministic
 nature of automatic object destruction of Python, users cannot predict when the resources
 allocated will be released. Some applications need to allocate and free the resources deterministically.
 For these kind of applications, the ``usb.util`` module has a set of functions to deal with resource
@@ -512,7 +512,7 @@ Help me, please
 If you need help, **do not email me**, the mailing list is there for this. Subscribe instructions
 can be found at the PyUSB_ website.
 
-.. [#] When I say True or False (capitalized), I mean the respectivelly values of the
+.. [#] When I say True or False (capitalized), I mean the respective values of the
        Python language. And when I say true and false, I mean any expression in Python
        which evals to true or false.
 
