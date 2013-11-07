@@ -453,7 +453,7 @@ Additional Topics
 Behind every great abstraction, there's a great implementation
 --------------------------------------------------------------
 
-In the early days, there was only libusb_. Then came libusb 1.0, and now we had libusb 0.1 and 1.0.
+In the early days, there was only libusb_. Then came libusb 1.0, and we had libusb 0.1 and 1.0.
 After, they created OpenUSB_, and now we live at the
 `Tower of Babel <http://en.wikipedia.org/wiki/Tower_of_Babel>`__ of the USB libraries [#]_.
 How does PyUSB deal with it? Well, PyUSB is a democratic library, you may choose whichever
@@ -462,12 +462,12 @@ PyUSB to use it.
 
 The ``find`` function has one more parameter that I haven't told you. It is the ``backend``
 parameter. If you don't supply it, it will be used one of the builtin backends. A backend
-is a object inherited from ``usb.backend.IBackend``, responsible to implement the operating
+is an object inherited from ``usb.backend.IBackend``, responsible to implement the operating
 system specific USB stuff. As you might guess, the builtins are libusb 0.1, libusb 1.0 and
 OpenUSB backends.
 
-You can create you own backend and use it. Just inherit from ``IBackend`` and implement
-the methods necessary. You might want to give a look at the ``usb.backend`` package
+You can create your own backend and use it. Just inherit from ``IBackend`` and implement
+the methods necessary. You might want to take a look at the ``usb.backend`` package
 documentation to learn how to do that.
 
 Don't be selfish
@@ -491,7 +491,7 @@ the `configuration selection problem <http://libusb.sourceforge.net/api-1.0/cave
 described in the libusb_ documentation.
 
 If you want to free all resources allocated by the device object (including interfaces claimed),
-you can use the ``dispose_resources`` function. It releases all resources allocated and put the
+you can use the ``dispose_resources`` function. It releases all resources allocated and puts the
 device object (but not the device hardware itself) in the state it was at the time when the ``find``
 function returned.
 
@@ -538,7 +538,7 @@ can be found at the PyUSB_ website.
 .. [#] The interface number parameter is not used for most backends, and often can be
        safely ignored.
 
-.. [#] It's just a joke, don't take it serious. Many choices is better than no choice.
+.. [#] It's just a joke, don't take it seriously. Many choices is better than no choice.
 
 .. _libusb: http://www.libusb.org
 .. _OpenUSB: http://openusb.wiki.sourceforge.net
