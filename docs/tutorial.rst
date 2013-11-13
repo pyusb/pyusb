@@ -402,7 +402,7 @@ structure. Following is a example of how to do a control transfer [#]_::
 
     >>> msg = 'test'
     >>> assert dev.ctrl_transfer(0x40, CTRL_LOOPBACK_WRITE, 0, 0, msg) == len(msg)
-    >>> ret = dev.ctrl_transfer(0x40, CTRL_LOOPBACK_READ, 0, 0, len(msg))
+    >>> ret = dev.ctrl_transfer(0xC0, CTRL_LOOPBACK_READ, 0, 0, len(msg))
     >>> sret = ''.join([chr(x) for x in ret])
     >>> assert sret == msg
 
