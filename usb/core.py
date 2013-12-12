@@ -547,6 +547,18 @@ class Device(object):
         else:
             self.port_number = None
 
+    @property
+    def manufacturer(self):
+        return util.get_string(self, 1000, self.iManufacturer)
+
+    @property
+    def product(self):
+        return util.get_string(self, 1000, self.iProduct)
+    
+    @property
+    def serial_number(self):
+        return util.get_string(self, 1000, self.iSerialNumber)
+
     def set_configuration(self, configuration = None):
         r"""Set the active configuration.
 
