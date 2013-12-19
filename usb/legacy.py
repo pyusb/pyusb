@@ -270,11 +270,11 @@ class DeviceHandle(object):
 
         Arguments:
             index: index of descriptor in the device.
-            length: number of bytes of the string
+            length: number of bytes of the string (ignored)
             langid: Language ID. If it is omittedi, will be
                     used the first language.
         """
-        return util.get_string(self.dev, length, index, langid).encode('ascii')
+        return util.get_string(self.dev, index, langid).encode('ascii')
 
     def getDescriptor(self, desc_type, desc_index, length, endpoint = -1):
         r"""Retrieves a descriptor from the device identified by the type
