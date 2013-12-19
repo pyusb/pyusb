@@ -113,8 +113,8 @@ class ControlTest(unittest.TestCase):
     def test_get_string(self):
         manufacturer_str = 'Travis Robinson'.encode('utf-16-le').decode('utf-16-le')
         product_str = 'Benchmark Device'.encode('utf-16-le').decode('utf-16-le')
-        self.assertEqual(usb.util.get_string(self.dev, len(manufacturer_str), self.dev.iManufacturer), manufacturer_str)
-        self.assertEqual(usb.util.get_string(self.dev, len(product_str), self.dev.iProduct), product_str)
+        self.assertEqual(usb.util.get_string(self.dev, self.dev.iManufacturer), manufacturer_str)
+        self.assertEqual(usb.util.get_string(self.dev, self.dev.iProduct), product_str)
 
 def get_suite():
     suite = unittest.TestSuite()
