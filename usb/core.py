@@ -505,6 +505,7 @@ class Device(object):
         """
         self._ctx = _ResourceManager(dev, backend)
         self.__default_timeout = _DEFAULT_TIMEOUT
+        self._serial_number, self._product, self._manufacturer = None, None, None
 
         desc = backend.get_device_descriptor(dev)
 
@@ -546,6 +547,39 @@ class Device(object):
             self.port_number = int(desc.port_number)
         else:
             self.port_number = None
+
+    @property
+    def serial_number(self):
+        """ Return the USB device's serial number string descriptor
+
+        This property will cause some USB traffic the first time it is accessed
+        and cache the resulting value for future use.
+        """
+        if self._serial_number is None:
+            self._serial_number = util.get_string(self, self.iSerialNumber)
+        return self._serial_number
+
+    @property
+    def product(self):
+        """ Return the USB device's product string descriptor
+
+        This property will cause some USB traffic the first time it is accessed
+        and cache the resulting value for future use.
+        """
+        if self._product is None:
+            self._product = util.get_string(self, self.iProduct)
+        return self._product
+
+    @property
+    def manufacturer(self):
+        """ Return the USB device's manufacturer string descriptor
+
+        This property will cause some USB traffic the first time it is accessed
+        and cache the resulting value for future use.
+        """
+        if self._manufacturer is None:
+            self._manufacturer = util.get_string(self, self.iManufacturer)
+        return self._manufacturer
 
     def set_configuration(self, configuration = None):
         r"""Set the active configuration.
