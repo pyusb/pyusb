@@ -637,8 +637,7 @@ class Device(object):
         communicate with. The interface parameter is the bInterfaceNumber field
         of the interface descriptor which contains the endpoint. If you do not
         provide one, the first one found will be used, as explained in the
-        set_interface_altsetting() method. The bInterfaceNumber parameter is
-        not used for most backends, and often can be ignored.
+        set_interface_altsetting() method.
 
         The data parameter should be a sequence like type convertible to
         array type (see array module).
@@ -675,10 +674,8 @@ class Device(object):
         communicate with. The interface parameter is the bInterfaceNumber field
         of the interface descriptor which contains the endpoint. If you do not
         provide one, the first one found will be used, as explained in the
-        set_interface_altsetting() method. The bInterfaceNumber parameter is
-        not used for most backends, and often can be ignored.
-
-        The size parameter tells how many bytes you want to read.
+        set_interface_altsetting() method. The size parameters tells how many
+        bytes you want to read.
 
         The timeout is specified in miliseconds.
 

@@ -427,7 +427,7 @@ a loopback pipe in the endpoint 1::
     >>> assert sret == msg
 
 The first, third and fourth parameters are equal for both methods, they are the endpoint
-address, interface number [#]_ and timeout, respectively. The second parameter is the data
+address, interface number and timeout, respectively. The second parameter is the data
 payload (write) or the number of bytes to read (read). The returned data if either
 an instance of the array_ object for the ``read`` method or the number of bytes written
 for the ``write`` method.
@@ -529,9 +529,6 @@ can be found at the PyUSB_ website.
 
 .. [#] In PyUSB, control transfers are only issued in the endpoint 0. It's very very very
        rare a device having an alternate control endpoint (I've never seem such device).
-
-.. [#] The interface number parameter is not used for most backends, and often can be
-       safely ignored.
 
 .. [#] It's just a joke, don't take it seriously. Many choices is better than no choice.
 
