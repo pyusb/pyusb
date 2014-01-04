@@ -177,6 +177,12 @@ class _ResourceManager(object):
             return self._ep_type_map[key]
         except KeyError:
             e = util.find_descriptor(intf, bEndpointAddress=address)
+
+            if e is None:
+                raise ValueError(
+                    'Interface "' + str((intf.bInterfaceNumber, intf.bAlternateSetting)) + \
+                    '" has no endpoint ' + hex(address))
+
             etype = util.endpoint_type(e.bmAttributes)
             self._ep_type_map[key] = etype
             return etype
