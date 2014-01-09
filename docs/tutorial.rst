@@ -490,6 +490,30 @@ you can use the ``dispose_resources`` function. It releases all resources alloca
 device object (but not the device hardware itself) in the state it was at the time when the ``find``
 function returned.
 
+Specifying libraries by hand
+----------------------------
+
+In general, a backend is an wrapper on a shared library which implements the USB access API.
+By default, the backend uses the
+`find_library() <http://docs.python.org/3/library/ctypes.html#finding-shared-libraries>`_
+ctypes_ function. On Linux and other Unix like Operating Systems, ``find_library`` tries
+to run external programs (like */sbin/ldconfig*, *gcc* and *objdump*) to find the library file.
+
+On systems where these programs are missing and/or the library cache is disabled, this
+function cannot be used. To overcome this limitation, PyUSB allows you to supply a
+custom `find_library()` function to the backend.
+
+An example for such scenario would be::
+
+    >>> import usb.core
+    >>> import usb.backend.libusb1
+    >>>
+    >>> backend = usb.backend.libusb1.get_backend(find_library=lambda x: "/usr/lib/libusb-1.0.so")
+    >>> dev     = usb.core.find(..., backend=backend)
+
+Notice the `find_library` argument for the `get_backend()` function, in which you supply a function
+that is responsible to find the correct library for the backend.
+
 Old school rules
 ----------------
 
