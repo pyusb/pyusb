@@ -105,9 +105,9 @@ interface we have. After finding the endpoint, we send the data to it.
 If we know the endpoint address in advance, we could just call the ``write`` function
 from the device object::
 
-    dev.write(1, 'test', 0)
+    dev.write(1, 'test')
 
-Here we write the string 'test' at endpoint address *1* of the interface number *0*.
+Here we write the string 'test' at the endpoint address *1*.
 All these functions will be detailed in the following sections.
 
 What's wrong?
@@ -421,13 +421,13 @@ determined from the endpoint address. Here is our loopback example assuming the 
 a loopback pipe in the endpoint 1::
 
     >>> msg = 'test'
-    >>> assert len(dev.write(1, msg, 0, 100)) == len(msg)
-    >>> ret = dev.read(0x81, len(msg), 0, 100)
+    >>> assert len(dev.write(1, msg, 100)) == len(msg)
+    >>> ret = dev.read(0x81, len(msg), 100)
     >>> sret = ''.join([chr(x) for x in ret])
     >>> assert sret == msg
 
-The first, third and fourth parameters are equal for both methods, they are the endpoint
-address, interface number and timeout, respectively. The second parameter is the data
+The first and third parameters are equal for both methods, they are the endpoint
+address and timeout, respectively. The second parameter is the data
 payload (write) or the number of bytes to read (read). The returned data if either
 an instance of the array_ object for the ``read`` method or the number of bytes written
 for the ``write`` method.

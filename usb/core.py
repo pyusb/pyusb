@@ -62,8 +62,7 @@ class _ResourceManager(object):
         self.dev = dev
         self.handle = None
         self._claimed_intf = _interop._set()
-        self._alt_set = {}
-        self._ep_type_map = {}
+        self._ep_info = {}
 
     def managed_open(self):
         if self.handle is None:
@@ -81,33 +80,32 @@ class _ResourceManager(object):
         elif isinstance(config, Configuration):
             cfg = config
         elif config == 0: # unconfigured state
-            class FakeConfiguration(object):
+            class MockConfiguration(object):
                 def __init__(self):
                     self.index = None
                     self.bConfigurationValue = 0
-            cfg = FakeConfiguration()
+            cfg = MockConfiguration()
         else:
             cfg = util.find_descriptor(device, bConfigurationValue=config)
+
         self.managed_open()
         self.backend.set_configuration(self.handle, cfg.bConfigurationValue)
+
         # cache the index instead of the object to avoid cyclic references
         # of the device and Configuration (Device tracks the _ResourceManager,
         # which tracks the Configuration, which tracks the Device)
         self._active_cfg_index = cfg.index
-        # after changing configuration, our alternate setting and endpoint type caches
-        # are not valid anymore
-        self._ep_type_map.clear()
-        self._alt_set.clear()
+
+        self._ep_info.clear()
 
     def managed_claim_interface(self, device, intf):
         self.managed_open()
-        if intf is None:
-            cfg = self.get_active_configuration(device)
-            i = cfg[(0,0)].bInterfaceNumber
-        elif isinstance(intf, Interface):
+
+        if isinstance(intf, Interface):
             i = intf.bInterfaceNumber
         else:
             i = intf
+
         if i not in self._claimed_intf:
             self.backend.claim_interface(self.handle, i)
             self._claimed_intf.add(i)
@@ -120,6 +118,7 @@ class _ResourceManager(object):
             i = intf.bInterfaceNumber
         else:
             i = intf
+
         if i in self._claimed_intf:
             self.backend.release_interface(self.handle, i)
             self._claimed_intf.remove(i)
@@ -135,27 +134,38 @@ class _ResourceManager(object):
                 i = util.find_descriptor(cfg, bInterfaceNumber=intf, bAlternateSetting=alt)
             else:
                 i = util.find_descriptor(cfg, bInterfaceNumber=intf)
+
         self.managed_claim_interface(device, i)
+
         if alt is None:
             alt = i.bAlternateSetting
-        self.backend.set_interface_altsetting(self.handle, i.bInterfaceNumber, alt)
-        self._alt_set[i.bInterfaceNumber] = alt
 
-    def get_interface(self, device, intf):
-        # TODO: check the viability of issuing a GET_INTERFACE
-        # request when we don't have a alternate setting cached
-        if isinstance(intf, Interface):
-            return intf
+        self.backend.set_interface_altsetting(self.handle, i.bInterfaceNumber, alt)
+
+    def setup_request(self, device, endpoint):
+        # we need the endpoint address, but the "endpoint" parameter
+        # can be either the a Endpoint object or the endpoint address itself
+        if isinstance(endpoint, Endpoint):
+            endpoint_address = endpoint.bEndpointAddress
         else:
-            cfg = self.get_active_configuration(device)
-            if intf is None:
-                intf = cfg[(0,0)].bInterfaceNumber
-            if intf in self._alt_set:
-                return util.find_descriptor(cfg,
-                                            bInterfaceNumber=intf,
-                                            bAlternateSetting=self._alt_set[intf])
-            else:
-                return util.find_descriptor(cfg, bInterfaceNumber=intf)
+            endpoint_address = endpoint
+
+        intf, ep = self.get_interface_and_endpoint(device, endpoint_address)
+        self.managed_claim_interface(device, intf)
+        return (intf, ep)
+
+    # Find the interface and endpoint objects which endpoint address belongs to
+    def get_interface_and_endpoint(self, device, endpoint_address):
+        try:
+            return self._ep_info[endpoint_address]
+        except KeyError:
+            for intf in self.get_active_configuration(device):
+                ep = util.find_descriptor(intf, bEndpointAddress=endpoint_address)
+                if ep is not None:
+                    self._ep_info[endpoint_address] = (intf, ep)
+                    return intf, ep
+
+            raise ValueError('Invalid endpoint address ' + hex(endpoint_address))
 
     def get_active_configuration(self, device):
         if self._active_cfg_index is None:
@@ -170,23 +180,6 @@ class _ResourceManager(object):
             return cfg
         return device[self._active_cfg_index]
 
-    def get_endpoint_type(self, device, address, intf):
-        intf = self.get_interface(device, intf)
-        key = (address, intf.bInterfaceNumber, intf.bAlternateSetting)
-        try:
-            return self._ep_type_map[key]
-        except KeyError:
-            e = util.find_descriptor(intf, bEndpointAddress=address)
-
-            if e is None:
-                raise ValueError(
-                    'Interface "' + str((intf.bInterfaceNumber, intf.bAlternateSetting)) + \
-                    '" has no endpoint ' + hex(address))
-
-            etype = util.endpoint_type(e.bmAttributes)
-            self._ep_type_map[key] = etype
-            return etype
-
     def release_all_interfaces(self, device):
         claimed = copy.copy(self._claimed_intf)
         for i in claimed:
@@ -196,8 +189,7 @@ class _ResourceManager(object):
         self.release_all_interfaces(device)
         if close_handle:
             self.managed_close()
-        self._ep_type_map.clear()
-        self._alt_set.clear()
+        self._ep_info.clear()
         self._active_cfg_index = None
 
 class USBError(IOError):
@@ -250,8 +242,6 @@ class Endpoint(object):
         peripheral as a result of GET_DESCRIPTOR request.
         """
         self.device = device
-        intf = Interface(device, interface, alternate_setting, configuration)
-        self.interface = intf.bInterfaceNumber
         self.index = endpoint
 
         backend = device._ctx.backend
@@ -290,7 +280,7 @@ class Endpoint(object):
 
         For details, see the Device.write() method.
         """
-        return self.device.write(self.bEndpointAddress, data, self.interface, timeout)
+        return self.device.write(self, data, timeout)
 
     def read(self, size, timeout = None):
         r"""Read data from the endpoint.
@@ -303,7 +293,7 @@ class Endpoint(object):
 
         For details, see the Device.read() method.
         """
-        return self.device.read(self.bEndpointAddress, size, self.interface, timeout)
+        return self.device.read(self, size, timeout)
 
 class Interface(object):
     r"""Represent an interface object.
@@ -635,15 +625,12 @@ class Device(object):
         self._ctx.backend.reset_device(self._ctx.handle)
         self._ctx.dispose(self, True)
 
-    def write(self, endpoint, data, interface = None, timeout = None):
+    def write(self, endpoint, data, timeout = None):
         r"""Write data to the endpoint.
 
         This method is used to send data to the device. The endpoint parameter
         corresponds to the bEndpointAddress member whose endpoint you want to
-        communicate with. The interface parameter is the bInterfaceNumber field
-        of the interface descriptor which contains the endpoint. If you do not
-        provide one, the first one found will be used, as explained in the
-        set_interface_altsetting() method.
+        communicate with.
 
         The data parameter should be a sequence like type convertible to
         array type (see array module).
@@ -660,13 +647,12 @@ class Device(object):
                     util.ENDPOINT_TYPE_ISO:backend.iso_write
                 }
 
-        intf = self._ctx.get_interface(self, interface)
-        fn = fn_map[self._ctx.get_endpoint_type(self, endpoint, intf)]
-        self._ctx.managed_claim_interface(self, intf)
+        intf, ep = self._ctx.setup_request(self, endpoint)
+        fn = fn_map[util.endpoint_type(ep.bmAttributes)]
 
         return fn(
                 self._ctx.handle,
-                endpoint,
+                ep.bEndpointAddress,
                 intf.bInterfaceNumber,
                 _interop.as_array(data),
                 self.__get_timeout(timeout)
@@ -677,11 +663,7 @@ class Device(object):
 
         This method is used to receive data from the device. The endpoint parameter
         corresponds to the bEndpointAddress member whose endpoint you want to
-        communicate with. The interface parameter is the bInterfaceNumber field
-        of the interface descriptor which contains the endpoint. If you do not
-        provide one, the first one found will be used, as explained in the
-        set_interface_altsetting() method. The size parameters tells how many
-        bytes you want to read.
+        communicate with. The size parameters tells how many bytes you want to read.
 
         The timeout is specified in miliseconds.
 
@@ -695,13 +677,12 @@ class Device(object):
                     util.ENDPOINT_TYPE_ISO:backend.iso_read
                 }
 
-        intf = self._ctx.get_interface(self, interface)
-        fn = fn_map[self._ctx.get_endpoint_type(self, endpoint, intf)]
-        self._ctx.managed_claim_interface(self, intf)
+        intf, ep = self._ctx.setup_request(self, endpoint)
+        fn = fn_map[util.endpoint_type(ep.bmAttributes)]
 
         return fn(
                 self._ctx.handle,
-                endpoint,
+                ep.bEndpointAddress,
                 intf.bInterfaceNumber,
                 size,
                 self.__get_timeout(timeout)
