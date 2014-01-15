@@ -652,7 +652,7 @@ class _OpenUSB(usb.backend.IBackend):
     @methodtrace(_logger)
     def intr_read(self, dev_handle, ep, intf, size, timeout):
         request = _openusb_intr_request()
-        buffer = _interop.as_array('B', '\x00' * size)
+        buffer = _interop.as_array('\x00' * size)
         memset(byref(request), 0, sizeof(request))
         payload, request.length = buffer.buffer_info()
         request.payload = cast(payload, POINTER(c_uint8))
