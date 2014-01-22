@@ -517,7 +517,7 @@ class _LibUSB(usb.backend.IBackend):
                                 timeout
                             ))
         else:
-            data = _interop.as_array((0,) * data_or_wLength)
+            data = _interop.as_array('\x00' * data_or_wLength)
             read = int(_check(_lib.usb_control_msg(
                                 dev_handle,
                                 bmRequestType,
