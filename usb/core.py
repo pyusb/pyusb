@@ -733,26 +733,36 @@ class Device(object):
         r"""Determine if there is kernel driver associated with the interface.
 
         If a kernel driver is active, and the object will be unable to perform I/O.
+
+        The interface parameter is the device interface number to check.
         """
         self._ctx.managed_open()
-        return self._ctx.backend.is_kernel_driver_active(self._ctx.handle,
-                self._ctx.get_interface(self, interface).bInterfaceNumber)
+        return self._ctx.backend.is_kernel_driver_active(
+                self._ctx.handle,
+                interface)
 
     def detach_kernel_driver(self, interface):
         r"""Detach a kernel driver.
 
         If successful, you will then be able to perform I/O.
+
+        The interface parameter is the device interface number to detach the driver from.
         """
         self._ctx.managed_open()
-        self._ctx.backend.detach_kernel_driver(self._ctx.handle,
-            self._ctx.get_interface(self, interface).bInterfaceNumber)
+        self._ctx.backend.detach_kernel_driver(
+            self._ctx.handle,
+            interface)
 
     def attach_kernel_driver(self, interface):
         r"""Re-attach an interface's kernel driver, which was previously
-        detached using detach_kernel_driver()."""
+        detached using detach_kernel_driver().
+
+        The interface parameter is the device interface number to attach the driver to.
+        """
         self._ctx.managed_open()
-        self._ctx.backend.attach_kernel_driver(self._ctx.handle,
-            self._ctx.get_interface(self, interface).bInterfaceNumber)
+        self._ctx.backend.attach_kernel_driver(
+            self._ctx.handle,
+            interface)
 
     def __iter__(self):
         r"""Iterate over all configurations of the device."""
