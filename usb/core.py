@@ -293,7 +293,7 @@ class Endpoint(object):
 
         For details, see the Device.read() method.
         """
-        return self.device.read(self, size, timeout)
+        return self.device.read(self, size, timeout = timeout)
 
 class Interface(object):
     r"""Represent an interface object.
