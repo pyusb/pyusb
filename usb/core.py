@@ -658,7 +658,7 @@ class Device(object):
                 self.__get_timeout(timeout)
             )
 
-    def read(self, endpoint, size, interface = None, timeout = None):
+    def read(self, endpoint, size, timeout = None):
         r"""Read data from the endpoint.
 
         This method is used to receive data from the device. The endpoint parameter
