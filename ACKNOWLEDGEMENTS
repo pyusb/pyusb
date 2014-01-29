@@ -1,6 +1,12 @@
 This is a list of people who has contributed to PyUSB 1.0 development.
 If I forgot you, please email me.
 
+PyUSB 1.0.0 (beta 2)
+--------------------
+
+- Alan Aguiar: pull request #36.
+- jaseg: pull request #33.
+
 PyUSB 1.0.0 (beta 1)
 ---------------------
 
