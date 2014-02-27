@@ -193,6 +193,20 @@ class _openusb_request_result(Structure):
                 ('transferred_bytes', c_uint32)]
 
 class _openusb_ctrl_request(Structure):
+    def __init__(self):
+        super(_openusb_ctrl_request, self).__init__()
+        self.setup.bmRequestType = 0
+        self.setup.bRequest = 0
+        self.setup.wValue = 0
+        self.setup.wIndex = 0
+        self.payload = None
+        self.length = 0
+        self.timeout = 0
+        self.flags = 0
+        self.result.status = 0
+        self.result.transferred_bytes = 0
+        self.next = None
+
     class _openusb_ctrl_setup(Structure):
         _fields_ = [('bmRequestType', c_uint8),
                     ('bRequest', c_uint8),

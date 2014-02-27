@@ -44,7 +44,7 @@ import os
 __author__ = 'Wander Lairson Costa'
 
 # Use Semantic Versioning, http://semver.org/
-version_info = (1, 0, 0, 'b1')
+version_info = (1, 0, 0, 'b2')
 __version__ = '%d.%d.%d%s' % version_info
 
 
