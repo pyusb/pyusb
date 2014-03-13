@@ -64,14 +64,13 @@ def locate_library (candidates, find_library=ctypes.util.find_library):
         # Workaround for CPython 3.3 issue#16283 / pyusb #14
         if use_dll_workaround:
             candidate += '.dll'
-        
-        try:    
-            libname = find_library(candidate)
-        #trying to use a hack for openwrt and such embedded systems
-        except:
-            libname = "/usr/lib/libusb-1.0.so"        
-            if libname:
-                return libname
+            
+        libname = find_library(candidate)
+        #simple and dirty hack to make it work on openwrt             
+        if libname == None:
+            libname = "/usr/lib/libusb-1.0.so"
+        return libname
+       
     # -- end for
     return None
 
