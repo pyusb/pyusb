@@ -719,6 +719,13 @@ class Device(object):
 
         self._ctx.managed_open()
 
+        # Thanks to Johannes Stezenbach to point me out that we need to
+        # claim the recipient interface
+        recipient = bmRequestType & 3
+        if recipient == util.CTRL_RECIPIENT_INTERFACE:
+            interface_number = wIndex & 0xff
+            self._ctx.managed_claim_interface(self, interface_number)
+
         return self._ctx.backend.ctrl_transfer(
                                     self._ctx.handle,
                                     bmRequestType,
