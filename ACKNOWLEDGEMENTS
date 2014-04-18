@@ -6,6 +6,7 @@ PyUSB 1.0.0 (beta 2)
 
 - Alan Aguiar: pull request #36.
 - jaseg: pull request #33.
+- Johannes Stezenbach: thank you for the ctrl_transfer bug report.
 
 PyUSB 1.0.0 (beta 1)
 ---------------------
