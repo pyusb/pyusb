@@ -61,24 +61,24 @@ _logger = logging.getLogger('usb.core')
 _DEFAULT_TIMEOUT = 1000
 
 _descriptor_lookup = {
-        0x1 : "device",
-        0x2 : "configuration",
-        0x3 : "string",
-        0x4 : "interface",
-        0x5 : "endpoint",
-        0x6 : "device_qualifier",
-        0x7 : "other_speed_configuration",
-        0x8 : "interface_power",
+        0x1 : "Device",
+        0x2 : "Configuration",
+        0x3 : "String",
+        0x4 : "Interface",
+        0x5 : "Endpoint",
+        0x6 : "Device qualifier",
+        0x7 : "Other speed configuration",
+        0x8 : "Interface power",
         0x9 : "OTG",
-        0xA : "debug",
-        0xB : "interface_association",
-        0xC : "security",
-        0xD : "key",
-        0xE : "encryption type",
-        0xF : "binary device object store (BOS)",
-        0x10 : "device capability",
-        0x11 : "wireless endpoint companion",
-        0x30 : "SuperSpeed_endpoint_companion",
+        0xA : "Debug",
+        0xB : "Interface association",
+        0xC : "Security",
+        0xD : "Key",
+        0xE : "Encryption type",
+        0xF : "Binary device object store (BOS)",
+        0x10 : "Device capability",
+        0x11 : "Wireless endpoint companion",
+        0x30 : "SuperSpeed endpoint companion",
         }
 
 _device_class_lookup = {
@@ -374,20 +374,20 @@ class Endpoint(object):
     def show_info( self ):
         """ show information about an endpoint
         """
-        print( "      {0:<21}:{1:>#7x} (7 bytes)".format(
+        print( "      {0:<17}:{1:>#7x} (7 bytes)".format(
             "bLength", self.bLength) )
-        print( "      {0:<21}:{1:>#7x} ({2})".format(
+        print( "      {0:<17}:{1:>#7x} {2}".format(
             "bDescriptorType", self.bDescriptorType,
             _descriptor_lookup[self.bDescriptorType]) )
-        print( "      {0:<21}:{1:>#7x} ({2})".format(
+        print( "      {0:<17}:{1:>#7x} {2}".format(
             "bEndpointAddress", self.bEndpointAddress,
             "IN" if (0x80 & self.bEndpointAddress) else "OUT") )
-        print( "      {0:<21}:{1:>#7x} ({2})".format(
+        print( "      {0:<17}:{1:>#7x} {2}".format(
             "bmAttributes", self.bmAttributes,
-            _ep_attributes_lookup[self.bmAttributes]) )
-        print( "      {0:<21}:{1:>#7x} ({2} bytes)".format(
+            _ep_attributes_lookup[(self.bmAttributes & 0x3)]) )
+        print( "      {0:<17}:{1:>#7x} ({2} bytes)".format(
             "wMaxPacketSize", self.wMaxPacketSize, self.wMaxPacketSize) )
-        print( "      {0:<21}:{1:>#7x}".format(
+        print( "      {0:<17}:{1:>#7x}".format(
             "bInterval", self.bInterval) )
 
 
@@ -481,33 +481,32 @@ class Interface(object):
     def show_info( self ):
         """ show information about the interface
         """
-        print( "    {0:<23}:{1:>#7x} (9 bytes)".format(
+        print( "    {0:<19}:{1:>#7x} (9 bytes)".format(
             "bLength", self.bLength) )
-        print( "    {0:<23}:{1:>#7x} ({2})".format(
+        print( "    {0:<19}:{1:>#7x} {2}".format(
             "bDescriptorType", self.bDescriptorType,
             _descriptor_lookup[self.bDescriptorType]) )
-        print( "    {0:<23}:{1:>#7x}".format(
+        print( "    {0:<19}:{1:>#7x}".format(
             "bInterfaceNumber", self.bInterfaceNumber) )
-        print( "    {0:<23}:{1:>#7x}".format(
+        print( "    {0:<19}:{1:>#7x}".format(
             "bAlternateSetting", self.bAlternateSetting) )
-        print( "    {0:<23}:{1:>#7x}".format(
+        print( "    {0:<19}:{1:>#7x}".format(
             "bNumEndpoints", self.bNumEndpoints) )
-        print( "    {0:<23}:{1:>#7x} {2}".format(
+        print( "    {0:<19}:{1:>#7x} {2}".format(
             "bInterfaceClass", self.bInterfaceClass,
             _interface_class_lookup[self.bInterfaceClass]) )
-        print( "    {0:<23}:{1:>#7x}".format(
+        print( "    {0:<19}:{1:>#7x}".format(
             "bInterfaceSubClass", self.bInterfaceSubClass) )
-        print( "    {0:<23}:{1:>#7x}".format(
+        print( "    {0:<19}:{1:>#7x}".format(
             "bInterfaceProtocol", self.bInterfaceProtocol) )
-        print( "    {0:<23}:{1:>#7x} ({2})".format(
+        print( "    {0:<19}:{1:>#7x} {2}".format(
             "iInterface", self.iInterface,
-            "None Provided" if self.iInterface == 0 \
-                    else util.get_string(self.device, self.iInterface)) )
+            util.try_get_string( self.device, self.iInterface )) )
 
     def get_endpoints( self ):
         """ return a list of the endpoints
         """
-        return [i for i in self]
+        return [endpoint for endpoint in self]
 
     def show_all_info( self ):
         """ show all information for the interface
@@ -595,28 +594,27 @@ class Configuration(object):
     def show_info( self ):
         """ show information about the configuration
         """
-        print( "  {0:<25}:{1:>#7x} (9 bytes)".format(
+        print( "  {0:<21}:{1:>#7x} (9 bytes)".format(
             "bLength", self.bLength) )
-        print( "  {0:<25}:{1:>#7x} ({2})".format(
+        print( "  {0:<21}:{1:>#7x} {2}".format(
             "bDescriptorType", self.bDescriptorType,
             _descriptor_lookup[self.bDescriptorType]) )
-        print( "  {0:<25}:{1:>#7x} ({2} bytes)".format(
+        print( "  {0:<21}:{1:>#7x} ({2} bytes)".format(
             "wTotalLength", self.wTotalLength, self.wTotalLength) )
-        print( "  {0:<25}:{1:>#7x}".format(
+        print( "  {0:<21}:{1:>#7x}".format(
             "bNumInterfaces", self.bNumInterfaces) )
-        print( "  {0:<25}:{1:>#7x}".format(
+        print( "  {0:<21}:{1:>#7x}".format(
             "bConfigurationValue", self.bConfigurationValue) )
-        print( "  {0:<25}:{1:>#7x} ({2})".format(
+        print( "  {0:<21}:{1:>#7x} {2}".format(
             "iConfiguration", self.iConfiguration,
-            "None Provided" if self.iConfiguration == 0 \
-                    else util.get_string(self.device, self.iConfiguration)) )
-        print( "  {0:<25}:{1:>#7x} ({2} Powered)".format(
+            util.try_get_string( self.device, self.iConfiguration )) )
+        print( "  {0:<21}:{1:>#7x} {2} Powered{3}".format(
             "bmAttributes", self.bmAttributes,
             "Self" if (self.bmAttributes & (1<<6)) else "Bus",
             ", Remote Wakeup" if (self.bmAttributes & (1<<5)) else ""
             # bit 7 is high, bit 4..0 are 0
             ) )
-        print( "  {0:<25}:{1:>#7x} ({2} mA)".format(
+        print( "  {0:<21}:{1:>#7x} ({2} mA)".format(
             "bMaxPower", self.bMaxPower,
             _MAX_POWER_UNITS_USB2p0 * self.bMaxPower)
             # FIXME : add a check for superspeed vs usb 2.0
@@ -634,7 +632,7 @@ class Configuration(object):
     def get_interfaces(self):
         """ return a list of the interfaces
         """
-        return [i for i in self]
+        return [interface for interface in self]
 
 
 class Device(object):
@@ -981,43 +979,40 @@ class Device(object):
     def show_info( self ):
         """ show information about the device
         """
-        print( "{0:<27}:{1:>#7x} (18 bytes)".format(
+        print( "{0:<23}:{1:>#7x} (18 bytes)".format(
             "bLength", self.bLength) )
-        print( "{0:<27}:{1:>#7x} ({2})".format(
+        print( "{0:<23}:{1:>#7x} {2}".format(
             "bDescriptorType", self.bDescriptorType,
             _descriptor_lookup[self.bDescriptorType]) )
-        print( "{0:<27}:{1:>#7x} ({2}.{3}{4})".format(
+        print( "{0:<23}:{1:>#7x} USB {2}.{3}{4}".format(
             "bcdUSB", self.bcdUSB, (self.bcdUSB & 0xff00)>>8,
             (self.bcdUSB & 0xf0) >> 4,
             (self.bcdUSB & 0xf) if (self.bcdUSB & 0xf) else "" ) )
-        print( "{0:<27}:{1:>#7x} ({2})".format(
+        print( "{0:<23}:{1:>#7x} {2}".format(
             "bDeviceClass", self.bDeviceClass,
             _device_class_lookup[self.bDeviceClass]) )
-        print( "{0:<27}:{1:>#7x}".format(
+        print( "{0:<23}:{1:>#7x}".format(
             "bDeviceSubClass", self.bDeviceSubClass) )
-        print( "{0:<27}:{1:>#7x}".format(
+        print( "{0:<23}:{1:>#7x}".format(
             "bDeviceProtocol", self.bDeviceProtocol) )
-        print( "{0:<27}:{1:>#7x} ({1} bytes)".format(
+        print( "{0:<23}:{1:>#7x} ({1} bytes)".format(
             "bMaxPacketSize0", self.bMaxPacketSize0) )
-        print( "{0:<27}:{1:>#7x}".format(
+        print( "{0:<23}: {1:#06x}".format(
             "idVendor", self.idVendor) )
-        print( "{0:<27}: {1:#06x}".format(
+        print( "{0:<23}: {1:#06x}".format(
             "idProduct", self.idProduct) )
-        print( "{0:<27}: {1:#06x}".format(
+        print( "{0:<23}: {1:#06x}".format(
             "bcdDevice", self.bcdDevice) )
-        print( "{0:<27}:{1:>#7x} ({2})".format(
+        print( "{0:<23}:{1:>#7x} {2}".format(
             "iManufacturer", self.iManufacturer,
-            "None Provided" if self.iManufacturer == 0 \
-                    else util.get_string(self, self.iManufacturer)) )
-        print( "{0:<27}:{1:>#7x} ({2})".format(
+            util.try_get_string(self, self.iManufacturer)) )
+        print( "{0:<23}:{1:>#7x} {2}".format(
             "iProduct", self.iProduct,
-            "None Provided" if self.iProduct == 0 \
-                    else util.get_string(self, self.iProduct)) )
-        print( "{0:<27}:{1:>#7x} ({2})".format(
+            util.try_get_string(self, self.iProduct)) )
+        print( "{0:<23}:{1:>#7x} {2}".format(
             "iSerialNumber", self.iSerialNumber,
-            "None Provided" if self.iSerialNumber == 0 \
-                    else util.get_string(self, self.iSerialNumber)) )
-        print( "{0:<27}:{1:>#7x}".format(
+            util.try_get_string(self, self.iSerialNumber)) )
+        print( "{0:<23}:{1:>#7x}".format(
             "bNumConfigurations", self.bNumConfigurations) )
 
     def show_all_info( self ):
@@ -1025,13 +1020,22 @@ class Device(object):
         """
         print("DEVICE INFORMATION {0:=<40}".format(""))
         self.show_info()
-        for configuration in self.get_all_configurations():
-            print(" CONFIGURATION {0} {1:=<42}".format(
-                configuration.bConfigurationValue, ""))
-            configuration.show_all_info()
+        try:
+            for configuration in self.get_all_configurations():
+                print(" CONFIGURATION {0} {1:=<42}".format(
+                    configuration.bConfigurationValue, ""))
+                configuration.show_all_info()
+        except USBError:
+            try:
+                configuration = self.get_active_configuration()
+                print(" CONFIGURATION {0} {1:=<42}".format(
+                    configuration.bConfigurationValue, ""))
+                configuration.show_all_info()
+            except USBError:
+                print(" USBError Accessing Configurations")
 
     def get_all_configurations( self ):
-        return [i for i in self]
+        return [config for config in self]
 
     default_timeout = property(
                         __get_def_tmo,
@@ -1145,3 +1149,17 @@ def find(find_all=False, backend = None, custom_match = None, **args):
             return _interop._next(device_iter(k, v))
         except StopIteration:
             return None
+
+def show_device_info(show_all_info=False, **kwargs):
+    """ show information about connected devices
+    the show_all flag sets to verbose or not
+    **kwargs are passed directly to the find() function
+    """
+    kwargs["find_all"] = True
+    devices = find( **kwargs )
+    for device in devices:
+        if( show_all_info ):
+            device.show_all_info()
+        else:
+            device.show_info()
+        print("")
