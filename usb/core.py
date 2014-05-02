@@ -54,75 +54,13 @@ import usb.util as util
 import copy
 import operator
 import usb._interop as _interop
+import usb._lookup as _lookup
 import logging
 
 _logger = logging.getLogger('usb.core')
 
 _DEFAULT_TIMEOUT = 1000
 
-_descriptor_lookup = {
-        0x1 : "Device",
-        0x2 : "Configuration",
-        0x3 : "String",
-        0x4 : "Interface",
-        0x5 : "Endpoint",
-        0x6 : "Device qualifier",
-        0x7 : "Other speed configuration",
-        0x8 : "Interface power",
-        0x9 : "OTG",
-        0xA : "Debug",
-        0xB : "Interface association",
-        0xC : "Security",
-        0xD : "Key",
-        0xE : "Encryption type",
-        0xF : "Binary device object store (BOS)",
-        0x10 : "Device capability",
-        0x11 : "Wireless endpoint companion",
-        0x30 : "SuperSpeed endpoint companion",
-        }
-
-_device_class_lookup = {
-        0x0 : "Specified at interface",
-        0x2 : "Communications Device",
-        0x9 : "Hub",
-        0xF : "Personal Healthcare Device",
-        0xDC : "Diagnostic Device",
-        0xE0 : "Wireless Controller",
-        0xEF : "Miscellaneous",
-        0xFF : "Vendor-specific",
-        }
-
-_interface_class_lookup = {
-        0x0 : "Reserved",
-        0x1 : "Audio",
-        0x2 : "Communications Commands",
-        0x3 : "Human Interface Device",
-        0x5 : "Physical",
-        0x6 : "Image",
-        0x7 : "Printer",
-        0x8 : "Mass Storage",
-        0x9 : "Hub",
-        0xA : "Communications Data",
-        0xB : "Smart Card",
-        0xD : "Content Security",
-        0xE : "Video",
-        0xF : "Personal Healthcare",
-        0xDC : "Diagnostic Device",
-        0xE0 : "Wireless Controller",
-        0xEF : "Miscellaneous",
-        0xFE : "Application Specific",
-        0xFF : "Vendor Specific",
-        }
-
-_ep_attributes_lookup = {
-        0x0 : "Control",
-        0x1 : "Isochronous",
-        0x2 : "Bulk",
-        0x3 : "Interrupt",
-        }
-
-_MAX_POWER_UNITS_USB2p0 = 2             # mA
-_MAX_POWER_UNITS_USB_SUPERSPEED = 8     # mA
 
 def _set_attr(input, output, fields):
     for f in fields:
@@ -378,13 +316,13 @@ class Endpoint(object):
             "bLength", self.bLength) )
         print( "      {0:<17}:{1:>#7x} {2}".format(
             "bDescriptorType", self.bDescriptorType,
-            _descriptor_lookup[self.bDescriptorType]) )
+            _lookup.descriptors[self.bDescriptorType]) )
         print( "      {0:<17}:{1:>#7x} {2}".format(
             "bEndpointAddress", self.bEndpointAddress,
             "IN" if (0x80 & self.bEndpointAddress) else "OUT") )
         print( "      {0:<17}:{1:>#7x} {2}".format(
             "bmAttributes", self.bmAttributes,
-            _ep_attributes_lookup[(self.bmAttributes & 0x3)]) )
+            _lookup.ep_attributes[(self.bmAttributes & 0x3)]) )
         print( "      {0:<17}:{1:>#7x} ({2} bytes)".format(
             "wMaxPacketSize", self.wMaxPacketSize, self.wMaxPacketSize) )
         print( "      {0:<17}:{1:>#7x}".format(
@@ -485,7 +423,7 @@ class Interface(object):
             "bLength", self.bLength) )
         print( "    {0:<19}:{1:>#7x} {2}".format(
             "bDescriptorType", self.bDescriptorType,
-            _descriptor_lookup[self.bDescriptorType]) )
+            _lookup.descriptors[self.bDescriptorType]) )
         print( "    {0:<19}:{1:>#7x}".format(
             "bInterfaceNumber", self.bInterfaceNumber) )
         print( "    {0:<19}:{1:>#7x}".format(
@@ -494,7 +432,7 @@ class Interface(object):
             "bNumEndpoints", self.bNumEndpoints) )
         print( "    {0:<19}:{1:>#7x} {2}".format(
             "bInterfaceClass", self.bInterfaceClass,
-            _interface_class_lookup[self.bInterfaceClass]) )
+            _lookup.interface_classes[self.bInterfaceClass]) )
         print( "    {0:<19}:{1:>#7x}".format(
             "bInterfaceSubClass", self.bInterfaceSubClass) )
         print( "    {0:<19}:{1:>#7x}".format(
@@ -598,7 +536,7 @@ class Configuration(object):
             "bLength", self.bLength) )
         print( "  {0:<21}:{1:>#7x} {2}".format(
             "bDescriptorType", self.bDescriptorType,
-            _descriptor_lookup[self.bDescriptorType]) )
+            _lookup.descriptors[self.bDescriptorType]) )
         print( "  {0:<21}:{1:>#7x} ({2} bytes)".format(
             "wTotalLength", self.wTotalLength, self.wTotalLength) )
         print( "  {0:<21}:{1:>#7x}".format(
@@ -616,7 +554,7 @@ class Configuration(object):
             ) )
         print( "  {0:<21}:{1:>#7x} ({2} mA)".format(
             "bMaxPower", self.bMaxPower,
-            _MAX_POWER_UNITS_USB2p0 * self.bMaxPower)
+            _lookup.MAX_POWER_UNITS_USB2p0 * self.bMaxPower)
             # FIXME : add a check for superspeed vs usb 2.0
             )
 
@@ -983,14 +921,14 @@ class Device(object):
             "bLength", self.bLength) )
         print( "{0:<23}:{1:>#7x} {2}".format(
             "bDescriptorType", self.bDescriptorType,
-            _descriptor_lookup[self.bDescriptorType]) )
+            _lookup.descriptors[self.bDescriptorType]) )
         print( "{0:<23}:{1:>#7x} USB {2}.{3}{4}".format(
             "bcdUSB", self.bcdUSB, (self.bcdUSB & 0xff00)>>8,
             (self.bcdUSB & 0xf0) >> 4,
             (self.bcdUSB & 0xf) if (self.bcdUSB & 0xf) else "" ) )
         print( "{0:<23}:{1:>#7x} {2}".format(
             "bDeviceClass", self.bDeviceClass,
-            _device_class_lookup[self.bDeviceClass]) )
+            _lookup.device_classes[self.bDeviceClass]) )
         print( "{0:<23}:{1:>#7x}".format(
             "bDeviceSubClass", self.bDeviceSubClass) )
         print( "{0:<23}:{1:>#7x}".format(
