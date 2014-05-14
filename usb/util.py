@@ -1,8 +1,8 @@
-# Copyright (C) 2009-2013 Wander Lairson Costa 
-# 
+# Copyright (C) 2009-2013 Wander Lairson Costa
+#
 # The following terms apply to all files associated
 # with the software unless explicitly disclaimed in individual files.
-# 
+#
 # The authors hereby grant permission to use, copy, modify, distribute,
 # and license this software and its documentation for any purpose, provided
 # that existing copyright notices are retained in all copies and that this
@@ -12,13 +12,13 @@
 # and need not follow the licensing terms described here, provided that
 # the new terms are clearly indicated on the first page of each file where
 # they apply.
-# 
+#
 # IN NO EVENT SHALL THE AUTHORS OR DISTRIBUTORS BE LIABLE TO ANY PARTY
 # FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES
 # ARISING OUT OF THE USE OF THIS SOFTWARE, ITS DOCUMENTATION, OR ANY
 # DERIVATIVES THEREOF, EVEN IF THE AUTHORS HAVE BEEN ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
-# 
+#
 # THE AUTHORS AND DISTRIBUTORS SPECIFICALLY DISCLAIM ANY WARRANTIES,
 # INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY,
 # FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT.  THIS SOFTWARE
@@ -87,7 +87,7 @@ _CTRL_DIR_MASK = 0x80
 
 def endpoint_address(address):
     r"""Return the endpoint absolute address.
-    
+
     The address parameter is the bEndpointAddress field
     of the endpoint descriptor.
     """
@@ -104,7 +104,7 @@ def endpoint_direction(address):
 
 def endpoint_type(bmAttributes):
     r"""Return the transfer type of the endpoint.
-    
+
     The bmAttributes parameter is the bmAttributes field
     of the endpoint descriptor.
     The possible return values are: ENDPOINT_TYPE_CTRL,
@@ -114,7 +114,7 @@ def endpoint_type(bmAttributes):
 
 def ctrl_direction(bmRequestType):
     r"""Return the direction of a control request.
-    
+
     The bmRequestType parameter is the value of the
     bmRequestType field of a control transfer.
     The possible return values are CTRL_OUT or CTRL_IN.
@@ -256,3 +256,18 @@ def get_string(dev, index, langid = None):
                 langid
             )
     return buf[2:buf[0]].tostring().decode('utf-16-le')
+
+def try_get_string(dev, index, langid = None):
+    """ try to get a string, but return a string no matter what
+    """
+    if index == 0 :
+        string = "None Provided"
+    else:
+        try:
+            if langid is None:
+                string = get_string( dev, index )
+            else:
+                string = get_string( dev, index, langid )
+        except :
+            string = "Error Accessing String"
+    return string
