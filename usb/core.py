@@ -37,8 +37,6 @@ Endpoint - a class representing an endpoint descriptor.
 find() - a function to find USB devices.
 """
 
-from __future__ import print_function
-
 __author__ = 'Wander Lairson Costa'
 
 __all__ = [ 'Device', 'Configuration', 'Interface', 'Endpoint', 'find',
