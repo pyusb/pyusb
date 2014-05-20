@@ -547,12 +547,15 @@ def _setup_prototypes(lib):
 # check a libusb function call
 def _check(retval):
     if isinstance(retval, int):
-        retval = c_int(retval)
+        ret = retval
+
     if isinstance(retval, c_int):
-        if retval.value < 0:
-           ret = retval.value
-           raise USBError(_str_error[ret], ret, _libusb_errno[ret])
-    return retval
+        ret = retval.value
+
+    if ret < 0:
+        raise USBError(_str_error[ret], ret, _libusb_errno[ret])
+
+    return ret
 
 # wrap a device
 class _Device(object):
@@ -587,7 +590,7 @@ class _DevIterator(object):
         self.num_devs = _check(_lib.libusb_get_device_list(
                                     ctx,
                                     byref(self.dev_list))
-                                ).value
+                                )
     def __iter__(self):
         for i in range(self.num_devs):
             yield _Device(self.dev_list[i])
@@ -819,9 +822,9 @@ class _LibUSB(usb.backend.IBackend):
                                         timeout))
 
         if usb.util.ctrl_direction(bmRequestType) == usb.util.CTRL_OUT:
-            return ret.value
+            return ret
         else:
-            return buff[:ret.value]
+            return buff[:ret]
 
     @methodtrace(_logger)
     def reset_device(self, dev_handle):
