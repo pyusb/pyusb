@@ -553,7 +553,10 @@ def _check(retval):
         ret = retval.value
 
     if ret < 0:
-        raise USBError(_str_error[ret], ret, _libusb_errno[ret])
+        if ret == LIBUSB_ERROR_NOT_SUPPORTED:
+            raise NotImplementedError(_str_error[ret])
+        else:
+            raise USBError(_str_error[ret], ret, _libusb_errno[ret])
 
     return ret
 
