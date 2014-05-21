@@ -39,8 +39,8 @@ You will first need to install the following packages:
 
 1) python (PyUSB is useless without it), version >= 2.4
 2) At least one of the supported libraries (libusb 1.0, libusb 0.1 or OpenUSB)
-3) If your Python version is < 2.5, you have to install ctypes as a separate package,
-   because these versions of Python does not ship it.
+3) If your Python version is < 2.5, you have to install ctypes as a separate
+   package, because these versions of Python does not ship it.
 
 For example, the command::
 
