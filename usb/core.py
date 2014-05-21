@@ -39,21 +39,58 @@ find() - a function to find USB devices.
 
 __author__ = 'Wander Lairson Costa'
 
-__all__ = ['Device', 'Configuration', 'Interface', 'Endpoint', 'find']
+__all__ = [ 'Device', 'Configuration', 'Interface', 'Endpoint', 'find',
+            'show_device_info' ]
 
 import usb.util as util
 import copy
 import operator
 import usb._interop as _interop
+import usb._lookup as _lu
 import logging
 
 _logger = logging.getLogger('usb.core')
 
 _DEFAULT_TIMEOUT = 1000
 
+
 def _set_attr(input, output, fields):
     for f in fields:
        setattr(output, f, getattr(input, f))
+
+def _try_get_string(dev, index, langid = None, default_str_i0 = "",
+        default_access_error = "Error Accessing String"):
+    """ try to get a string, but return a string no matter what
+    """
+    if index == 0 :
+        string = default_str_i0
+    else:
+        try:
+            if langid is None:
+                string = get_string( dev, index )
+            else:
+                string = get_string( dev, index, langid )
+        except :
+            string = default_access_error
+    return string
+
+def _try_lookup(table, value, default = ""):
+    """ try to get a string from the lookup table, return "" instead of key
+    error
+    """
+    try:
+        string = table[ value ]
+    except KeyError:
+        string = default
+    return string
+
+
+class Descriptor( str ):
+    """ this class is used so that when a descriptor is shown on the
+    terminal it is propely formatted """
+    def __repr__( self ):
+        return self
+
 
 class _ResourceManager(object):
     def __init__(self, dev, backend):
@@ -192,6 +229,7 @@ class _ResourceManager(object):
         self._ep_info.clear()
         self._active_cfg_index = None
 
+
 class USBError(IOError):
     r"""Exception class for USB errors.
 
@@ -211,6 +249,7 @@ class USBError(IOError):
         IOError.__init__(self, errno, strerror)
         self.backend_error_code = error_code
 
+
 class Endpoint(object):
     r"""Represent an endpoint object.
 
@@ -225,6 +264,32 @@ class Endpoint(object):
     >>>         for e in i:
     >>>             print e.bEndpointAddress
     """
+
+    def __str__( self ):
+        return ( "ENDPOINT 0x{0:X}: {1} {2}".format(
+            self.bEndpointAddress,
+            _lu.ep_attributes[(self.bmAttributes & 0x3)],
+            "IN" if (0x80 & self.bEndpointAddress) else "OUT" ) )
+
+    def _get_descriptor( self ):
+        return Descriptor(
+        "{0:=<60}\n".format( "      " + str( self ) + " " ) +
+        "       {0:<17}:{1:>#7x} (7 bytes)\n".format(
+                "bLength", self.bLength ) +
+        "       {0:<17}:{1:>#7x} {2}\n".format(
+                "bDescriptorType", self.bDescriptorType,
+                _try_lookup( _lu.descriptors, self.bDescriptorType ) ) +
+        "       {0:<17}:{1:>#7x} {2}\n".format(
+                "bEndpointAddress", self.bEndpointAddress,
+                "IN" if (0x80 & self.bEndpointAddress) else "OUT" ) +
+        "       {0:<17}:{1:>#7x} {2}\n".format(
+                "bmAttributes", self.bmAttributes,
+                _lu.ep_attributes[(self.bmAttributes & 0x3)] ) +
+        "       {0:<17}:{1:>#7x} ({2} bytes)\n".format(
+                "wMaxPacketSize", self.wMaxPacketSize, self.wMaxPacketSize ) +
+        "       {0:<17}:{1:>#7x}".format( "bInterval", self.bInterval )
+        )
+    descriptor = property( fget=_get_descriptor )
 
     def __init__(self, device, endpoint, interface = 0,
                     alternate_setting = 0, configuration = 0):
@@ -296,6 +361,7 @@ class Endpoint(object):
         """
         return self.device.read(self, size, timeout)
 
+
 class Interface(object):
     r"""Represent an interface object.
 
@@ -356,6 +422,61 @@ class Interface(object):
                 )
             )
 
+    def __str__( self ):
+        return ( "INTERFACE {0}: {1}".format( self.bInterfaceNumber,
+            _try_lookup( _lu.interface_classes, self.bInterfaceClass, default =
+                "Unknown Class" )
+            ) )
+
+    def _get_descriptor( self ):
+        return Descriptor(
+        "{0:=<60}\n".format( "    " + str( self ) + " " ) +
+        "     {0:<19}:{1:>#7x} (9 bytes)\n".format(
+            "bLength", self.bLength) +
+        "     {0:<19}:{1:>#7x} {2}\n".format(
+            "bDescriptorType", self.bDescriptorType,
+            _try_lookup( _lu.descriptors, self.bDescriptorType )) +
+        "     {0:<19}:{1:>#7x}\n".format(
+            "bInterfaceNumber", self.bInterfaceNumber) +
+        "     {0:<19}:{1:>#7x}\n".format(
+            "bAlternateSetting", self.bAlternateSetting) +
+        "     {0:<19}:{1:>#7x}\n".format(
+            "bNumEndpoints", self.bNumEndpoints) +
+        "     {0:<19}:{1:>#7x} {2}\n".format(
+            "bInterfaceClass", self.bInterfaceClass,
+            _try_lookup( _lu.interface_classes, self.bInterfaceClass )) +
+        "     {0:<19}:{1:>#7x}\n".format(
+            "bInterfaceSubClass", self.bInterfaceSubClass) +
+        "     {0:<19}:{1:>#7x}\n".format(
+            "bInterfaceProtocol", self.bInterfaceProtocol) +
+        "     {0:<19}:{1:>#7x} {2}".format(
+            "iInterface", self.iInterface,
+            _try_get_string( self.device, self.iInterface ))
+        )
+    descriptor = property( fget=_get_descriptor )
+
+    def _get_full_descriptor( self ):
+        """ show all information for the interface
+        """
+        string = self.descriptor
+        for endpoint in self:
+            string += "\n{0}".format( endpoint.descriptor )
+        return Descriptor(string)
+    descriptor_full = property( fget=_get_full_descriptor )
+
+    def _get_summary_descriptor( self ):
+        string = str( self )
+        for ep in self:
+            string += "\n      {0}".format(ep)
+        return Descriptor(string)
+    descriptor_summary = property( fget=_get_summary_descriptor)
+
+    def _get_endpoints( self ):
+        """ return a list of the endpoints
+        """
+        return [endpoint for endpoint in self]
+    endpoints = property( fget=_get_endpoints )
+
     def set_altsetting(self):
         r"""Set the interface alternate setting."""
         self.device.set_interface_altsetting(
@@ -373,6 +494,7 @@ class Interface(object):
                     self.alternate_index,
                     self.configuration
                 )
+
     def __getitem__(self, index):
         r"""Return the Endpoint object in the given position."""
         return Endpoint(
@@ -382,6 +504,7 @@ class Interface(object):
                 self.alternate_index,
                 self.configuration
             )
+
 
 class Configuration(object):
     r"""Represent a configuration object.
@@ -431,6 +554,62 @@ class Configuration(object):
                 )
             )
 
+    def __str__( self ):
+        return ( "CONFIGURATION {0}: {1} mA".format(
+            self.bConfigurationValue,
+            _lu.MAX_POWER_UNITS_USB2p0 * self.bMaxPower
+            ) )
+
+    def _get_descriptor( self ):
+        return Descriptor(
+        "{0:=<60}\n".format( "  " + str( self ) + " " ) +
+        "   {0:<21}:{1:>#7x} (9 bytes)\n".format(
+            "bLength", self.bLength) +
+        "   {0:<21}:{1:>#7x} {2}\n".format(
+            "bDescriptorType", self.bDescriptorType,
+            _try_lookup( _lu.descriptors, self.bDescriptorType )) +
+        "   {0:<21}:{1:>#7x} ({2} bytes)\n".format(
+            "wTotalLength", self.wTotalLength, self.wTotalLength) +
+        "   {0:<21}:{1:>#7x}\n".format(
+            "bNumInterfaces", self.bNumInterfaces) +
+        "   {0:<21}:{1:>#7x}\n".format(
+            "bConfigurationValue", self.bConfigurationValue) +
+        "   {0:<21}:{1:>#7x} {2}\n".format(
+            "iConfiguration", self.iConfiguration,
+            _try_get_string( self.device, self.iConfiguration )) +
+        "   {0:<21}:{1:>#7x} {2} Powered{3}\n".format(
+            "bmAttributes", self.bmAttributes,
+            "Self" if (self.bmAttributes & (1<<6)) else "Bus",
+            ", Remote Wakeup" if (self.bmAttributes & (1<<5)) else ""
+            # bit 7 is high, bit 4..0 are 0
+            ) +
+        "   {0:<21}:{1:>#7x} ({2} mA)".format(
+            "bMaxPower", self.bMaxPower,
+            _lu.MAX_POWER_UNITS_USB2p0 * self.bMaxPower)
+            # FIXME : add a check for superspeed vs usb 2.0
+        )
+    descriptor = property( fget=_get_descriptor )
+
+    def _get_full_descriptor( self ):
+        string = self.descriptor
+        for interface in self:
+            string += "\n{0}".format( interface.descriptor_full )
+        return Descriptor(string)
+    descriptor_full = property( fget=_get_full_descriptor )
+
+    def _get_summary_descriptor( self ):
+        string = str( self )
+        for itf in self:
+            string += "\n    {0}".format( itf.descriptor_summary )
+        return Descriptor(string)
+    descriptor_summary = property( fget=_get_summary_descriptor)
+
+    def _get_interfaces(self):
+        """ return a list of the interfaces
+        """
+        return [interface for interface in self]
+    interfaces = property( fget=_get_interfaces )
+
     def set(self):
         r"""Set this configuration as the active one."""
         self.device.set_configuration(self.bConfigurationValue)
@@ -445,6 +624,7 @@ class Configuration(object):
                     alt += 1
             except (USBError, IndexError):
                 pass
+
     def __getitem__(self, index):
         r"""Return the Interface object in the given position.
 
@@ -490,6 +670,79 @@ class Device(object):
     in miliseconds. If the parameter is omitted, Device.default_timeout value
     will be used instead. This property can be set by the user at anytime.
     """
+
+    def __str__( self ):
+        mfr_str = _try_get_string( self, self.iManufacturer,
+                default_str_i0 = "", default_access_error = "" )
+        return ( "DEVICE ID {2:0>4x}:{3:0>4x} on Bus {0:0>3} Address {1:0>3}{4}".format(
+            self.bus, self.address, self.idVendor, self.idProduct,
+            ", {0}".format(mfr_str) if mfr_str != "" else "" ) )
+
+    def _get_descriptor( self ):
+        return Descriptor(
+        "{0:=<60}\n".format( str( self ) + " " ) +
+        " {0:<23}:{1:>#7x} (18 bytes)\n".format(
+            "bLength", self.bLength) +
+        " {0:<23}:{1:>#7x} {2}\n".format(
+            "bDescriptorType", self.bDescriptorType,
+            _try_lookup( _lu.descriptors, self.bDescriptorType ) ) +
+        " {0:<23}:{1:>#7x} USB {2}.{3}{4}\n".format(
+            "bcdUSB", self.bcdUSB, (self.bcdUSB & 0xff00)>>8,
+            (self.bcdUSB & 0xf0) >> 4,
+            (self.bcdUSB & 0xf) if (self.bcdUSB & 0xf) else "" ) +
+        " {0:<23}:{1:>#7x} {2}\n".format(
+            "bDeviceClass", self.bDeviceClass,
+            _try_lookup( _lu.device_classes, self.bDeviceClass ) ) +
+        " {0:<23}:{1:>#7x}\n".format(
+            "bDeviceSubClass", self.bDeviceSubClass) +
+        " {0:<23}:{1:>#7x}\n".format(
+            "bDeviceProtocol", self.bDeviceProtocol) +
+        " {0:<23}:{1:>#7x} ({1} bytes)\n".format(
+            "bMaxPacketSize0", self.bMaxPacketSize0) +
+        " {0:<23}: {1:#06x}\n".format(
+            "idVendor", self.idVendor) +
+        " {0:<23}: {1:#06x}\n".format(
+            "idProduct", self.idProduct) +
+        " {0:<23}: {1:#06x}\n".format(
+            "bcdDevice", self.bcdDevice) +
+        " {0:<23}:{1:>#7x} {2}\n".format(
+            "iManufacturer", self.iManufacturer,
+            _try_get_string(self, self.iManufacturer)) +
+        " {0:<23}:{1:>#7x} {2}\n".format(
+            "iProduct", self.iProduct,
+            _try_get_string(self, self.iProduct)) +
+        " {0:<23}:{1:>#7x} {2}\n".format(
+            "iSerialNumber", self.iSerialNumber,
+            _try_get_string(self, self.iSerialNumber)) +
+        " {0:<23}:{1:>#7x}".format(
+            "bNumConfigurations", self.bNumConfigurations)
+        )
+    descriptor = property( fget=_get_descriptor )
+
+    def _get_full_descriptor( self ):
+        string = self.descriptor
+        try:
+            for configuration in self:
+                string += "\n{0}".format( configuration.descriptor_full )
+        except USBError:
+            try:
+                configuration = self.get_active_configuration()
+                string += "\n{0}".format( configuration.descriptor_full )
+            except USBError:
+                string += " USBError Accessing Configurations"
+        return Descriptor(string)
+    descriptor_full = property( fget=_get_full_descriptor )
+
+    def _get_summary_descriptor( self ):
+        string = str( self )
+        for cfg in self:
+            string += "\n  {0}".format( cfg.descriptor_summary )
+        return Descriptor(string)
+    descriptor_summary = property( fget=_get_summary_descriptor)
+
+    def _get_configurations( self ):
+        return [config for config in self]
+    configurations = property( fget=_get_configurations )
 
     def __init__(self, dev, backend):
         r"""Initialize the Device object.
@@ -693,7 +946,6 @@ class Device(object):
                 self.__get_timeout(timeout)
             )
 
-
     def ctrl_transfer(self, bmRequestType, bRequest, wValue=0, wIndex=0,
             data_or_wLength = None, timeout = None):
         r"""Do a control transfer on the endpoint 0.
@@ -810,6 +1062,7 @@ class Device(object):
                         doc = 'Default timeout for transfer I/O functions'
                     )
 
+
 def find(find_all=False, backend = None, custom_match = None, **args):
     r"""Find an USB device and return it.
 
@@ -913,3 +1166,21 @@ def find(find_all=False, backend = None, custom_match = None, **args):
             return _interop._next(device_iter(k, v))
         except StopIteration:
             return None
+
+def show_device_info(verbose=False, **kwargs):
+    """ show information about connected devices
+    the verbose flag sets to verbose or not
+    **kwargs are passed directly to the find() function
+    """
+    kwargs["find_all"] = True
+    devices = find( **kwargs )
+    for device in devices:
+        if( verbose == "very" ):
+            print( "{0}\n".format(device.descriptor_full) )
+        elif( verbose ):
+            print( "{0}\n".format( device.descriptor_summary ) )
+        else:
+            print( "{0}, USB {1}.{2}{3} {4}".format(device,
+                (device.bcdUSB & 0xff00)>>8, (device.bcdUSB & 0xf0) >> 4,
+                (device.bcdUSB & 0xf) if (device.bcdUSB & 0xf) else "",
+                _try_lookup( _lu.device_classes, device.bDeviceClass ) ) )
