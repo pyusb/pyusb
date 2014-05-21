@@ -34,6 +34,7 @@ import logging
 import errno
 import sys
 import usb._interop as _interop
+import usb.util as util
 import usb.libloader
 from usb.core import USBError
 
@@ -718,6 +719,21 @@ class _OpenUSB(usb.backend.IBackend):
     @methodtrace(_logger)
     def reset_device(self, dev_handle):
         _check(_lib.openusb_reset(dev_handle))
+
+    @methodtrace(_logger)
+    def clear_halt(self, dev_handle, ep):
+        bmRequestType = util.build_request_type(
+                            util.CTRL_OUT,
+                            util.CTRL_TYPE_STANDARD,
+                            util.CTRL_RECIPIENT_ENDPOINT)
+        self.ctrl_transfer(
+            dev_handle,
+            bmRequestType,
+            0x03,
+            0,
+            ep,
+            _interop.as_array(),
+            1000)
 
 def get_backend(find_library=None):
     try:

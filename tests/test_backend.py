@@ -50,6 +50,7 @@ class BackendTest(unittest.TestCase):
             self.test_set_configuration()
             self.test_claim_interface()
             self.test_set_interface_altsetting()
+            self.test_clear_halt()
             self.test_bulk_write_read()
             self.test_intr_write_read()
             self.test_iso_write_read()
@@ -184,6 +185,10 @@ class BackendTest(unittest.TestCase):
                 self.backend.iso_read,
                 devinfo.EP_ISO
             )
+
+    def test_clear_halt(self):
+        self.backend.clear_halt(self.handle, 0x01)
+        self.backend.clear_halt(self.handle, 0x81)
 
     def test_ctrl_transfer(self):
         for data in (utils.get_array_data1(), utils.get_array_data2()):

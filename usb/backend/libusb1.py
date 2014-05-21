@@ -449,6 +449,9 @@ def _setup_prototypes(lib):
     lib.libusb_strerror.argtypes = [c_uint]
     lib.libusb_strerror.restype = c_char_p
 
+    # int libusb_clear_halt(libusb_device_handle *dev, unsigned char endpoint)
+    lib.libusb_clear_halt.argtypes = [_libusb_device_handle, c_ubyte]
+
     # void libusb_set_iso_packet_lengths(
     #               libusb_transfer* transfer,
     #               unsigned int length
@@ -814,6 +817,10 @@ class _LibUSB(usb.backend.IBackend):
             return ret
         else:
             return buff[:ret]
+
+    @methodtrace(_logger)
+    def clear_halt(self, dev_handle, ep):
+        _check(self.lib.libusb_clear_halt(dev_handle.handle, ep))
 
     @methodtrace(_logger)
     def reset_device(self, dev_handle):

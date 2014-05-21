@@ -43,11 +43,12 @@ class ControlTest(unittest.TestCase):
 
     def runTest(self):
         try:
+            self.dev.set_configuration()
             self.test_getset_configuration()
             self.test_get_status()
-            self.test_clearset_feature()
             self.test_getset_descriptor()
             self.test_getset_interface()
+            self.test_clearset_feature()
             self.test_get_string()
         finally:
             usb.util.dispose_resources(self.dev)
@@ -60,6 +61,7 @@ class ControlTest(unittest.TestCase):
 
     def test_clearset_feature(self):
         e = self.dev[0][0,0][0]
+        self.dev.set_interface_altsetting(0, 0)
         self.assertEqual(usb.control.get_status(self.dev, e), 0)
         usb.control.set_feature(self.dev, usb.control.ENDPOINT_HALT, e)
         self.assertEqual(usb.control.get_status(self.dev, e), 1)

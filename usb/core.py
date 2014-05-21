@@ -295,6 +295,10 @@ class Endpoint(object):
         """
         return self.device.read(self, size, timeout)
 
+    def clear_halt(self):
+        r"""Clear the halt/status condition."""
+        self.device.clear_halt(self.bEndpointAddress)
+
 class Interface(object):
     r"""Represent an interface object.
 
@@ -617,6 +621,13 @@ class Device(object):
         >>>     pass
         """
         self._ctx.managed_set_interface(self, interface, alternate_setting)
+
+    def clear_halt(self, ep):
+        r""" Clear the halt/stall condition for the endpoint ep."""
+        if isinstance(ep, Endpoint):
+            ep = ep.bEndpointAddress
+        self._ctx.managed_open()
+        self._ctx.backend.clear_halt(self._ctx.handle, ep)
 
     def reset(self):
         r"""Reset the device."""

@@ -534,6 +534,10 @@ class _LibUSB(usb.backend.IBackend):
             return data[:read]
 
     @methodtrace(_logger)
+    def clear_halt(self, dev_handle, ep):
+        _check(_lib.usb_clear_halt(dev_handle, ep))
+
+    @methodtrace(_logger)
     def reset_device(self, dev_handle):
         _check(_lib.usb_reset(dev_handle))
 

@@ -55,6 +55,7 @@ class DeviceTest(unittest.TestCase):
             self.test_timeout()
             self.test_set_configuration()
             self.test_set_interface_altsetting()
+            self.test_clear_halt()
             self.test_write_read()
             self.test_ctrl_transfer()
             #self.test_reset()
@@ -159,6 +160,11 @@ class DeviceTest(unittest.TestCase):
                     ))
             self.assertTrue(utils.array_equals(ret, adata),
                              str(ret) + ' != ' + str(adata))
+
+    def test_clear_halt(self):
+        self.dev.set_interface_altsetting(0, 0)
+        self.dev.clear_halt(0x01)
+        self.dev.clear_halt(0x81)
 
 class ConfigurationTest(unittest.TestCase):
     def __init__(self, dev):
