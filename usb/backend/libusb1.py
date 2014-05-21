@@ -95,24 +95,6 @@ LIBUSB_ERROR_NO_MEM = -11
 LIBUSB_ERROR_NOT_SUPPORTED = -12
 LIBUSB_ERROR_OTHER = -99
 
-# map return codes to strings
-_str_error = {
-    LIBUSB_SUCCESS:'Success (no error)',
-    LIBUSB_ERROR_IO:'Input/output error',
-    LIBUSB_ERROR_INVALID_PARAM:'Invalid parameter',
-    LIBUSB_ERROR_ACCESS:'Access denied (insufficient permissions)',
-    LIBUSB_ERROR_NO_DEVICE:'No such device (it may have been disconnected)',
-    LIBUSB_ERROR_NOT_FOUND:'Entity not found',
-    LIBUSB_ERROR_BUSY:'Resource busy',
-    LIBUSB_ERROR_TIMEOUT:'Operation timed out',
-    LIBUSB_ERROR_OVERFLOW:'Overflow',
-    LIBUSB_ERROR_PIPE:'Pipe error',
-    LIBUSB_ERROR_INTERRUPTED:'System call interrupted (perhaps due to signal)',
-    LIBUSB_ERROR_NO_MEM:'Insufficient memory',
-    LIBUSB_ERROR_NOT_SUPPORTED:'Operation not supported or unimplemented on this platform',
-    LIBUSB_ERROR_OTHER:'Unknown error'
-}
-
 # map return code to errno values
 _libusb_errno = {
     0:None,
@@ -463,6 +445,10 @@ def _setup_prototypes(lib):
     # int libusb_submit_transfer(struct libusb_transfer *transfer);
     lib.libusb_submit_transfer.argtypes = [POINTER(_libusb_transfer)]
 
+    # const char *libusb_strerror(enum libusb_error errcode)
+    lib.libusb_strerror.argtypes = [c_uint]
+    lib.libusb_strerror.restype = c_char_p
+
     # void libusb_set_iso_packet_lengths(
     #               libusb_transfer* transfer,
     #               unsigned int length
@@ -544,6 +530,9 @@ def _setup_prototypes(lib):
     #int libusb_handle_events(libusb_context *ctx);
     lib.libusb_handle_events.argtypes = [c_void_p]
 
+def _strerror(errcode):
+    return _lib.libusb_strerror(errcode).decode('utf8')
+
 # check a libusb function call
 def _check(retval):
     if isinstance(retval, int):
@@ -554,9 +543,9 @@ def _check(retval):
 
     if ret < 0:
         if ret == LIBUSB_ERROR_NOT_SUPPORTED:
-            raise NotImplementedError(_str_error[ret])
+            raise NotImplementedError(_strerror(ret))
         else:
-            raise USBError(_str_error[ret], ret, _libusb_errno[ret])
+            raise USBError(_strerror(ret), ret, _libusb_errno[ret])
 
     return ret
 
