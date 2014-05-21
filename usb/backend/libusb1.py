@@ -534,12 +534,9 @@ def _strerror(errcode):
     return _lib.libusb_strerror(errcode).decode('utf8')
 
 # check a libusb function call
-def _check(retval):
-    if isinstance(retval, int):
-        ret = retval
-
-    if isinstance(retval, c_int):
-        ret = retval.value
+def _check(ret):
+    if hasattr(ret, 'value'):
+        ret = ret.value
 
     if ret < 0:
         if ret == LIBUSB_ERROR_NOT_SUPPORTED:

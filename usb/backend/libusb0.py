@@ -360,11 +360,13 @@ def _setup_prototypes(lib):
     # struct usb_bus *usb_get_busses(void);
     lib.usb_get_busses.restype = POINTER(_usb_bus)
 
-def _check(retval):
-    if retval is None:
+def _check(ret):
+    if ret is None:
         errmsg = _lib.usb_strerror()
     else:
-        ret = int(retval)
+        if hasattr(ret, 'value'):
+            ret = ret.value
+
         if ret < 0:
             errmsg = _lib.usb_strerror()
             # No error means that we need to get the error

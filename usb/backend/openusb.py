@@ -35,6 +35,7 @@ import errno
 import sys
 import usb._interop as _interop
 import usb.libloader
+from usb.core import USBError
 
 __author__ = 'Wander Lairson Costa'
 
@@ -496,15 +497,13 @@ def _setup_prototypes(lib):
 
     lib.openusb_isoc_xfer.restype = c_int32
 
-def _check(retval):
-    if isinstance(retval, c_int):
-        ret = retval.value
-    else:
-        ret = retval
+def _check(ret):
+    if hasattr(ret, 'value'):
+        ret = ret.value
+
     if ret != 0:
-        from usb.core import USBError
         raise USBError(_lib.openusb_strerror(ret), ret, _openusb_errno[ret])
-    return retval
+    return ret
 
 class _Context(object):
     def __init__(self):
