@@ -85,7 +85,7 @@ def _try_lookup(table, value, default = ""):
     return string
 
 
-class Descriptor( str ):
+class _Descriptor( str ):
     """ this class is used so that when a descriptor is shown on the
     terminal it is propely formatted """
     def __repr__( self ):
@@ -272,7 +272,7 @@ class Endpoint(object):
             "IN" if (0x80 & self.bEndpointAddress) else "OUT" ) )
 
     def _get_descriptor( self ):
-        return Descriptor(
+        return _Descriptor(
         "{0:=<60}\n".format( "      " + str( self ) + " " ) +
         "       {0:<17}:{1:>#7x} (7 bytes)\n".format(
                 "bLength", self.bLength ) +
@@ -429,7 +429,7 @@ class Interface(object):
             ) )
 
     def _get_descriptor( self ):
-        return Descriptor(
+        return _Descriptor(
         "{0:=<60}\n".format( "    " + str( self ) + " " ) +
         "     {0:<19}:{1:>#7x} (9 bytes)\n".format(
             "bLength", self.bLength) +
@@ -461,14 +461,14 @@ class Interface(object):
         string = self.descriptor
         for endpoint in self:
             string += "\n{0}".format( endpoint.descriptor )
-        return Descriptor(string)
+        return _Descriptor(string)
     descriptor_full = property( fget=_get_full_descriptor )
 
     def _get_summary_descriptor( self ):
         string = str( self )
         for ep in self:
             string += "\n      {0}".format(ep)
-        return Descriptor(string)
+        return _Descriptor(string)
     descriptor_summary = property( fget=_get_summary_descriptor)
 
     def _get_endpoints( self ):
@@ -561,7 +561,7 @@ class Configuration(object):
             ) )
 
     def _get_descriptor( self ):
-        return Descriptor(
+        return _Descriptor(
         "{0:=<60}\n".format( "  " + str( self ) + " " ) +
         "   {0:<21}:{1:>#7x} (9 bytes)\n".format(
             "bLength", self.bLength) +
@@ -594,14 +594,14 @@ class Configuration(object):
         string = self.descriptor
         for interface in self:
             string += "\n{0}".format( interface.descriptor_full )
-        return Descriptor(string)
+        return _Descriptor(string)
     descriptor_full = property( fget=_get_full_descriptor )
 
     def _get_summary_descriptor( self ):
         string = str( self )
         for itf in self:
             string += "\n    {0}".format( itf.descriptor_summary )
-        return Descriptor(string)
+        return _Descriptor(string)
     descriptor_summary = property( fget=_get_summary_descriptor)
 
     def _get_interfaces(self):
@@ -679,7 +679,7 @@ class Device(object):
             ", {0}".format(mfr_str) if mfr_str != "" else "" ) )
 
     def _get_descriptor( self ):
-        return Descriptor(
+        return _Descriptor(
         "{0:=<60}\n".format( str( self ) + " " ) +
         " {0:<23}:{1:>#7x} (18 bytes)\n".format(
             "bLength", self.bLength) +
@@ -730,14 +730,14 @@ class Device(object):
                 string += "\n{0}".format( configuration.descriptor_full )
             except USBError:
                 string += " USBError Accessing Configurations"
-        return Descriptor(string)
+        return _Descriptor(string)
     descriptor_full = property( fget=_get_full_descriptor )
 
     def _get_summary_descriptor( self ):
         string = str( self )
         for cfg in self:
             string += "\n  {0}".format( cfg.descriptor_summary )
-        return Descriptor(string)
+        return _Descriptor(string)
     descriptor_summary = property( fget=_get_summary_descriptor)
 
     def _get_configurations( self ):
