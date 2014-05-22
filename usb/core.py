@@ -39,21 +39,58 @@ find() - a function to find USB devices.
 
 __author__ = 'Wander Lairson Costa'
 
-__all__ = ['Device', 'Configuration', 'Interface', 'Endpoint', 'find']
+__all__ = [ 'Device', 'Configuration', 'Interface', 'Endpoint', 'find',
+            'show_devices' ]
 
 import usb.util as util
 import copy
 import operator
 import usb._interop as _interop
+import usb._lookup as _lu
 import logging
 
 _logger = logging.getLogger('usb.core')
 
 _DEFAULT_TIMEOUT = 1000
 
+
 def _set_attr(input, output, fields):
     for f in fields:
        setattr(output, f, getattr(input, f))
+
+def _try_get_string(dev, index, langid = None, default_str_i0 = "",
+        default_access_error = "Error Accessing String"):
+    """ try to get a string, but return a string no matter what
+    """
+    if index == 0 :
+        string = default_str_i0
+    else:
+        try:
+            if langid is None:
+                string = util.get_string( dev, index )
+            else:
+                string = util.get_string( dev, index, langid )
+        except :
+            string = default_access_error
+    return string
+
+def _try_lookup(table, value, default = ""):
+    """ try to get a string from the lookup table, return "" instead of key
+    error
+    """
+    try:
+        string = table[ value ]
+    except KeyError:
+        string = default
+    return string
+
+
+class _Descriptor( str ):
+    """ this class is used so that when a descriptor is shown on the
+    terminal it is propely formatted """
+    def __repr__( self ):
+        return self
+
 
 class _ResourceManager(object):
     def __init__(self, dev, backend):
@@ -192,12 +229,13 @@ class _ResourceManager(object):
         self._ep_info.clear()
         self._active_cfg_index = None
 
+
 class USBError(IOError):
     r"""Exception class for USB errors.
 
-    Backends must raise this exception when USB related errors occur.
-    The backend specific error code is available through the
-    'backend_error_code' member variable.
+    Backends must raise this exception when USB related errors occur.  The
+    backend specific error code is available through the 'backend_error_code'
+    member variable.
     """
 
     def __init__(self, strerror, error_code = None, errno = None):
@@ -207,16 +245,17 @@ class USBError(IOError):
         to the parent object. The error_code parameter is attributed to the
         backend_error_code member variable.
         """
+
         IOError.__init__(self, errno, strerror)
         self.backend_error_code = error_code
+
 
 class Endpoint(object):
     r"""Represent an endpoint object.
 
-    This class contains all fields of the Endpoint Descriptor
-    according to the USB Specification. You may access them as class
-    properties.  For example, to access the field bEndpointAddress
-    of the endpoint descriptor:
+    This class contains all fields of the Endpoint Descriptor according to the
+    USB Specification. You may access them as class properties. For example, to
+    access the field bEndpointAddress of the endpoint descriptor:
 
     >>> import usb.core
     >>> dev = usb.core.find()
@@ -226,20 +265,49 @@ class Endpoint(object):
     >>>             print e.bEndpointAddress
     """
 
+    def __str__( self ):
+        return (
+            "ENDPOINT 0x%X: %s %s" % (self.bEndpointAddress,
+            _lu.ep_attributes[(self.bmAttributes & 0x3)],
+            "IN" if (0x80 & self.bEndpointAddress) else "OUT")
+            )
+
+    def _get_descriptor( self ):
+        headstr = "      " + str( self ) + " "
+        return _Descriptor(
+        "%s%s\n" % ( headstr, "=" * (60 - len(headstr)) ) +
+        "       %-17s:%#7x (7 bytes)\n" % (
+                "bLength", self.bLength ) +
+        "       %-17s:%#7x %s\n" % (
+                "bDescriptorType", self.bDescriptorType,
+                _try_lookup( _lu.descriptors, self.bDescriptorType ) ) +
+        "       %-17s:%#7x %s\n" % (
+                "bEndpointAddress", self.bEndpointAddress,
+                "IN" if (0x80 & self.bEndpointAddress) else "OUT" ) +
+        "       %-17s:%#7x %s\n" % (
+                "bmAttributes", self.bmAttributes,
+                _lu.ep_attributes[(self.bmAttributes & 0x3)] ) +
+        "       %-17s:%#7x (%d bytes)\n" % (
+                "wMaxPacketSize", self.wMaxPacketSize, self.wMaxPacketSize ) +
+        "       %-17s:%#7x" % ( "bInterval", self.bInterval )
+        )
+    descriptor = property( fget=_get_descriptor )
+
     def __init__(self, device, endpoint, interface = 0,
                     alternate_setting = 0, configuration = 0):
         r"""Initialize the Endpoint object.
 
         The device parameter is the device object returned by the find()
-        function. endpoint is the endpoint logical index (not the endpoint address).
-        The configuration parameter is the logical index of the
+        function. endpoint is the endpoint logical index (not the endpoint
+        address).  The configuration parameter is the logical index of the
         configuration (not the bConfigurationValue field). The interface
-        parameter is the interface logical index (not the bInterfaceNumber field)
-        and alternate_setting is the alternate setting logical index (not the
-        bAlternateSetting value).  Not every interface has more than one alternate
-        setting.  In this case, the alternate_setting parameter should be zero.
-        By "logical index" we mean the relative order of the configurations returned by the
-        peripheral as a result of GET_DESCRIPTOR request.
+        parameter is the interface logical index (not the bInterfaceNumber
+        field) and alternate_setting is the alternate setting logical index
+        (not the bAlternateSetting value).  Not every interface has more than
+        one alternate setting.  In this case, the alternate_setting parameter
+        should be zero.  By "logical index" we mean the relative order of the
+        configurations returned by the peripheral as a result of GET_DESCRIPTOR
+        request.
         """
         self.device = device
         self.index = endpoint
@@ -295,6 +363,7 @@ class Endpoint(object):
         """
         return self.device.read(self, size, timeout)
 
+
 class Interface(object):
     r"""Represent an interface object.
 
@@ -317,12 +386,13 @@ class Interface(object):
         The device parameter is the device object returned by the find()
         function. The configuration parameter is the logical index of the
         configuration (not the bConfigurationValue field). The interface
-        parameter is the interface logical index (not the bInterfaceNumber field)
-        and alternate_setting is the alternate setting logical index (not the
-        bAlternateSetting value).  Not every interface has more than one alternate
-        setting.  In this case, the alternate_setting parameter should be zero.
-        By "logical index" we mean the relative order of the configurations returned by the
-        peripheral as a result of GET_DESCRIPTOR request.
+        parameter is the interface logical index (not the bInterfaceNumber
+        field) and alternate_setting is the alternate setting logical index
+        (not the bAlternateSetting value).  Not every interface has more than
+        one alternate setting.  In this case, the alternate_setting parameter
+        should be zero.  By "logical index" we mean the relative order of the
+        configurations returned by the peripheral as a result of GET_DESCRIPTOR
+        request.
         """
         self.device = device
         self.alternate_index = alternate_setting
@@ -354,6 +424,63 @@ class Interface(object):
                 )
             )
 
+    def __str__( self ):
+        return (
+            "INTERFACE %d%s: %s" % ( self.bInterfaceNumber,
+            ", %d" % (self.bAlternateSetting) if self.bAlternateSetting else "",
+            _try_lookup( _lu.interface_classes, self.bInterfaceClass,
+                default = "Unknown Class" ) )
+            )
+
+    def _get_descriptor( self ):
+        headstr = "    " + str( self ) + " "
+        return _Descriptor(
+        "%s%s\n" % ( headstr, "=" * (60 - len(headstr)) ) +
+        "     %-19s:%#7x (9 bytes)\n" % (
+            "bLength", self.bLength) +
+        "     %-19s:%#7x %s\n" % (
+            "bDescriptorType", self.bDescriptorType,
+            _try_lookup( _lu.descriptors, self.bDescriptorType )) +
+        "     %-19s:%#7x\n" % (
+            "bInterfaceNumber", self.bInterfaceNumber) +
+        "     %-19s:%#7x\n" % (
+            "bAlternateSetting", self.bAlternateSetting) +
+        "     %-19s:%#7x\n" % (
+            "bNumEndpoints", self.bNumEndpoints) +
+        "     %-19s:%#7x %s\n" % (
+            "bInterfaceClass", self.bInterfaceClass,
+            _try_lookup( _lu.interface_classes, self.bInterfaceClass )) +
+        "     %-19s:%#7x\n" % (
+            "bInterfaceSubClass", self.bInterfaceSubClass) +
+        "     %-19s:%#7x\n" % (
+            "bInterfaceProtocol", self.bInterfaceProtocol) +
+        "     %-19s:%#7x %s" % (
+            "iInterface", self.iInterface,
+            _try_get_string( self.device, self.iInterface ))
+        )
+
+    def _get_descriptor_recursive( self ):
+        """ show all information for the interface
+        """
+        string = self._get_descriptor()
+        for endpoint in self:
+            string += "\n%s" % ( endpoint._get_descriptor() )
+        return _Descriptor(string)
+    descriptor = property( fget=_get_descriptor_recursive )
+
+    def _get_summary_descriptor( self ):
+        string = "    " + str( self )
+        for ep in self:
+            string += "\n      %s" % (ep)
+        return _Descriptor(string)
+    summary = property( fget=_get_summary_descriptor )
+
+    def _get_endpoints( self ):
+        """ return a list of the endpoints
+        """
+        return [endpoint for endpoint in self]
+    endpoints = property( fget=_get_endpoints )
+
     def set_altsetting(self):
         r"""Set the interface alternate setting."""
         self.device.set_interface_altsetting(
@@ -371,6 +498,7 @@ class Interface(object):
                     self.alternate_index,
                     self.configuration
                 )
+
     def __getitem__(self, index):
         r"""Return the Endpoint object in the given position."""
         return Endpoint(
@@ -381,13 +509,14 @@ class Interface(object):
                 self.configuration
             )
 
+
 class Configuration(object):
     r"""Represent a configuration object.
 
-    This class contains all fields of the Configuration Descriptor
-    according to the USB Specification. You may access them as class
-    properties.  For example, to access the field bConfigurationValue
-    of the configuration descriptor:
+    This class contains all fields of the Configuration Descriptor according to
+    the USB Specification. You may access them as class properties.  For
+    example, to access the field bConfigurationValue of the configuration
+    descriptor:
 
     >>> import usb.core
     >>> dev = usb.core.find()
@@ -429,6 +558,63 @@ class Configuration(object):
                 )
             )
 
+    def __str__( self ):
+        return (
+            "CONFIGURATION %d: %d mA" % (
+            self.bConfigurationValue,
+            _lu.MAX_POWER_UNITS_USB2p0 * self.bMaxPower)
+            )
+
+    def _get_descriptor( self ):
+        headstr = "  " + str( self ) + " "
+        return _Descriptor(
+        "%s%s\n" % ( headstr, "=" * (60 - len(headstr)) ) +
+        "   %-21s:%#7x (9 bytes)\n" % (
+            "bLength", self.bLength) +
+        "   %-21s:%#7x %s\n" % (
+            "bDescriptorType", self.bDescriptorType,
+            _try_lookup( _lu.descriptors, self.bDescriptorType )) +
+        "   %-21s:%#7x (%d bytes)\n" % (
+            "wTotalLength", self.wTotalLength, self.wTotalLength) +
+        "   %-21s:%#7x\n" % (
+            "bNumInterfaces", self.bNumInterfaces) +
+        "   %-21s:%#7x\n" % (
+            "bConfigurationValue", self.bConfigurationValue) +
+        "   %-21s:%#7x %s\n" % (
+            "iConfiguration", self.iConfiguration,
+            _try_get_string( self.device, self.iConfiguration )) +
+        "   %-21s:%#7x %s Powered%s\n" % (
+            "bmAttributes", self.bmAttributes,
+            "Self" if (self.bmAttributes & (1<<6)) else "Bus",
+            ", Remote Wakeup" if (self.bmAttributes & (1<<5)) else ""
+            # bit 7 is high, bit 4..0 are 0
+            ) +
+        "   %-21s:%#7x (%d mA)" % (
+            "bMaxPower", self.bMaxPower,
+            _lu.MAX_POWER_UNITS_USB2p0 * self.bMaxPower)
+            # FIXME : add a check for superspeed vs usb 2.0
+        )
+
+    def _get_descriptor_recursive( self ):
+        string = self._get_descriptor()
+        for interface in self:
+            string += "\n%s" % ( interface.descriptor )
+        return _Descriptor(string)
+    descriptor = property( fget=_get_descriptor_recursive )
+
+    def _get_summary_descriptor( self ):
+        string = "  " + str( self )
+        for itf in self:
+            string += "\n%s" % ( itf.summary )
+        return _Descriptor(string)
+    summary = property( fget=_get_summary_descriptor )
+
+    def _get_interfaces(self):
+        """ return a list of the interfaces
+        """
+        return [interface for interface in self]
+    interfaces = property( fget=_get_interfaces )
+
     def set(self):
         r"""Set this configuration as the active one."""
         self.device.set_configuration(self.bConfigurationValue)
@@ -443,6 +629,7 @@ class Configuration(object):
                     alt += 1
             except (USBError, IndexError):
                 pass
+
     def __getitem__(self, index):
         r"""Return the Interface object in the given position.
 
@@ -457,21 +644,20 @@ class Configuration(object):
 class Device(object):
     r"""Device object.
 
-    This class contains all fields of the Device Descriptor according
-    to the USB Specification. You may access them as class properties.
-    For example, to access the field bDescriptorType of the device
-    descriptor:
+    This class contains all fields of the Device Descriptor according to the
+    USB Specification. You may access them as class properties.  For example,
+    to access the field bDescriptorType of the device descriptor:
 
     >>> import usb.core
     >>> dev = usb.core.find()
     >>> dev.bDescriptorType
 
-    Additionally, the class provides methods to communicate with
-    the hardware. Typically, an application will first call the
-    set_configuration() method to put the device in a known configured
-    state, optionally call the set_interface_altsetting() to select the
-    alternate setting (if there is more than one) of the interface used,
-    and call the write() and read() method to send and receive data.
+    Additionally, the class provides methods to communicate with the hardware.
+    Typically, an application will first call the set_configuration() method to
+    put the device in a known configured state, optionally call the
+    set_interface_altsetting() to select the alternate setting (if there is
+    more than one) of the interface used, and call the write() and read()
+    method to send and receive data.
 
     When working in a new hardware, one first try would be like this:
 
@@ -480,15 +666,93 @@ class Device(object):
     >>> dev.set_configuration()
     >>> dev.write(1, 'test')
 
-    This sample finds the device of interest (myVendorId and myProductId should be
-    replaced by the corresponding values of your device), then configures the device
-    (by default, the configuration value is 1, which is a typical value for most
-    devices) and then writes some data to the endpoint 0x01.
+    This sample finds the device of interest (myVendorId and myProductId should
+    be replaced by the corresponding values of your device), then configures
+    the device (by default, the configuration value is 1, which is a typical
+    value for most devices) and then writes some data to the endpoint 0x01.
 
-    Timeout values for the write, read and ctrl_transfer methods are specified in
-    miliseconds. If the parameter is omitted, Device.default_timeout value will
-    be used instead. This property can be set by the user at anytime.
+    Timeout values for the write, read and ctrl_transfer methods are specified
+    in miliseconds. If the parameter is omitted, Device.default_timeout value
+    will be used instead. This property can be set by the user at anytime.
     """
+
+    def __str__( self ):
+        return (
+            "DEVICE ID %04x:%04x on Bus %03d Address %03d" % (
+            self.idVendor, self.idProduct, self.bus, self.address )
+            )
+
+    def _get_descriptor( self ):
+        headstr = str( self ) + " "
+        return _Descriptor(
+        "%s%s\n" % ( headstr, "=" * (60 - len(headstr)) ) +
+        " %-23s:%#7x (18 bytes)\n" % (
+            "bLength", self.bLength) +
+        " %-23s:%#7x %s\n" % (
+            "bDescriptorType", self.bDescriptorType,
+            _try_lookup( _lu.descriptors, self.bDescriptorType ) ) +
+        " %-23s:%#7x USB %d.%d%s\n" % (
+            "bcdUSB", self.bcdUSB, (self.bcdUSB & 0xff00)>>8,
+            (self.bcdUSB & 0xf0) >> 4,
+            str(self.bcdUSB & 0xf) if (self.bcdUSB & 0xf) else "" ) +
+        " %-23s:%#7x %s\n" % (
+            "bDeviceClass", self.bDeviceClass,
+            _try_lookup( _lu.device_classes, self.bDeviceClass ) ) +
+        " %-23s:%#7x\n" % (
+            "bDeviceSubClass", self.bDeviceSubClass) +
+        " %-23s:%#7x\n" % (
+            "bDeviceProtocol", self.bDeviceProtocol) +
+        " %-23s:%#7x (%d bytes)\n" % (
+            "bMaxPacketSize0", self.bMaxPacketSize0, self.bMaxPacketSize0 ) +
+        " %-23s: %#06x\n" % (
+            "idVendor", self.idVendor) +
+        " %-23s: %#06x\n" % (
+            "idProduct", self.idProduct) +
+        " %-23s:%#7x Device %d.%d%s\n" % (
+            "bcdDevice", self.bcdDevice, (self.bcdDevice & 0xff00)>>8,
+            (self.bcdDevice & 0xf0) >> 4,
+            str(self.bcdDevice & 0xf) if (self.bcdDevice & 0xf) else "" ) +
+        " %-23s:%#7x %s\n" % (
+            "iManufacturer", self.iManufacturer,
+            _try_get_string(self, self.iManufacturer)) +
+        " %-23s:%#7x %s\n" % (
+            "iProduct", self.iProduct,
+            _try_get_string(self, self.iProduct)) +
+        " %-23s:%#7x %s\n" % (
+            "iSerialNumber", self.iSerialNumber,
+            _try_get_string(self, self.iSerialNumber)) +
+        " %-23s:%#7x" % (
+            "bNumConfigurations", self.bNumConfigurations)
+        )
+
+    def _get_descriptor_recursive( self ):
+        string = self._get_descriptor()
+        try:
+            for configuration in self:
+                string += "\n%s" % ( configuration.descriptor )
+        except USBError:
+            try:
+                configuration = self.get_active_configuration()
+                string += "\n%s" % ( configuration.descriptor )
+            except USBError:
+                string += " USBError Accessing Configurations"
+        return _Descriptor(string)
+    descriptor = property( fget=_get_descriptor_recursive )
+
+    def _get_summary_descriptor( self ):
+        string = str( self )
+        for cfg in self:
+            string += "\n%s" % ( cfg.summary )
+        return _Descriptor(string)
+    summary = property( fget=_get_summary_descriptor )
+
+    def _get_configurations( self ):
+        return [config for config in self]
+    configurations = property( fget=_get_configurations )
+
+    def _get_interfaces( self ):
+        return [ itf for itf in self.get_active_configuration() ]
+    interfaces = property( fget=_get_interfaces )
 
     def __init__(self, dev, backend):
         r"""Initialize the Device object.
@@ -582,34 +846,37 @@ class Device(object):
 
         The configuration parameter is the bConfigurationValue field of the
         configuration you want to set as active. If you call this method
-        without parameter, it will use the first configuration found.
-        As a device hardly ever has more than one configuration, calling
-        the method without parameter is enough to get the device ready.
+        without parameter, it will use the first configuration found.  As a
+        device hardly ever has more than one configuration, calling the method
+        without parameter is enough to get the device ready.
         """
         self._ctx.managed_set_configuration(self, configuration)
 
     def get_active_configuration(self):
-        r"""Return a Configuration object representing the current configuration set."""
+        r"""Return a Configuration object representing the current
+        configuration set.
+        """
         return self._ctx.get_active_configuration(self)
 
     def set_interface_altsetting(self, interface = None, alternate_setting = None):
         r"""Set the alternate setting for an interface.
 
-        When you want to use an interface and it has more than one alternate setting,
-        you should call this method to select the alternate setting you would like
-        to use. If you call the method without one or the two parameters, it will
-        be selected the first one found in the Device in the same way of set_configuration
-        method.
+        When you want to use an interface and it has more than one alternate
+        setting, you should call this method to select the alternate setting
+        you would like to use. If you call the method without one or the two
+        parameters, it will be selected the first one found in the Device in
+        the same way of set_configuration method.
 
         Commonly, an interface has only one alternate setting and this call is
-        not necessary. For most of the devices, either it has more than one alternate
-        setting or not, it is not harmful to make a call to this method with no arguments,
-        as devices will silently ignore the request when there is only one alternate
-        setting, though the USB Spec allows devices with no additional alternate setting
-        return an error to the Host in response to a SET_INTERFACE request.
+        not necessary. For most of the devices, either it has more than one
+        alternate setting or not, it is not harmful to make a call to this
+        method with no arguments, as devices will silently ignore the request
+        when there is only one alternate setting, though the USB Spec allows
+        devices with no additional alternate setting return an error to the
+        Host in response to a SET_INTERFACE request.
 
-        If you are in doubt, you may want to call it with no arguments wrapped by
-        a try/except clause:
+        If you are in doubt, you may want to call it with no arguments wrapped
+        by a try/except clause:
 
         >>> try:
         >>>     dev.set_interface_altsetting()
@@ -661,9 +928,10 @@ class Device(object):
     def read(self, endpoint, size, timeout = None):
         r"""Read data from the endpoint.
 
-        This method is used to receive data from the device. The endpoint parameter
-        corresponds to the bEndpointAddress member whose endpoint you want to
-        communicate with. The size parameters tells how many bytes you want to read.
+        This method is used to receive data from the device. The endpoint
+        parameter corresponds to the bEndpointAddress member whose endpoint you
+        want to communicate with. The size parameters tells how many bytes you
+        want to read.
 
         The timeout is specified in miliseconds.
 
@@ -688,27 +956,26 @@ class Device(object):
                 self.__get_timeout(timeout)
             )
 
-
     def ctrl_transfer(self, bmRequestType, bRequest, wValue=0, wIndex=0,
             data_or_wLength = None, timeout = None):
         r"""Do a control transfer on the endpoint 0.
 
-        This method is used to issue a control transfer over the
-        endpoint 0(endpoint 0 is required to always be a control endpoint).
+        This method is used to issue a control transfer over the endpoint 0
+        (endpoint 0 is required to always be a control endpoint).
 
-        The parameters bmRequestType, bRequest, wValue and wIndex are the
-        same of the USB Standard Control Request format.
+        The parameters bmRequestType, bRequest, wValue and wIndex are the same
+        of the USB Standard Control Request format.
 
-        Control requests may or may not have a data payload to write/read.
-        In cases which it has, the direction bit of the bmRequestType
-        field is used to infere the desired request direction. For
-        host to device requests (OUT), data_or_wLength parameter is
-        the data payload to send, and it must be a sequence type convertible
-        to an array object. In this case, the return value is the number of data
-        payload written. For device to host requests (IN), data_or_wLength
-        is the wLength parameter of the control request specifying the
-        number of bytes to read in data payload. In this case, the return
-        value is the data payload read, as an array object.
+        Control requests may or may not have a data payload to write/read.  In
+        cases which it has, the direction bit of the bmRequestType field is
+        used to infere the desired request direction. For host to device
+        requests (OUT), data_or_wLength parameter is the data payload to send,
+        and it must be a sequence type convertible to an array object. In this
+        case, the return value is the number of data payload written. For
+        device to host requests (IN), data_or_wLength is the wLength parameter
+        of the control request specifying the number of bytes to read in data
+        payload. In this case, the return value is the data payload read, as an
+        array object.
         """
         if util.ctrl_direction(bmRequestType) == util.CTRL_OUT:
             a = _interop.as_array(data_or_wLength)
@@ -739,7 +1006,8 @@ class Device(object):
     def is_kernel_driver_active(self, interface):
         r"""Determine if there is kernel driver associated with the interface.
 
-        If a kernel driver is active, and the object will be unable to perform I/O.
+        If a kernel driver is active, and the object will be unable to perform
+        I/O.
 
         The interface parameter is the device interface number to check.
         """
@@ -753,7 +1021,8 @@ class Device(object):
 
         If successful, you will then be able to perform I/O.
 
-        The interface parameter is the device interface number to detach the driver from.
+        The interface parameter is the device interface number to detach the
+        driver from.
         """
         self._ctx.managed_open()
         self._ctx.backend.detach_kernel_driver(
@@ -764,7 +1033,8 @@ class Device(object):
         r"""Re-attach an interface's kernel driver, which was previously
         detached using detach_kernel_driver().
 
-        The interface parameter is the device interface number to attach the driver to.
+        The interface parameter is the device interface number to attach the
+        driver to.
         """
         self._ctx.managed_open()
         self._ctx.backend.attach_kernel_driver(
@@ -802,31 +1072,30 @@ class Device(object):
                         doc = 'Default timeout for transfer I/O functions'
                     )
 
+
 def find(find_all=False, backend = None, custom_match = None, **args):
     r"""Find an USB device and return it.
 
-    find() is the function used to discover USB devices.
-    You can pass as arguments any combination of the
-    USB Device Descriptor fields to match a device. For example:
+    find() is the function used to discover USB devices.  You can pass as
+    arguments any combination of the USB Device Descriptor fields to match a
+    device. For example:
 
     find(idVendor=0x3f4, idProduct=0x2009)
 
-    will return the Device object for the device with
-    idVendor Device descriptor field equals to 0x3f4 and
-    idProduct equals to 0x2009.
+    will return the Device object for the device with idVendor Device
+    descriptor field equals to 0x3f4 and idProduct equals to 0x2009.
 
-    If there is more than one device which matchs the criteria,
-    the first one found will be returned. If a matching device cannot
-    be found the function returns None. If you want to get all
-    devices, you can set the parameter find_all to True, then find
-    will return an list with all matched devices. If no matching device
-    is found, it will return an empty list. Example:
+    If there is more than one device which matchs the criteria, the first one
+    found will be returned. If a matching device cannot be found the function
+    returns None. If you want to get all devices, you can set the parameter
+    find_all to True, then find will return an list with all matched devices.
+    If no matching device is found, it will return an empty list. Example:
 
     printers = find(find_all=True, bDeviceClass=7)
 
-    This call will get all the USB printers connected to the system.
-    (actually may be not, because some devices put their class
-     information in the Interface Descriptor).
+    This call will get all the USB printers connected to the system.  (actually
+    may be not, because some devices put their class information in the
+    Interface Descriptor).
 
     You can also use a customized match criteria:
 
@@ -849,8 +1118,8 @@ def find(find_all=False, backend = None, custom_match = None, **args):
     printer will be found.
 
     You can combine a customized match with device descriptor fields. In this
-    case, the fields must match and the custom_match must return True. In the our
-    previous example, if we would like to get all printers belonging to the
+    case, the fields must match and the custom_match must return True. In the
+    our previous example, if we would like to get all printers belonging to the
     manufacturer 0x3f4, the code would be like so:
 
     printers = find(find_all=True, idVendor=0x3f4, custom_match=is_printer)
@@ -864,9 +1133,9 @@ def find(find_all=False, backend = None, custom_match = None, **args):
 
     find(backend = MyBackend())
 
-    PyUSB has builtin backends for libusb 0.1, libusb 1.0 and OpenUSB.
-    If you do not supply a backend explicitly, find() function will select
-    one of the predefineds backends according to system availability.
+    PyUSB has builtin backends for libusb 0.1, libusb 1.0 and OpenUSB.  If you
+    do not supply a backend explicitly, find() function will select one of the
+        predefineds backends according to system availability.
 
     Backends are explained in the usb.backend module.
     """
@@ -907,3 +1176,20 @@ def find(find_all=False, backend = None, custom_match = None, **args):
             return _interop._next(device_iter(k, v))
         except StopIteration:
             return None
+
+def show_devices(verbose=False, **kwargs):
+    """ show information about connected devices
+    the verbose flag sets to verbose or not
+    **kwargs are passed directly to the find() function
+    """
+    kwargs["find_all"] = True
+    devices = find( **kwargs )
+    strings = ""
+    for device in devices:
+        if not verbose:
+            strings +=  "%s, %s\n" % ( str(device), _try_lookup(
+                _lu.device_classes, device.bDeviceClass ) )
+        else:
+            strings += "%s\n\n" % ( device.summary )
+
+    return _Descriptor( strings )
