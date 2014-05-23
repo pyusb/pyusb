@@ -32,6 +32,7 @@ import utils
 import unittest
 import usb.core
 import devinfo
+import usb._interop
 import usb.util
 import usb.backend.libusb0 as libusb0
 import usb.backend.libusb1 as libusb1
@@ -57,6 +58,7 @@ class DeviceTest(unittest.TestCase):
             self.test_set_interface_altsetting()
             self.test_clear_halt()
             self.test_write_read()
+            self.test_write_array()
             self.test_ctrl_transfer()
             #self.test_reset()
         finally:
@@ -136,6 +138,16 @@ class DeviceTest(unittest.TestCase):
                                     str(adata) + ', in interface = ' + \
                                     str(alt)
                                 )
+
+    def test_write_array(self):
+        a = usb._interop.as_array('test')
+        self.dev.set_interface_altsetting(0, devinfo.INTF_BULK)
+
+        self.assertEquals(self.dev.write(devinfo.EP_BULK, a), len(a))
+
+        self.assertTrue(utils.array_equals(
+            self.dev.read(devinfo.EP_BULK | usb.util.ENDPOINT_IN, len(a)),
+            a))
 
     def test_ctrl_transfer(self):
         for data in data_list:
