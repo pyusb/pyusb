@@ -243,17 +243,18 @@ class IBackend(object):
         """
         _not_implemented(self.bulk_write)
 
-    def bulk_read(self, dev_handle, ep, intf, size, timeout):
+    def bulk_read(self, dev_handle, ep, intf, buff, timeout):
         r"""Perform a bulk read.
 
         dev_handle is the value returned by the open_device() method.
         The ep parameter is the bEndpointAddress field whose endpoint
         the data will be received from. intf is the bInterfaceNumber field
-        of the interface containing the endpoint. The size parameter
-        is the number of bytes to be read.  The timeout parameter specifies
+        of the interface containing the endpoint. The buff parameter
+        is buffer to receive the data read, the length of the buffer tells
+        how many bytes should be read.  The timeout parameter specifies
         a time limit to the operation in miliseconds.
 
-        The method returns an array.array object containing the data read.
+        The method returns the number of bytes actually read.
         """
         _not_implemented(self.bulk_read)
 
@@ -278,11 +279,12 @@ class IBackend(object):
         dev_handle is the value returned by the open_device() method.
         The ep parameter is the bEndpointAddress field whose endpoint
         the data will be received from. intf is the bInterfaceNumber field
-        of the interface containing the endpoint. The size parameter
-        is the number of bytes to be read.  The timeout parameter specifies
+        of the interface containing the endpoint. The buff parameter
+        is buffer to receive the data read, the length of the buffer tells
+        how many bytes should be read.  The timeout parameter specifies
         a time limit to the operation in miliseconds.
 
-        The method returns an array.array object containing the data read.
+        The method returns the number of bytes actually read.
         """
         _not_implemented(self.intr_read)
 
@@ -307,11 +309,12 @@ class IBackend(object):
         dev_handle is the value returned by the open_device() method.
         The ep parameter is the bEndpointAddress field whose endpoint
         the data will be received from. intf is the bInterfaceNumber field
-        of the interface containing the endpoint. The size parameter
-        is the number of bytes to be read. The timeout parameter specifies
+        of the interface containing the endpoint. The buff parameter
+        is buffer to receive the data read, the length of the buffer tells
+        how many bytes should be read.  The timeout parameter specifies
         a time limit to the operation in miliseconds.
 
-        The method returns an array.array object containing the data read.
+        The method returns the number of bytes actually read.
         """
         _not_implemented(self.iso_read)
 

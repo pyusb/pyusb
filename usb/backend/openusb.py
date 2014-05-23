@@ -643,15 +643,14 @@ class _OpenUSB(usb.backend.IBackend):
         return request.result.transferred_bytes
 
     @methodtrace(_logger)
-    def bulk_read(self, dev_handle, ep, intf, size, timeout):
+    def bulk_read(self, dev_handle, ep, intf, buff, timeout):
         request = _openusb_bulk_request()
-        buffer = _interop.as_array('\x00' * size)
         memset(byref(request), 0, sizeof(request))
-        payload, request.length = buffer.buffer_info()
+        payload, request.length = buff.buffer_info()
         request.payload = cast(payload, POINTER(c_uint8))
         request.timeout = timeout
         _check(_lib.openusb_bulk_xfer(dev_handle, intf, ep, byref(request)))
-        return buffer[:request.result.transferred_bytes]
+        return request.result.transferred_bytes
 
     @methodtrace(_logger)
     def intr_write(self, dev_handle, ep, intf, data, timeout):
@@ -664,15 +663,14 @@ class _OpenUSB(usb.backend.IBackend):
         return request.result.transferred_bytes
 
     @methodtrace(_logger)
-    def intr_read(self, dev_handle, ep, intf, size, timeout):
+    def intr_read(self, dev_handle, ep, intf, buff, timeout):
         request = _openusb_intr_request()
-        buffer = _interop.as_array('\x00' * size)
         memset(byref(request), 0, sizeof(request))
-        payload, request.length = buffer.buffer_info()
+        payload, request.length = buff.buffer_info()
         request.payload = cast(payload, POINTER(c_uint8))
         request.timeout = timeout
         _check(_lib.openusb_intr_xfer(dev_handle, intf, ep, byref(request)))
-        return buffer[:request.result.transferred_bytes]
+        return request.result.transferred_bytes
 
 # TODO: implement isochronous
 #    @methodtrace(_logger)

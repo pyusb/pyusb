@@ -234,12 +234,16 @@ class BackendTest(unittest.TestCase):
                                 ', in EP = ' + \
                                 str(ep))
 
+            buff = usb.util.create_buffer(length)
+
             try:
-                ret = read_fn(self.handle, ep | usb.util.ENDPOINT_IN, intf, length, 1000)
+                ret = read_fn(self.handle, ep | usb.util.ENDPOINT_IN, intf, buff, 1000)
             except NotImplementedError:
                 return
 
-            self.assertEqual(ret,
+            self.assertEqual(ret, length, str(ret) + ' != ' + str(length))
+
+            self.assertEqual(buff,
                              data,
                              'Failed to read data: ' + \
                                 str(data) + \

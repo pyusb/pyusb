@@ -115,11 +115,14 @@ class DeviceTest(unittest.TestCase):
             for data in data_list:
                 adata = utils.to_array(data)
                 length = utils.data_len(data)
+                buff = usb.util.create_buffer(length)
 
                 try:
                     ret = self.dev.write(eps[alt], data)
                 except NotImplementedError:
                     continue
+
+                self.assertEqual(ret, length)
 
                 self.assertEqual(ret,
                                  length,
@@ -139,6 +142,32 @@ class DeviceTest(unittest.TestCase):
                                     str(alt)
                                 )
 
+                try:
+                    ret = self.dev.write(eps[alt], data)
+                except NotImplementedError:
+                    continue
+
+                self.assertEqual(ret, length)
+
+                self.assertEqual(ret,
+                                 length,
+                                 'Failed to write data: ' + \
+                                    str(data) + ', in interface = ' + \
+                                    str(alt)
+                                )
+
+                try:
+                    ret = self.dev.read(eps[alt] | usb.util.ENDPOINT_IN, buff)
+                except NotImplementedError:
+                    continue
+
+                self.assertEqual(ret, length)
+
+                self.assertTrue(utils.array_equals(buff, adata),
+                                 str(buff) + ' != ' + \
+                                    str(adata) + ', in interface = ' + \
+                                    str(alt)
+                                )
     def test_write_array(self):
         a = usb._interop.as_array('test')
         self.dev.set_interface_altsetting(0, devinfo.INTF_BULK)
@@ -250,11 +279,19 @@ class EndpointTest(unittest.TestCase):
         self.dev.set_interface_altsetting(0, 0)
         for data in data_list:
             adata = utils.to_array(data)
-            ret = self.ep_out.write(data)
             length = utils.data_len(data)
+            buff = usb.util.create_buffer(length)
+
+            ret = self.ep_out.write(data)
             self.assertEqual(ret, length, 'Failed to write data: ' + str(data))
             ret = self.ep_in.read(length)
             self.assertTrue(utils.array_equals(ret, adata), str(ret) + ' != ' + str(adata))
+
+            ret = self.ep_out.write(data)
+            self.assertEqual(ret, length, 'Failed to write data: ' + str(data))
+            ret = self.ep_in.read(buff)
+            self.assertEqual(ret, length)
+            self.assertTrue(utils.array_equals(buff, adata), str(buff) + ' != ' + str(adata))
 
 def get_suite():
     suite = unittest.TestSuite()
