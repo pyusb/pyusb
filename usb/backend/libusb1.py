@@ -792,15 +792,10 @@ class _LibUSB(usb.backend.IBackend):
                       bRequest,
                       wValue,
                       wIndex,
-                      data_or_wLength,
+                      data,
                       timeout):
-        if usb.util.ctrl_direction(bmRequestType) == usb.util.CTRL_OUT:
-            buff = data_or_wLength
-        else:
-            buff = _interop.as_array('\x00' * data_or_wLength)
-
-        addr, length = buff.buffer_info()
-        length *= buff.itemsize
+        addr, length = data.buffer_info()
+        length *= data.itemsize
 
         ret = _check(self.lib.libusb_control_transfer(
                                         dev_handle.handle,
@@ -812,10 +807,7 @@ class _LibUSB(usb.backend.IBackend):
                                         length,
                                         timeout))
 
-        if usb.util.ctrl_direction(bmRequestType) == usb.util.CTRL_OUT:
-            return ret
-        else:
-            return buff[:ret]
+        return ret
 
     @methodtrace(_logger)
     def clear_halt(self, dev_handle, ep):

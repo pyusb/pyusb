@@ -324,7 +324,7 @@ class IBackend(object):
                       bRequest,
                       wValue,
                       wIndex,
-                      data_or_wLength,
+                      data,
                       timeout):
         r"""Perform a control transfer on the endpoint 0.
 
@@ -333,12 +333,12 @@ class IBackend(object):
 
         dev_handle is the value returned by the open_device() method.
         bmRequestType, bRequest, wValue and wIndex are the same fields
-        of the setup packet. data_or_wLength is either the payload to be sent
-        to the device, if any, as an array.array object (None there is no
-        payload) for OUT requests in the data stage or the wLength field
-        specifying the number of bytes to read for IN requests in the data
-        stage. The timeout parameter specifies a time limit to the operation
-        in miliseconds.
+        of the setup packet. data is an array object, for OUT requests
+        is bytes to transmit in the data stage and for IN requests is
+        the buffer to hold the data read. The number of bytes requested
+        to transmit or receive is equal to the length of the array times
+        the data.itemsize field. The timeout parameter specifies a time
+        limit to the operation in miliseconds.
 
         Return the number of bytes written (for OUT transfers) or the data
         read (for IN transfers), as an array.array object.

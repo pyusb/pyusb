@@ -735,16 +735,15 @@ class Device(object):
         the data payload to send, and it must be a sequence type convertible
         to an array object. In this case, the return value is the number of data
         payload written. For device to host requests (IN), data_or_wLength
-        is the wLength parameter of the control request specifying the
-        number of bytes to read in data payload. In this case, the return
-        value is the data payload read, as an array object.
+        is either the wLength parameter of the control request specifying the
+        number of bytes to read in data payload, and the return value is
+        an array object with data read, or an array object which the data
+        will be read to, and the return value is the number of bytes read.
         """
-        if util.ctrl_direction(bmRequestType) == util.CTRL_OUT:
-            a = _interop.as_array(data_or_wLength)
-        elif data_or_wLength is None:
-            a = 0
-        else:
-            a = data_or_wLength
+        try:
+            buff = util.create_buffer(data_or_wLength)
+        except TypeError:
+            buff = _interop.as_array(data_or_wLength)
 
         self._ctx.managed_open()
 
@@ -755,15 +754,22 @@ class Device(object):
             interface_number = wIndex & 0xff
             self._ctx.managed_claim_interface(self, interface_number)
 
-        return self._ctx.backend.ctrl_transfer(
+        ret = self._ctx.backend.ctrl_transfer(
                                     self._ctx.handle,
                                     bmRequestType,
                                     bRequest,
                                     wValue,
                                     wIndex,
-                                    a,
-                                    self.__get_timeout(timeout)
-                                )
+                                    buff,
+                                    self.__get_timeout(timeout))
+
+        if isinstance(data_or_wLength, array.array) \
+                or util.ctrl_direction(bmRequestType) == util.CTRL_OUT:
+            return ret
+        elif ret != len(buff) * buff.itemsize:
+            return buff[:ret]
+        else:
+            return buff
 
     def is_kernel_driver_active(self, interface):
         r"""Determine if there is kernel driver associated with the interface.

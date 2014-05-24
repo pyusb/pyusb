@@ -688,7 +688,7 @@ class _OpenUSB(usb.backend.IBackend):
                       bRequest,
                       wValue,
                       wIndex,
-                      data_or_wLength,
+                      data,
                       timeout):
         request = _openusb_ctrl_request()
         request.setup.bmRequestType = bmRequestType
@@ -699,20 +699,13 @@ class _OpenUSB(usb.backend.IBackend):
 
         direction = usb.util.ctrl_direction(bmRequestType)
 
-        if direction == usb.util.CTRL_OUT:
-            buffer = data_or_wLength
-        else:
-            buffer = _interop.as_array('\x00' * data_or_wLength)
-
-        payload, request.length = buffer.buffer_info()
+        payload, request.length = data.buffer_info()
+        request.length *= data.itemsize
         request.payload = cast(payload, POINTER(c_uint8))
 
         _check(_lib.openusb_ctrl_xfer(dev_handle, 0, 0, byref(request)))
 
-        if direction == usb.util.CTRL_OUT:
-            return request.result.transferred_bytes
-        else:
-            return buffer[:request.result.transferred_bytes]
+        return request.result.transferred_bytes
 
     @methodtrace(_logger)
     def reset_device(self, dev_handle):

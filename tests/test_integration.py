@@ -182,25 +182,52 @@ class DeviceTest(unittest.TestCase):
         for data in data_list:
             length = utils.data_len(data)
             adata = utils.to_array(data)
+
             ret = self.dev.ctrl_transfer(
                     0x40,
                     devinfo.PICFW_SET_VENDOR_BUFFER,
                     0,
                     0,
-                    data
-                )
+                    data)
+
             self.assertEqual(ret,
                              length,
                              'Failed to write data: ' + str(data))
+
             ret = utils.to_array(self.dev.ctrl_transfer(
                         0xC0,
                         devinfo.PICFW_GET_VENDOR_BUFFER,
                         0,
                         0,
-                        length
-                    ))
+                        length))
+
             self.assertTrue(utils.array_equals(ret, adata),
                              str(ret) + ' != ' + str(adata))
+
+            buff = usb.util.create_buffer(length)
+
+            ret = self.dev.ctrl_transfer(
+                    0x40,
+                    devinfo.PICFW_SET_VENDOR_BUFFER,
+                    0,
+                    0,
+                    data)
+
+            self.assertEqual(ret,
+                             length,
+                             'Failed to write data: ' + str(data))
+
+            ret = self.dev.ctrl_transfer(
+                        0xC0,
+                        devinfo.PICFW_GET_VENDOR_BUFFER,
+                        0,
+                        0,
+                        buff)
+
+            self.assertEqual(ret, length)
+
+            self.assertTrue(utils.array_equals(buff, adata),
+                             str(buff) + ' != ' + str(adata))
 
     def test_clear_halt(self):
         self.dev.set_interface_altsetting(0, 0)

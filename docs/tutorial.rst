@@ -433,8 +433,9 @@ an instance of the array_ object for the ``read`` method or the number of bytes 
 for the ``write`` method.
 
 Since beta 2 version, instead of the number of bytes, you can also pass to ``read``
-an array_ object in which the data will be read into. In this case, the number of
-bytes to read will be the length of the array times the ``array.itemsize`` value.
+and ``ctrl_transfer`` an array_ object in which the data will be read into. In
+this case, the number of bytes to read will be the length of the array times
+the ``array.itemsize`` value.
 
 As in ``ctrl_transfer``, the ``timeout`` parameter is optional. When the ``timeout``
 is omitted, it is used the ``Device.default_timeout`` property as the operation timeout.
