@@ -243,17 +243,18 @@ class IBackend(object):
         """
         _not_implemented(self.bulk_write)
 
-    def bulk_read(self, dev_handle, ep, intf, size, timeout):
+    def bulk_read(self, dev_handle, ep, intf, buff, timeout):
         r"""Perform a bulk read.
 
         dev_handle is the value returned by the open_device() method.
         The ep parameter is the bEndpointAddress field whose endpoint
         the data will be received from. intf is the bInterfaceNumber field
-        of the interface containing the endpoint. The size parameter
-        is the number of bytes to be read.  The timeout parameter specifies
+        of the interface containing the endpoint. The buff parameter
+        is buffer to receive the data read, the length of the buffer tells
+        how many bytes should be read.  The timeout parameter specifies
         a time limit to the operation in miliseconds.
 
-        The method returns an array.array object containing the data read.
+        The method returns the number of bytes actually read.
         """
         _not_implemented(self.bulk_read)
 
@@ -278,11 +279,12 @@ class IBackend(object):
         dev_handle is the value returned by the open_device() method.
         The ep parameter is the bEndpointAddress field whose endpoint
         the data will be received from. intf is the bInterfaceNumber field
-        of the interface containing the endpoint. The size parameter
-        is the number of bytes to be read.  The timeout parameter specifies
+        of the interface containing the endpoint. The buff parameter
+        is buffer to receive the data read, the length of the buffer tells
+        how many bytes should be read.  The timeout parameter specifies
         a time limit to the operation in miliseconds.
 
-        The method returns an array.array object containing the data read.
+        The method returns the number of bytes actually read.
         """
         _not_implemented(self.intr_read)
 
@@ -307,11 +309,12 @@ class IBackend(object):
         dev_handle is the value returned by the open_device() method.
         The ep parameter is the bEndpointAddress field whose endpoint
         the data will be received from. intf is the bInterfaceNumber field
-        of the interface containing the endpoint. The size parameter
-        is the number of bytes to be read. The timeout parameter specifies
+        of the interface containing the endpoint. The buff parameter
+        is buffer to receive the data read, the length of the buffer tells
+        how many bytes should be read.  The timeout parameter specifies
         a time limit to the operation in miliseconds.
 
-        The method returns an array.array object containing the data read.
+        The method returns the number of bytes actually read.
         """
         _not_implemented(self.iso_read)
 
@@ -321,7 +324,7 @@ class IBackend(object):
                       bRequest,
                       wValue,
                       wIndex,
-                      data_or_wLength,
+                      data,
                       timeout):
         r"""Perform a control transfer on the endpoint 0.
 
@@ -330,12 +333,12 @@ class IBackend(object):
 
         dev_handle is the value returned by the open_device() method.
         bmRequestType, bRequest, wValue and wIndex are the same fields
-        of the setup packet. data_or_wLength is either the payload to be sent
-        to the device, if any, as an array.array object (None there is no
-        payload) for OUT requests in the data stage or the wLength field
-        specifying the number of bytes to read for IN requests in the data
-        stage. The timeout parameter specifies a time limit to the operation
-        in miliseconds.
+        of the setup packet. data is an array object, for OUT requests
+        is bytes to transmit in the data stage and for IN requests is
+        the buffer to hold the data read. The number of bytes requested
+        to transmit or receive is equal to the length of the array times
+        the data.itemsize field. The timeout parameter specifies a time
+        limit to the operation in miliseconds.
 
         Return the number of bytes written (for OUT transfers) or the data
         read (for IN transfers), as an array.array object.

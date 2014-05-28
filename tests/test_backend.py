@@ -193,6 +193,8 @@ class BackendTest(unittest.TestCase):
     def test_ctrl_transfer(self):
         for data in (utils.get_array_data1(), utils.get_array_data2()):
             length = len(data) * data.itemsize
+            buff = usb.util.create_buffer(length)
+
             ret = self.backend.ctrl_transfer(self.handle,
                                              0x40,
                                              devinfo.PICFW_SET_VENDOR_BUFFER,
@@ -203,14 +205,18 @@ class BackendTest(unittest.TestCase):
             self.assertEqual(ret,
                              length,
                              'Failed to write data: ' + str(data) + ', ' + str(length) + ' != ' + str(ret))
+
             ret = self.backend.ctrl_transfer(self.handle,
                                              0xC0,
                                              devinfo.PICFW_GET_VENDOR_BUFFER,
                                              0,
                                              0,
-                                             length,
+                                             buff,
                                              1000)
-            self.assertEqual(ret,
+
+            self.assertEqual(ret, length)
+
+            self.assertEqual(buff,
                              data,
                              'Failed to read data: ' + str(data) + ' != ' + str(ret))
 
@@ -234,12 +240,16 @@ class BackendTest(unittest.TestCase):
                                 ', in EP = ' + \
                                 str(ep))
 
+            buff = usb.util.create_buffer(length)
+
             try:
-                ret = read_fn(self.handle, ep | usb.util.ENDPOINT_IN, intf, length, 1000)
+                ret = read_fn(self.handle, ep | usb.util.ENDPOINT_IN, intf, buff, 1000)
             except NotImplementedError:
                 return
 
-            self.assertEqual(ret,
+            self.assertEqual(ret, length, str(ret) + ' != ' + str(length))
+
+            self.assertEqual(buff,
                              data,
                              'Failed to read data: ' + \
                                 str(data) + \

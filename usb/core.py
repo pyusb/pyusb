@@ -46,6 +46,7 @@ import copy
 import operator
 import usb._interop as _interop
 import logging
+import array
 
 _logger = logging.getLogger('usb.core')
 
@@ -282,18 +283,20 @@ class Endpoint(object):
         """
         return self.device.write(self, data, timeout)
 
-    def read(self, size, timeout = None):
+    def read(self, size_or_buffer, timeout = None):
         r"""Read data from the endpoint.
 
-        The parameter size is the number of bytes to read and timeout is the
-        time limit of the operation.The transfer type and endpoint address
+        The parameter size_or_buffer is either the number of bytes to
+        read or an array object where the data will be put in and timeout is the
+        time limit of the operation. The transfer type and endpoint address
         are automatically inferred.
 
-        The method returns an array.array object with the data read.
+        The method returns either an array object or the number of bytes
+        actually read.
 
         For details, see the Device.read() method.
         """
-        return self.device.read(self, size, timeout)
+        return self.device.read(self, size_or_buffer, timeout)
 
     def clear_halt(self):
         r"""Clear the halt/status condition."""
@@ -669,16 +672,20 @@ class Device(object):
                 self.__get_timeout(timeout)
             )
 
-    def read(self, endpoint, size, timeout = None):
+    def read(self, endpoint, size_or_buffer, timeout = None):
         r"""Read data from the endpoint.
 
         This method is used to receive data from the device. The endpoint parameter
         corresponds to the bEndpointAddress member whose endpoint you want to
-        communicate with. The size parameters tells how many bytes you want to read.
+        communicate with. The size_or_buffer parameter either tells how many bytes
+        you want to read or supplies the buffer to receive the data (it *must* be
+        an object of the type array).
 
         The timeout is specified in miliseconds.
 
-        The method returns an array object with the data read.
+        If the size_or_buffer parameter is the number of bytes to read, the method
+        returns an array object with the data read. If the size_or_buffer parameter
+        is an array object, it returns the number of bytes actually read.
         """
         backend = self._ctx.backend
 
@@ -691,13 +698,24 @@ class Device(object):
         intf, ep = self._ctx.setup_request(self, endpoint)
         fn = fn_map[util.endpoint_type(ep.bmAttributes)]
 
-        return fn(
+        if isinstance(size_or_buffer, array.array):
+            buff = size_or_buffer
+        else: # here we consider it is a integer
+            buff = util.create_buffer(size_or_buffer)
+
+        ret = fn(
                 self._ctx.handle,
                 ep.bEndpointAddress,
                 intf.bInterfaceNumber,
-                size,
-                self.__get_timeout(timeout)
-            )
+                buff,
+                self.__get_timeout(timeout))
+
+        if isinstance(size_or_buffer, array.array):
+            return ret
+        elif ret != len(buff) * buff.itemsize:
+            return buff[:ret]
+        else:
+            return buff
 
 
     def ctrl_transfer(self, bmRequestType, bRequest, wValue=0, wIndex=0,
@@ -717,16 +735,15 @@ class Device(object):
         the data payload to send, and it must be a sequence type convertible
         to an array object. In this case, the return value is the number of data
         payload written. For device to host requests (IN), data_or_wLength
-        is the wLength parameter of the control request specifying the
-        number of bytes to read in data payload. In this case, the return
-        value is the data payload read, as an array object.
+        is either the wLength parameter of the control request specifying the
+        number of bytes to read in data payload, and the return value is
+        an array object with data read, or an array object which the data
+        will be read to, and the return value is the number of bytes read.
         """
-        if util.ctrl_direction(bmRequestType) == util.CTRL_OUT:
-            a = _interop.as_array(data_or_wLength)
-        elif data_or_wLength is None:
-            a = 0
-        else:
-            a = data_or_wLength
+        try:
+            buff = util.create_buffer(data_or_wLength)
+        except TypeError:
+            buff = _interop.as_array(data_or_wLength)
 
         self._ctx.managed_open()
 
@@ -737,15 +754,22 @@ class Device(object):
             interface_number = wIndex & 0xff
             self._ctx.managed_claim_interface(self, interface_number)
 
-        return self._ctx.backend.ctrl_transfer(
+        ret = self._ctx.backend.ctrl_transfer(
                                     self._ctx.handle,
                                     bmRequestType,
                                     bRequest,
                                     wValue,
                                     wIndex,
-                                    a,
-                                    self.__get_timeout(timeout)
-                                )
+                                    buff,
+                                    self.__get_timeout(timeout))
+
+        if isinstance(data_or_wLength, array.array) \
+                or util.ctrl_direction(bmRequestType) == util.CTRL_OUT:
+            return ret
+        elif ret != len(buff) * buff.itemsize:
+            return buff[:ret]
+        else:
+            return buff
 
     def is_kernel_driver_active(self, interface):
         r"""Determine if there is kernel driver associated with the interface.

@@ -749,12 +749,12 @@ class _LibUSB(usb.backend.IBackend):
                             timeout)
 
     @methodtrace(_logger)
-    def bulk_read(self, dev_handle, ep, intf, size, timeout):
+    def bulk_read(self, dev_handle, ep, intf, buff, timeout):
         return self.__read(self.lib.libusb_bulk_transfer,
                            dev_handle,
                            ep,
                            intf,
-                           size,
+                           buff,
                            timeout)
 
     @methodtrace(_logger)
@@ -767,12 +767,12 @@ class _LibUSB(usb.backend.IBackend):
                             timeout)
 
     @methodtrace(_logger)
-    def intr_read(self, dev_handle, ep, intf, size, timeout):
+    def intr_read(self, dev_handle, ep, intf, buff, timeout):
         return self.__read(self.lib.libusb_interrupt_transfer,
                            dev_handle,
                            ep,
                            intf,
-                           size,
+                           buff,
                            timeout)
 
     @methodtrace(_logger)
@@ -781,10 +781,9 @@ class _LibUSB(usb.backend.IBackend):
         return handler.submit(self.ctx)
 
     @methodtrace(_logger)
-    def iso_read(self, dev_handle, ep, intf, size, timeout):
-        data = _interop.as_array('\x00' * size)
-        handler = _IsoTransferHandler(dev_handle, ep, data, timeout)
-        return data[:handler.submit(self.ctx)]
+    def iso_read(self, dev_handle, ep, intf, buff, timeout):
+        handler = _IsoTransferHandler(dev_handle, ep, buff, timeout)
+        return handler.submit(self.ctx)
 
     @methodtrace(_logger)
     def ctrl_transfer(self,
@@ -793,15 +792,10 @@ class _LibUSB(usb.backend.IBackend):
                       bRequest,
                       wValue,
                       wIndex,
-                      data_or_wLength,
+                      data,
                       timeout):
-        if usb.util.ctrl_direction(bmRequestType) == usb.util.CTRL_OUT:
-            buff = data_or_wLength
-        else:
-            buff = _interop.as_array('\x00' * data_or_wLength)
-
-        addr, length = buff.buffer_info()
-        length *= buff.itemsize
+        addr, length = data.buffer_info()
+        length *= data.itemsize
 
         ret = _check(self.lib.libusb_control_transfer(
                                         dev_handle.handle,
@@ -813,10 +807,7 @@ class _LibUSB(usb.backend.IBackend):
                                         length,
                                         timeout))
 
-        if usb.util.ctrl_direction(bmRequestType) == usb.util.CTRL_OUT:
-            return ret
-        else:
-            return buff[:ret]
+        return ret
 
     @methodtrace(_logger)
     def clear_halt(self, dev_handle, ep):
@@ -855,10 +846,9 @@ class _LibUSB(usb.backend.IBackend):
 
         return transferred.value
 
-    def __read(self, fn, dev_handle, ep, intf, size, timeout):
-        data = _interop.as_array('\x00' * size)
-        address, length = data.buffer_info()
-        length *= data.itemsize
+    def __read(self, fn, dev_handle, ep, intf, buff, timeout):
+        address, length = buff.buffer_info()
+        length *= buff.itemsize
         transferred = c_int()
         retval = fn(dev_handle.handle,
                   ep,
@@ -869,7 +859,7 @@ class _LibUSB(usb.backend.IBackend):
         # do not assume LIBUSB_ERROR_TIMEOUT means no I/O.
         if not (transferred.value and retval == LIBUSB_ERROR_TIMEOUT):
             _check(retval)
-        return data[:transferred.value]
+        return transferred.value
 
 def get_backend(find_library=None):
     global _lib
