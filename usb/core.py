@@ -68,9 +68,9 @@ def _try_get_string(dev, index, langid = None, default_str_i0 = "",
     else:
         try:
             if langid is None:
-                string = util.get_string( dev, index )
+                string = util.get_string(dev, index)
             else:
-                string = util.get_string( dev, index, langid )
+                string = util.get_string(dev, index, langid)
         except :
             string = default_access_error
     return string
@@ -86,10 +86,10 @@ def _try_lookup(table, value, default = ""):
     return string
 
 
-class _DescriptorInfo( str ):
+class _DescriptorInfo(str):
     """ this class is used so that when a descriptor is shown on the
     terminal it is propely formatted """
-    def __repr__( self ):
+    def __repr__(self):
         return self
 
 
@@ -266,33 +266,33 @@ class Endpoint(object):
     >>>             print e.bEndpointAddress
     """
 
-    def __str__( self ):
+    def __str__(self):
         return (
             "ENDPOINT 0x%X: %s %s" % (self.bEndpointAddress,
             _lu.ep_attributes[(self.bmAttributes & 0x3)],
             "IN" if (0x80 & self.bEndpointAddress) else "OUT")
             )
 
-    def _get_descriptor( self ):
-        headstr = "      " + str( self ) + " "
+    def _get_descriptor(self):
+        headstr = "      " + str(self) + " "
         return _DescriptorInfo(
-        "%s%s\n" % ( headstr, "=" * (60 - len(headstr)) ) +
+        "%s%s\n" % (headstr, "=" * (60 - len(headstr))) +
         "       %-17s:%#7x (7 bytes)\n" % (
-                "bLength", self.bLength ) +
+                "bLength", self.bLength) +
         "       %-17s:%#7x %s\n" % (
                 "bDescriptorType", self.bDescriptorType,
-                _try_lookup( _lu.descriptors, self.bDescriptorType ) ) +
+                _try_lookup(_lu.descriptors, self.bDescriptorType)) +
         "       %-17s:%#7x %s\n" % (
                 "bEndpointAddress", self.bEndpointAddress,
-                "IN" if (0x80 & self.bEndpointAddress) else "OUT" ) +
+                "IN" if (0x80 & self.bEndpointAddress) else "OUT") +
         "       %-17s:%#7x %s\n" % (
                 "bmAttributes", self.bmAttributes,
-                _lu.ep_attributes[(self.bmAttributes & 0x3)] ) +
+                _lu.ep_attributes[(self.bmAttributes & 0x3)]) +
         "       %-17s:%#7x (%d bytes)\n" % (
-                "wMaxPacketSize", self.wMaxPacketSize, self.wMaxPacketSize ) +
-        "       %-17s:%#7x" % ( "bInterval", self.bInterval )
+                "wMaxPacketSize", self.wMaxPacketSize, self.wMaxPacketSize) +
+        "       %-17s:%#7x" % ("bInterval", self.bInterval)
         )
-    info = property( fget=_get_descriptor )
+    info = property(fget=_get_descriptor)
 
     def __init__(self, device, endpoint, interface = 0,
                     alternate_setting = 0, configuration = 0):
@@ -431,23 +431,23 @@ class Interface(object):
                 )
             )
 
-    def __str__( self ):
+    def __str__(self):
         return (
-            "INTERFACE %d%s: %s" % ( self.bInterfaceNumber,
+            "INTERFACE %d%s: %s" % (self.bInterfaceNumber,
             ", %d" % (self.bAlternateSetting) if self.bAlternateSetting else "",
-            _try_lookup( _lu.interface_classes, self.bInterfaceClass,
-                default = "Unknown Class" ) )
+            _try_lookup(_lu.interface_classes, self.bInterfaceClass,
+                default = "Unknown Class"))
             )
 
-    def _get_descriptor( self ):
-        headstr = "    " + str( self ) + " "
+    def _get_descriptor(self):
+        headstr = "    " + str(self) + " "
         return _DescriptorInfo(
-        "%s%s\n" % ( headstr, "=" * (60 - len(headstr)) ) +
+        "%s%s\n" % (headstr, "=" * (60 - len(headstr))) +
         "     %-19s:%#7x (9 bytes)\n" % (
             "bLength", self.bLength) +
         "     %-19s:%#7x %s\n" % (
             "bDescriptorType", self.bDescriptorType,
-            _try_lookup( _lu.descriptors, self.bDescriptorType )) +
+            _try_lookup(_lu.descriptors, self.bDescriptorType)) +
         "     %-19s:%#7x\n" % (
             "bInterfaceNumber", self.bInterfaceNumber) +
         "     %-19s:%#7x\n" % (
@@ -456,37 +456,37 @@ class Interface(object):
             "bNumEndpoints", self.bNumEndpoints) +
         "     %-19s:%#7x %s\n" % (
             "bInterfaceClass", self.bInterfaceClass,
-            _try_lookup( _lu.interface_classes, self.bInterfaceClass )) +
+            _try_lookup(_lu.interface_classes, self.bInterfaceClass)) +
         "     %-19s:%#7x\n" % (
             "bInterfaceSubClass", self.bInterfaceSubClass) +
         "     %-19s:%#7x\n" % (
             "bInterfaceProtocol", self.bInterfaceProtocol) +
         "     %-19s:%#7x %s" % (
             "iInterface", self.iInterface,
-            _try_get_string( self.device, self.iInterface ))
+            _try_get_string(self.device, self.iInterface))
         )
 
-    def _get_descriptor_recursive( self ):
+    def _get_descriptor_recursive(self):
         """ show all information for the interface
         """
         string = self._get_descriptor()
         for endpoint in self:
-            string += "\n%s" % ( endpoint._get_descriptor() )
+            string += "\n%s" % (endpoint._get_descriptor())
         return _DescriptorInfo(string)
-    info = property( fget=_get_descriptor_recursive )
+    info = property(fget=_get_descriptor_recursive)
 
-    def _get_summary_descriptor( self ):
-        string = "    " + str( self )
+    def _get_summary_descriptor(self):
+        string = "    " + str(self)
         for ep in self:
             string += "\n      %s" % (ep)
         return _DescriptorInfo(string)
-    summary = property( fget=_get_summary_descriptor )
+    summary = property(fget=_get_summary_descriptor)
 
-    def _get_endpoints( self ):
+    def _get_endpoints(self):
         """ return a list of the endpoints
         """
         return [endpoint for endpoint in self]
-    endpoints = property( fget=_get_endpoints )
+    endpoints = property(fget=_get_endpoints)
 
     def set_altsetting(self):
         r"""Set the interface alternate setting."""
@@ -565,22 +565,22 @@ class Configuration(object):
                 )
             )
 
-    def __str__( self ):
+    def __str__(self):
         return (
             "CONFIGURATION %d: %d mA" % (
             self.bConfigurationValue,
             _lu.MAX_POWER_UNITS_USB2p0 * self.bMaxPower)
             )
 
-    def _get_descriptor( self ):
-        headstr = "  " + str( self ) + " "
+    def _get_descriptor(self):
+        headstr = "  " + str(self) + " "
         return _DescriptorInfo(
-        "%s%s\n" % ( headstr, "=" * (60 - len(headstr)) ) +
+        "%s%s\n" % (headstr, "=" * (60 - len(headstr))) +
         "   %-21s:%#7x (9 bytes)\n" % (
             "bLength", self.bLength) +
         "   %-21s:%#7x %s\n" % (
             "bDescriptorType", self.bDescriptorType,
-            _try_lookup( _lu.descriptors, self.bDescriptorType )) +
+            _try_lookup(_lu.descriptors, self.bDescriptorType)) +
         "   %-21s:%#7x (%d bytes)\n" % (
             "wTotalLength", self.wTotalLength, self.wTotalLength) +
         "   %-21s:%#7x\n" % (
@@ -589,7 +589,7 @@ class Configuration(object):
             "bConfigurationValue", self.bConfigurationValue) +
         "   %-21s:%#7x %s\n" % (
             "iConfiguration", self.iConfiguration,
-            _try_get_string( self.device, self.iConfiguration )) +
+            _try_get_string(self.device, self.iConfiguration)) +
         "   %-21s:%#7x %s Powered%s\n" % (
             "bmAttributes", self.bmAttributes,
             "Self" if (self.bmAttributes & (1<<6)) else "Bus",
@@ -602,25 +602,25 @@ class Configuration(object):
             # FIXME : add a check for superspeed vs usb 2.0
         )
 
-    def _get_descriptor_recursive( self ):
+    def _get_descriptor_recursive(self):
         string = self._get_descriptor()
         for interface in self:
-            string += "\n%s" % ( interface.info )
+            string += "\n%s" % (interface.info)
         return _DescriptorInfo(string)
-    info = property( fget=_get_descriptor_recursive )
+    info = property(fget=_get_descriptor_recursive)
 
-    def _get_summary_descriptor( self ):
-        string = "  " + str( self )
+    def _get_summary_descriptor(self):
+        string = "  " + str(self)
         for itf in self:
-            string += "\n%s" % ( itf.summary )
+            string += "\n%s" % (itf.summary)
         return _DescriptorInfo(string)
-    summary = property( fget=_get_summary_descriptor )
+    summary = property(fget=_get_summary_descriptor)
 
     def _get_interfaces(self):
         """ return a list of the interfaces
         """
         return [interface for interface in self]
-    interfaces = property( fget=_get_interfaces )
+    interfaces = property(fget=_get_interfaces)
 
     def set(self):
         r"""Set this configuration as the active one."""
@@ -683,34 +683,34 @@ class Device(object):
     will be used instead. This property can be set by the user at anytime.
     """
 
-    def __str__( self ):
+    def __str__(self):
         return (
             "DEVICE ID %04x:%04x on Bus %03d Address %03d" % (
-            self.idVendor, self.idProduct, self.bus, self.address )
+            self.idVendor, self.idProduct, self.bus, self.address)
             )
 
-    def _get_descriptor( self ):
-        headstr = str( self ) + " "
+    def _get_descriptor(self):
+        headstr = str(self) + " "
         return _DescriptorInfo(
-        "%s%s\n" % ( headstr, "=" * (60 - len(headstr)) ) +
+        "%s%s\n" %  (headstr, "=" * (60 - len(headstr))) +
         " %-23s:%#7x (18 bytes)\n" % (
             "bLength", self.bLength) +
         " %-23s:%#7x %s\n" % (
             "bDescriptorType", self.bDescriptorType,
-            _try_lookup( _lu.descriptors, self.bDescriptorType ) ) +
+            _try_lookup(_lu.descriptors, self.bDescriptorType)) +
         " %-23s:%#7x USB %d.%d%s\n" % (
             "bcdUSB", self.bcdUSB, (self.bcdUSB & 0xff00)>>8,
             (self.bcdUSB & 0xf0) >> 4,
-            str(self.bcdUSB & 0xf) if (self.bcdUSB & 0xf) else "" ) +
+            str(self.bcdUSB & 0xf) if (self.bcdUSB & 0xf) else "") +
         " %-23s:%#7x %s\n" % (
             "bDeviceClass", self.bDeviceClass,
-            _try_lookup( _lu.device_classes, self.bDeviceClass ) ) +
+            _try_lookup(_lu.device_classes, self.bDeviceClass)) +
         " %-23s:%#7x\n" % (
             "bDeviceSubClass", self.bDeviceSubClass) +
         " %-23s:%#7x\n" % (
             "bDeviceProtocol", self.bDeviceProtocol) +
         " %-23s:%#7x (%d bytes)\n" % (
-            "bMaxPacketSize0", self.bMaxPacketSize0, self.bMaxPacketSize0 ) +
+            "bMaxPacketSize0", self.bMaxPacketSize0, self.bMaxPacketSize0) +
         " %-23s: %#06x\n" % (
             "idVendor", self.idVendor) +
         " %-23s: %#06x\n" % (
@@ -718,7 +718,7 @@ class Device(object):
         " %-23s:%#7x Device %d.%d%s\n" % (
             "bcdDevice", self.bcdDevice, (self.bcdDevice & 0xff00)>>8,
             (self.bcdDevice & 0xf0) >> 4,
-            str(self.bcdDevice & 0xf) if (self.bcdDevice & 0xf) else "" ) +
+            str(self.bcdDevice & 0xf) if (self.bcdDevice & 0xf) else "") +
         " %-23s:%#7x %s\n" % (
             "iManufacturer", self.iManufacturer,
             _try_get_string(self, self.iManufacturer)) +
@@ -732,34 +732,34 @@ class Device(object):
             "bNumConfigurations", self.bNumConfigurations)
         )
 
-    def _get_descriptor_recursive( self ):
+    def _get_descriptor_recursive(self):
         string = self._get_descriptor()
         try:
             for configuration in self:
-                string += "\n%s" % ( configuration.info )
+                string += "\n%s" % (configuration.info)
         except USBError:
             try:
                 configuration = self.get_active_configuration()
-                string += "\n%s" % ( configuration.info )
+                string += "\n%s" % (configuration.info)
             except USBError:
                 string += " USBError Accessing Configurations"
         return _DescriptorInfo(string)
-    info = property( fget=_get_descriptor_recursive )
+    info = property(fget=_get_descriptor_recursive)
 
-    def _get_summary_descriptor( self ):
-        string = str( self )
+    def _get_summary_descriptor(self):
+        string = str(self)
         for cfg in self:
-            string += "\n%s" % ( cfg.summary )
+            string += "\n%s" % (cfg.summary)
         return _DescriptorInfo(string)
-    summary = property( fget=_get_summary_descriptor )
+    summary = property(fget=_get_summary_descriptor)
 
-    def _get_configurations( self ):
+    def _get_configurations(self):
         return [config for config in self]
-    configurations = property( fget=_get_configurations )
+    configurations = property(fget=_get_configurations)
 
-    def _get_interfaces( self ):
+    def _get_interfaces(self):
         return [ itf for itf in self.get_active_configuration() ]
-    interfaces = property( fget=_get_interfaces )
+    interfaces = property(fget=_get_interfaces)
 
     def __init__(self, dev, backend):
         r"""Initialize the Device object.
@@ -1218,13 +1218,13 @@ def show_devices(verbose=False, **kwargs):
     **kwargs are passed directly to the find() function
     """
     kwargs["find_all"] = True
-    devices = find( **kwargs )
+    devices = find(**kwargs)
     strings = ""
     for device in devices:
         if not verbose:
-            strings +=  "%s, %s\n" % ( str(device), _try_lookup(
-                _lu.device_classes, device.bDeviceClass ) )
+            strings +=  "%s, %s\n" % (str(device), _try_lookup(
+                _lu.device_classes, device.bDeviceClass))
         else:
-            strings += "%s\n\n" % ( device.summary )
+            strings += "%s\n\n" % (device.summary)
 
-    return _DescriptorInfo( strings )
+    return _DescriptorInfo(strings)
