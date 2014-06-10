@@ -86,7 +86,7 @@ def _try_lookup(table, value, default = ""):
     return string
 
 
-class _Descriptor( str ):
+class _DescriptorInfo( str ):
     """ this class is used so that when a descriptor is shown on the
     terminal it is propely formatted """
     def __repr__( self ):
@@ -275,7 +275,7 @@ class Endpoint(object):
 
     def _get_descriptor( self ):
         headstr = "      " + str( self ) + " "
-        return _Descriptor(
+        return _DescriptorInfo(
         "%s%s\n" % ( headstr, "=" * (60 - len(headstr)) ) +
         "       %-17s:%#7x (7 bytes)\n" % (
                 "bLength", self.bLength ) +
@@ -292,7 +292,7 @@ class Endpoint(object):
                 "wMaxPacketSize", self.wMaxPacketSize, self.wMaxPacketSize ) +
         "       %-17s:%#7x" % ( "bInterval", self.bInterval )
         )
-    descriptor = property( fget=_get_descriptor )
+    info = property( fget=_get_descriptor )
 
     def __init__(self, device, endpoint, interface = 0,
                     alternate_setting = 0, configuration = 0):
@@ -441,7 +441,7 @@ class Interface(object):
 
     def _get_descriptor( self ):
         headstr = "    " + str( self ) + " "
-        return _Descriptor(
+        return _DescriptorInfo(
         "%s%s\n" % ( headstr, "=" * (60 - len(headstr)) ) +
         "     %-19s:%#7x (9 bytes)\n" % (
             "bLength", self.bLength) +
@@ -472,14 +472,14 @@ class Interface(object):
         string = self._get_descriptor()
         for endpoint in self:
             string += "\n%s" % ( endpoint._get_descriptor() )
-        return _Descriptor(string)
-    descriptor = property( fget=_get_descriptor_recursive )
+        return _DescriptorInfo(string)
+    info = property( fget=_get_descriptor_recursive )
 
     def _get_summary_descriptor( self ):
         string = "    " + str( self )
         for ep in self:
             string += "\n      %s" % (ep)
-        return _Descriptor(string)
+        return _DescriptorInfo(string)
     summary = property( fget=_get_summary_descriptor )
 
     def _get_endpoints( self ):
@@ -574,7 +574,7 @@ class Configuration(object):
 
     def _get_descriptor( self ):
         headstr = "  " + str( self ) + " "
-        return _Descriptor(
+        return _DescriptorInfo(
         "%s%s\n" % ( headstr, "=" * (60 - len(headstr)) ) +
         "   %-21s:%#7x (9 bytes)\n" % (
             "bLength", self.bLength) +
@@ -605,15 +605,15 @@ class Configuration(object):
     def _get_descriptor_recursive( self ):
         string = self._get_descriptor()
         for interface in self:
-            string += "\n%s" % ( interface.descriptor )
-        return _Descriptor(string)
-    descriptor = property( fget=_get_descriptor_recursive )
+            string += "\n%s" % ( interface.info )
+        return _DescriptorInfo(string)
+    info = property( fget=_get_descriptor_recursive )
 
     def _get_summary_descriptor( self ):
         string = "  " + str( self )
         for itf in self:
             string += "\n%s" % ( itf.summary )
-        return _Descriptor(string)
+        return _DescriptorInfo(string)
     summary = property( fget=_get_summary_descriptor )
 
     def _get_interfaces(self):
@@ -691,7 +691,7 @@ class Device(object):
 
     def _get_descriptor( self ):
         headstr = str( self ) + " "
-        return _Descriptor(
+        return _DescriptorInfo(
         "%s%s\n" % ( headstr, "=" * (60 - len(headstr)) ) +
         " %-23s:%#7x (18 bytes)\n" % (
             "bLength", self.bLength) +
@@ -736,21 +736,21 @@ class Device(object):
         string = self._get_descriptor()
         try:
             for configuration in self:
-                string += "\n%s" % ( configuration.descriptor )
+                string += "\n%s" % ( configuration.info )
         except USBError:
             try:
                 configuration = self.get_active_configuration()
-                string += "\n%s" % ( configuration.descriptor )
+                string += "\n%s" % ( configuration.info )
             except USBError:
                 string += " USBError Accessing Configurations"
-        return _Descriptor(string)
-    descriptor = property( fget=_get_descriptor_recursive )
+        return _DescriptorInfo(string)
+    info = property( fget=_get_descriptor_recursive )
 
     def _get_summary_descriptor( self ):
         string = str( self )
         for cfg in self:
             string += "\n%s" % ( cfg.summary )
-        return _Descriptor(string)
+        return _DescriptorInfo(string)
     summary = property( fget=_get_summary_descriptor )
 
     def _get_configurations( self ):
@@ -1227,4 +1227,4 @@ def show_devices(verbose=False, **kwargs):
         else:
             strings += "%s\n\n" % ( device.summary )
 
-    return _Descriptor( strings )
+    return _DescriptorInfo( strings )
