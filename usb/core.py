@@ -482,11 +482,9 @@ class Interface(object):
         return _DescriptorInfo(string)
     summary = property(fget=_get_summary_descriptor)
 
-    def _get_endpoints(self):
-        """ return a list of the endpoints
-        """
-        return [endpoint for endpoint in self]
-    endpoints = property(fget=_get_endpoints)
+    def endpoints(self):
+        r"""Return a tuple of the interface endpoints."""
+        return tuple(self)
 
     def set_altsetting(self):
         r"""Set the interface alternate setting."""
@@ -616,11 +614,9 @@ class Configuration(object):
         return _DescriptorInfo(string)
     summary = property(fget=_get_summary_descriptor)
 
-    def _get_interfaces(self):
-        """ return a list of the interfaces
-        """
-        return [interface for interface in self]
-    interfaces = property(fget=_get_interfaces)
+    def interfaces(self):
+        r"""Return a tuple of the configuration interfaces."""
+        return tuple(self)
 
     def set(self):
         r"""Set this configuration as the active one."""
@@ -753,13 +749,9 @@ class Device(object):
         return _DescriptorInfo(string)
     summary = property(fget=_get_summary_descriptor)
 
-    def _get_configurations(self):
-        return [config for config in self]
-    configurations = property(fget=_get_configurations)
-
-    def _get_interfaces(self):
-        return [ itf for itf in self.get_active_configuration() ]
-    interfaces = property(fget=_get_interfaces)
+    def configurations(self):
+        r"""Return a tuple of the device configurations."""
+        return tuple(self)
 
     def __init__(self, dev, backend):
         r"""Initialize the Device object.
