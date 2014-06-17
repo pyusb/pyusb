@@ -56,6 +56,20 @@ def _set_attr(input, output, fields):
     for f in fields:
        setattr(output, f, getattr(input, f))
 
+def _set_extra(input, output):
+    # Different libusb versions name this field differently.
+    if hasattr(input, 'extra_length'):
+        extra_length_attr = 'extra_length'
+    elif hasattr(input, 'extralen'):
+        extra_length_attr = 'extralen'
+    else:
+        extra_length_attr = ''
+    if extra_length_attr and hasattr(input, 'extra'):
+        extra = getattr(input, 'extra')[0:getattr(input, extra_length_attr)]
+        setattr(output, 'extra', extra)
+    else:
+        setattr(output, 'extra', [])
+
 class _ResourceManager(object):
     def __init__(self, dev, backend):
         self.backend = backend
@@ -269,6 +283,7 @@ class Endpoint(object):
                     'bSynchAddress'
                 )
             )
+        _set_extra(desc, self)
 
     def write(self, data, timeout = None):
         r"""Write data to the endpoint.
@@ -360,6 +375,7 @@ class Interface(object):
                     'iInterface',
                 )
             )
+        _set_extra(desc, self)
 
     def set_altsetting(self):
         r"""Set the interface alternate setting."""
@@ -435,6 +451,7 @@ class Configuration(object):
                     'bMaxPower'
                 )
             )
+        _set_extra(desc, self)
 
     def set(self):
         r"""Set this configuration as the active one."""
