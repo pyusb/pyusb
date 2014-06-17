@@ -86,6 +86,9 @@ _ENDPOINT_DIR_MASK = 0x80
 _ENDPOINT_TRANSFER_TYPE_MASK = 0x03
 _CTRL_DIR_MASK = 0x80
 
+# For compatibility between Python 2 and 3
+_dummy_s = '\x00'.encode('utf-8')
+
 def endpoint_address(address):
     r"""Return the endpoint absolute address.
 
@@ -147,7 +150,7 @@ def create_buffer(length):
     call. This function creates a compatible sequence buffer
     of the given length.
     """
-    return array.array('B', (0,) * length)
+    return array.array('B', _dummy_s * length)
 
 def find_descriptor(desc, find_all=False, custom_match=None, **args):
     r"""Find an inner descriptor.
