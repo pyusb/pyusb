@@ -673,7 +673,7 @@ class _LibUSB(usb.backend.IBackend):
         dev_desc.bus = self.lib.libusb_get_bus_number(dev.devid)
         dev_desc.address = self.lib.libusb_get_device_address(dev.devid)
 
-	#Only available i newer versions of libusb
+        # Only available in newer versions of libusb
         try:
             dev_desc.port_number = self.lib.libusb_get_port_number(dev.devid)
         except AttributeError:
@@ -687,7 +687,10 @@ class _LibUSB(usb.backend.IBackend):
         _check(self.lib.libusb_get_config_descriptor(
                 dev.devid,
                 config, byref(cfg)))
-        return _ConfigDescriptor(cfg)
+        config_desc = _ConfigDescriptor(cfg)
+        config_desc.extra_descriptors = (
+                config_desc.extra[:config_desc.extra_length])
+        return config_desc
 
     @methodtrace(_logger)
     def get_interface_descriptor(self, dev, intf, alt, config):
@@ -697,14 +700,18 @@ class _LibUSB(usb.backend.IBackend):
         i = cfg.interface[intf]
         if alt >= i.num_altsetting:
             raise IndexError('Invalid alternate setting index ' + str(alt))
-        return _WrapDescriptor(i.altsetting[alt], cfg)
+        intf_desc = i.altsetting[alt]
+        intf_desc.extra_descriptors = intf_desc.extra[:intf_desc.extra_length]
+        return _WrapDescriptor(intf_desc, cfg)
 
     @methodtrace(_logger)
     def get_endpoint_descriptor(self, dev, ep, intf, alt, config):
         i = self.get_interface_descriptor(dev, intf, alt, config)
         if ep > i.bNumEndpoints:
             raise IndexError('Invalid endpoint index ' + str(ep))
-        return _WrapDescriptor(i.endpoint[ep], i)
+        ep_desc = i.endpoint[ep]
+        ep_desc.extra_descriptors = ep_desc.extra[:ep_desc.extra_length]
+        return _WrapDescriptor(ep_desc, i)
 
     @methodtrace(_logger)
     def open_device(self, dev):

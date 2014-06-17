@@ -571,6 +571,7 @@ class _OpenUSB(usb.backend.IBackend):
                                               0,
                                               config,
                                               byref(desc)))
+        desc.extra_descriptors = []
         return desc
 
     @methodtrace(_logger)
@@ -584,6 +585,7 @@ class _OpenUSB(usb.backend.IBackend):
                                                  intf,
                                                  alt,
                                                  byref(desc)))
+        desc.extra_descriptors = []
         return desc
 
     @methodtrace(_logger)
@@ -598,6 +600,7 @@ class _OpenUSB(usb.backend.IBackend):
                                                 alt,
                                                 ep,
                                                 byref(desc)))
+        desc.extra_descriptors = []
         return desc
 
     @methodtrace(_logger)
