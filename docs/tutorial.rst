@@ -9,7 +9,6 @@ PyUSB 1.0 is a Python_ library allowing easy USB_ access. PyUSB provides
 several features:
 
 100% written in Python:
-
     Unlike the 0.x version, which is written in C, 1.0 version is written in
     Python.  This allows Python programmers with no background in C to
     understand better how PyUSB works.
