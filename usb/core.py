@@ -303,7 +303,8 @@ class Endpoint(object):
                     'wMaxPacketSize',
                     'bInterval',
                     'bRefresh',
-                    'bSynchAddress'
+                    'bSynchAddress',
+                    'extra_descriptors'
                 )
             )
 
@@ -424,6 +425,7 @@ class Interface(object):
                     'bInterfaceSubClass',
                     'bInterfaceProtocol',
                     'iInterface',
+                    'extra_descriptors'
                 )
             )
 
@@ -546,7 +548,8 @@ class Configuration(object):
                     'bConfigurationValue',
                     'iConfiguration',
                     'bmAttributes',
-                    'bMaxPower'
+                    'bMaxPower',
+                    'extra_descriptors'
                 )
             )
 

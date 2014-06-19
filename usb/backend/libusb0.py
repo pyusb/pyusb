@@ -401,7 +401,9 @@ class _LibUSB(usb.backend.IBackend):
     def get_configuration_descriptor(self, dev, config):
         if config >= dev.descriptor.bNumConfigurations:
             raise IndexError('Invalid configuration index ' + str(config))
-        return dev.config[config]
+        config_desc = dev.config[config]
+        config_desc.extra_descriptors = config_desc.extra[:config_desc.extralen]
+        return config_desc
 
     @methodtrace(_logger)
     def get_interface_descriptor(self, dev, intf, alt, config):
@@ -411,14 +413,18 @@ class _LibUSB(usb.backend.IBackend):
         interface = cfgdesc.interface[intf]
         if alt >= interface.num_altsetting:
             raise IndexError('Invalid alternate setting index ' + str(alt))
-        return interface.altsetting[alt]
+        intf_desc = interface.altsetting[alt]
+        intf_desc.extra_descriptors = intf_desc.extra[:intf_desc.extralen]
+        return intf_desc
 
     @methodtrace(_logger)
     def get_endpoint_descriptor(self, dev, ep, intf, alt, config):
         interface = self.get_interface_descriptor(dev, intf, alt, config)
         if ep >= interface.bNumEndpoints:
             raise IndexError('Invalid endpoint index ' + str(ep))
-        return interface.endpoint[ep]
+        ep_desc = interface.endpoint[ep]
+        ep_desc.extra_descriptors = ep_desc.extra[:ep_desc.extralen]
+        return ep_desc
 
     @methodtrace(_logger)
     def open_device(self, dev):
