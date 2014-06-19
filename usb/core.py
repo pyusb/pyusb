@@ -1084,10 +1084,11 @@ def find(find_all=False, backend = None, custom_match = None, **args):
     If there is more than one device which matchs the criteria, the first one
     found will be returned. If a matching device cannot be found the function
     returns None. If you want to get all devices, you can set the parameter
-    find_all to True, then find will return an list with all matched devices.
-    If no matching device is found, it will return an empty list. Example:
+    find_all to True, then find will return an iterator with all matched devices.
+    If no matching device is found, it will return an empty iterator. Example:
 
-    printers = find(find_all=True, bDeviceClass=7)
+    for printer in find(find_all=True, bDeviceClass=7):
+        print (printer)
 
     This call will get all the USB printers connected to the system.  (actually
     may be not, because some devices put their class information in the
@@ -1108,7 +1109,8 @@ def find(find_all=False, backend = None, custom_match = None, **args):
             if usb.util.find_descriptor(cfg, bInterfaceClass=7) is not None:
                 return True
 
-    printers = find(find_all=True, custom_match = is_printer)
+    for printer in find(find_all=True, custom_match = is_printer):
+        print (printer)
 
     Now even if the device class code is in the interface descriptor the
     printer will be found.
@@ -1118,12 +1120,12 @@ def find(find_all=False, backend = None, custom_match = None, **args):
     our previous example, if we would like to get all printers belonging to the
     manufacturer 0x3f4, the code would be like so:
 
-    printers = find(find_all=True, idVendor=0x3f4, custom_match=is_printer)
+    printers = list(find(find_all=True, idVendor=0x3f4, custom_match=is_printer))
 
     If you want to use find as a 'list all devices' function, just call
     it with find_all = True:
 
-    devices = find(find_all=True)
+    devices = list(find(find_all=True))
 
     Finally, you may pass a custom backend to the find function:
 
@@ -1166,7 +1168,7 @@ def find(find_all=False, backend = None, custom_match = None, **args):
     k, v = args.keys(), args.values()
 
     if find_all:
-        return [d for d in device_iter(k, v)]
+        return device_iter(k, v)
     else:
         try:
             return _interop._next(device_iter(k, v))

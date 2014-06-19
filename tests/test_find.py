@@ -68,32 +68,25 @@ class FindTest(unittest.TestCase):
         b = _MyBackend()
         self.assertEqual(find(backend=b, idVendor=1), None)
         self.assertNotEqual(find(backend=b, idProduct=1), None)
-        self.assertEqual(len(find(find_all=True, backend=b)), len(b.devices))
-        self.assertEqual(len(find(find_all=True, backend=b, idProduct=1)), 1)
-        self.assertEqual(len(find(find_all=True, backend=b, idVendor=1)), 0)
+        self.assertEqual(len(tuple(find(find_all=True, backend=b))), len(b.devices))
+        self.assertEqual(len(tuple(find(find_all=True, backend=b, idProduct=1))), 1)
+        self.assertEqual(len(tuple(find(find_all=True, backend=b, idVendor=1))), 0)
 
         self.assertEqual(
-                len(
-                    find(
+                len(tuple(find(
                         find_all=True,
                         backend=b,
-                        custom_match = lambda d: d.idProduct==1
-                    ),
-                ),
-                1
-            )
+                        custom_match = lambda d: d.idProduct==1))),
+                    1)
 
         self.assertEqual(
-                len(
+                len(tuple(
                     find(
                         find_all=True,
                         backend=b,
                         custom_match = lambda d: d.idVendor==devinfo.ID_VENDOR,
-                        idProduct=1
-                    ),
-                ),
-                1
-            )
+                        idProduct=1))),
+                    1)
 
 def get_suite():
     suite = unittest.TestSuite()
