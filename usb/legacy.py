@@ -116,7 +116,7 @@ class Configuration(object):
     r"""Configuration descriptor object."""
     def __init__(self, cfg):
         self.iConfiguration = cfg.iConfiguration
-        self.maxPower = cfg.bMaxPower << 2
+        self.maxPower = cfg.bMaxPower << 1
         self.remoteWakeup = (cfg.bmAttributes >> 5) & 1
         self.selfPowered = (cfg.bmAttributes >> 6) & 1
         self.totalLength = cfg.wTotalLength
@@ -133,7 +133,7 @@ class Configuration(object):
 class DeviceHandle(object):
     def __init__(self, dev):
         self.dev = dev
-        self.__claimed_interface = -1
+        self.__claimed_interface = None
 
     def bulkWrite(self, endpoint, buffer, timeout = 100):
         r"""Perform a bulk write request to the endpoint specified.
@@ -145,7 +145,7 @@ class DeviceHandle(object):
                 timeout: operation timeout in miliseconds. (default: 100)
                          Returns the number of bytes written.
         """
-        return self.dev.write(endpoint, buffer, self.__claimed_interface, timeout)
+        return self.dev.write(endpoint, buffer, timeout)
 
     def bulkRead(self, endpoint, size, timeout = 100):
         r"""Performs a bulk read request to the endpoint specified.
@@ -156,7 +156,7 @@ class DeviceHandle(object):
                 timeout: operation timeout in miliseconds. (default: 100)
             Return a tuple with the data read.
         """
-        return self.dev.read(endpoint, size, self.__claimed_interface, timeout)
+        return self.dev.read(endpoint, size, timeout)
 
     def interruptWrite(self, endpoint, buffer, timeout = 100):
         r"""Perform a interrupt write request to the endpoint specified.
@@ -168,7 +168,7 @@ class DeviceHandle(object):
                 timeout: operation timeout in miliseconds. (default: 100)
                          Returns the number of bytes written.
         """
-        return self.dev.write(endpoint, buffer, self.__claimed_interface, timeout)
+        return self.dev.write(endpoint, buffer, timeout)
 
     def interruptRead(self, endpoint, size, timeout = 100):
         r"""Performs a interrupt read request to the endpoint specified.
@@ -179,7 +179,7 @@ class DeviceHandle(object):
                 timeout: operation timeout in miliseconds. (default: 100)
             Return a tuple with the data read.
         """
-        return self.dev.read(endpoint, size, self.__claimed_interface, timeout)
+        return self.dev.read(endpoint, size, timeout)
 
     def controlMsg(self, requestType, request, buffer, value = 0, index = 0, timeout = 100):
         r"""Perform a control request to the default control pipe on a device.
@@ -202,8 +202,7 @@ class DeviceHandle(object):
                     wValue = value,
                     wIndex = index,
                     data_or_wLength = buffer,
-                    timeout = timeout
-                )
+                    timeout = timeout)
 
     def clearHalt(self, endpoint):
         r"""Clears any halt status on the specified endpoint.
@@ -211,10 +210,7 @@ class DeviceHandle(object):
         Arguments:
             endpoint: endpoint number.
         """
-        cfg = self.dev.get_active_configuration()
-        intf = util.find_descriptor(cfg, bInterfaceNumber = self.__claimed_interface)
-        e = util.find_descriptor(intf, bEndpointAddress = endpoint)
-        control.clear_feature(self.dev, control.ENDPOINT_HALT, e)
+        self.dev.clear_halt(endpoint)
 
     def claimInterface(self, interface):
         r"""Claims the interface with the Operating System.
