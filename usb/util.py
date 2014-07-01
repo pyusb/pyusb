@@ -142,9 +142,9 @@ def build_request_type(direction, type, recipient):
     return recipient | type | direction
 
 def create_buffer(length):
-    r"""Create a buffer to be passed to a read function
+    r"""Create a buffer to be passed to a read function.
 
-    A read function may receive a out buffer so the data
+    A read function may receive an out buffer so the data
     is read inplace and the object can be reused, avoiding
     the overhead of creating a new object at each new read
     call. This function creates a compatible sequence buffer
@@ -155,7 +155,7 @@ def create_buffer(length):
 def find_descriptor(desc, find_all=False, custom_match=None, **args):
     r"""Find an inner descriptor.
 
-    find_descriptor works in the same way the core.find() function does,
+    find_descriptor works in the same way as the core.find() function does,
     but it acts on general descriptor objects. For example, suppose you
     have a Device object called dev and want a Configuration of this
     object with its bConfigurationValue equals to 1, the code would
@@ -229,15 +229,15 @@ def dispose_resources(device):
 
     After calling this function, you can continue using the device
     object normally. If the resources will be necessary again, it
-    will allocate them automatically.
+    will be allocated automatically.
     """
     device._ctx.dispose(device)
 
 def get_string(dev, index, langid = None):
     r"""Retrieve a string descriptor from the device.
 
-    dev is the Device object to which the request will be
-    sent to.
+    dev is the Device object which the string will be
+    read from.
 
     index is the string descriptor index and langid is the Language
     ID of the descriptor. If langid is omitted, the string descriptor

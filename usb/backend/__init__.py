@@ -87,10 +87,11 @@ class IBackend(object):
     necessary.
 
     As Python is a dynamic typed language, you are not obligated to inherit from
-    IBackend: everything that bahaves like an IBackend is an IBackend. But you
+    IBackend: everything that behaves like an IBackend is an IBackend. But you
     are strongly recommended to do so, inheriting from IBackend provides consistent
     default behavior.
     """
+
     def enumerate_devices(self):
         r"""This function is required to return an iterable object which
         yields an implementation defined device identification for each
@@ -120,7 +121,7 @@ class IBackend(object):
         fields acessible as member variables. They must be convertible (but
         not required to be equal) to the int type.
 
-        The dev parameter is the already described device identification object.
+        The dev parameter is the device identification object.
         config is the logical index of the configuration (not the bConfigurationValue
         field).  By "logical index" we mean the relative order of the configurations
         returned by the peripheral as a result of GET_DESCRIPTOR request.
@@ -134,7 +135,7 @@ class IBackend(object):
         fields accessible as member variables. They must be convertible (but
         not required to be equal) to the int type.
 
-        The dev parameter is the already described device identification object.
+        The dev parameter is the device identification object.
         The intf parameter is the interface logical index (not the bInterfaceNumber field)
         and alt is the alternate setting logical index (not the bAlternateSetting value).
         Not every interface has more than one alternate setting.  In this case, the alt
@@ -151,7 +152,7 @@ class IBackend(object):
         not required to be equal) to the int type.
 
         The ep parameter is the endpoint logical index (not the bEndpointAddress
-        field) of the endpoint descriptor desired. intf, alt and config are the same
+        field) of the endpoint descriptor desired. dev, intf, alt and config are the same
         values already described in the get_interface_descriptor() method.
         """
         _not_implemented(self.get_endpoint_descriptor)
@@ -250,9 +251,9 @@ class IBackend(object):
         The ep parameter is the bEndpointAddress field whose endpoint
         the data will be received from. intf is the bInterfaceNumber field
         of the interface containing the endpoint. The buff parameter
-        is buffer to receive the data read, the length of the buffer tells
-        how many bytes should be read.  The timeout parameter specifies
-        a time limit to the operation in miliseconds.
+        is the buffer to receive the data read, the length of the buffer
+        tells how many bytes should be read. The timeout parameter
+        specifies a time limit to the operation in miliseconds.
 
         The method returns the number of bytes actually read.
         """
@@ -280,9 +281,9 @@ class IBackend(object):
         The ep parameter is the bEndpointAddress field whose endpoint
         the data will be received from. intf is the bInterfaceNumber field
         of the interface containing the endpoint. The buff parameter
-        is buffer to receive the data read, the length of the buffer tells
-        how many bytes should be read.  The timeout parameter specifies
-        a time limit to the operation in miliseconds.
+        is the buffer to receive the data read, the length of the buffer
+        tells how many bytes should be read.  The timeout parameter
+        specifies a time limit to the operation in miliseconds.
 
         The method returns the number of bytes actually read.
         """
@@ -295,7 +296,7 @@ class IBackend(object):
         The ep parameter is the bEndpointAddress field whose endpoint
         the data will be sent to. intf is the bInterfaceNumber field
         of the interface containing the endpoint. The data parameter
-        is the data to be sent.It must be an instance of the array.array
+        is the data to be sent. It must be an instance of the array.array
         class. The timeout parameter specifies a time limit to the operation
         in miliseconds.
 
@@ -311,7 +312,7 @@ class IBackend(object):
         the data will be received from. intf is the bInterfaceNumber field
         of the interface containing the endpoint. The buff parameter
         is buffer to receive the data read, the length of the buffer tells
-        how many bytes should be read.  The timeout parameter specifies
+        how many bytes should be read. The timeout parameter specifies
         a time limit to the operation in miliseconds.
 
         The method returns the number of bytes actually read.
@@ -334,11 +335,11 @@ class IBackend(object):
         dev_handle is the value returned by the open_device() method.
         bmRequestType, bRequest, wValue and wIndex are the same fields
         of the setup packet. data is an array object, for OUT requests
-        is bytes to transmit in the data stage and for IN requests is
-        the buffer to hold the data read. The number of bytes requested
-        to transmit or receive is equal to the length of the array times
-        the data.itemsize field. The timeout parameter specifies a time
-        limit to the operation in miliseconds.
+        it contains the bytes to transmit in the data stage and for
+        IN requests it is the buffer to hold the data read. The number
+        of bytes requested to transmit or receive is equal to the length
+        of the array times the data.itemsize field. The timeout parameter
+        specifies a time limit to the operation in miliseconds.
 
         Return the number of bytes written (for OUT transfers) or the data
         read (for IN transfers), as an array.array object.

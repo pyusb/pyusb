@@ -10,7 +10,7 @@ several features:
 
 100% written in Python:
     Unlike the 0.x version, which is written in C, 1.0 version is written in
-    Python.  This allows Python programmers with no background in C to
+    Python. This allows Python programmers with no background in C to
     understand better how PyUSB works.
 Platform neutrality:
     1.0 version implements a frontend-backend scheme. This isolates the API
@@ -86,8 +86,7 @@ endpoint found::
         custom_match = \
         lambda e: \
             usb.util.endpoint_direction(e.bEndpointAddress) == \
-            usb.util.ENDPOINT_OUT
-    )
+            usb.util.ENDPOINT_OUT)
 
     assert ep is not None
 

@@ -96,7 +96,7 @@ def get_status(dev, recipient = None):
     sent to.
 
     The recipient can be None (on which the status will be queried
-    on the device), an Interface or Endpoint descriptors.
+    from the device), an Interface or Endpoint descriptors.
 
     The status value is returned as an integer with the lower
     word being the two bytes status value.
@@ -117,7 +117,7 @@ def clear_feature(dev, feature, recipient = None):
     feature is the feature you want to disable.
 
     The recipient can be None (on which the status will be queried
-    on the device), an Interface or Endpoint descriptors.
+    from the device), an Interface or Endpoint descriptors.
     """
     if feature == ENDPOINT_HALT:
         dev.clear_halt(recipient)
@@ -137,7 +137,7 @@ def set_feature(dev, feature, recipient = None):
     feature is the feature you want to enable.
 
     The recipient can be None (on which the status will be queried
-    on the device), an Interface or Endpoint descriptors.
+    from the device), an Interface or Endpoint descriptors.
     """
     bmRequestType, wIndex = _parse_recipient(recipient, util.CTRL_OUT)
     dev.ctrl_transfer(bmRequestType = bmRequestType,
@@ -159,18 +159,18 @@ def get_descriptor(dev, desc_size, desc_type, desc_index, wIndex = 0):
     it is zero.
     """
     wValue = desc_index | (desc_type << 8)
+
     bmRequestType = util.build_request_type(
                         util.CTRL_IN,
                         util.CTRL_TYPE_STANDARD,
-                        util.CTRL_RECIPIENT_DEVICE
-                    )
+                        util.CTRL_RECIPIENT_DEVICE)
+
     return dev.ctrl_transfer(
             bmRequestType = bmRequestType,
             bRequest = 0x06,
             wValue = wValue,
             wIndex = wIndex,
-            data_or_wLength = desc_size
-        )
+            data_or_wLength = desc_size)
 
 def set_descriptor(dev, desc, desc_type, desc_index, wIndex = None):
     r"""Update an existing descriptor or add a new one.
@@ -185,18 +185,18 @@ def set_descriptor(dev, desc, desc_type, desc_index, wIndex = None):
     it is zero.
     """
     wValue = desc_index | (desc_type << 8)
+
     bmRequestType = util.build_request_type(
                         util.CTRL_OUT,
                         util.CTRL_TYPE_STANDARD,
-                        util.CTRL_RECIPIENT_DEVICE
-                    )
+                        util.CTRL_RECIPIENT_DEVICE)
+
     dev.ctrl_transfer(
         bmRequestType = bmRequestType,
         bRequest = 0x07,
         wValue = wValue,
         wIndex = wIndex,
-        data_or_wLength = desc
-    )
+        data_or_wLength = desc)
 
 def get_configuration(dev):
     r"""Get the current active configuration of the device.
@@ -211,13 +211,12 @@ def get_configuration(dev):
     bmRequestType = util.build_request_type(
                             util.CTRL_IN,
                             util.CTRL_TYPE_STANDARD,
-                            util.CTRL_RECIPIENT_DEVICE
-                        )
+                            util.CTRL_RECIPIENT_DEVICE)
+
     return dev.ctrl_transfer(
                 bmRequestType,
                 bRequest = 0x08,
-                data_or_wLength = 1
-            )[0]
+                data_or_wLength = 1)[0]
 
 def set_configuration(dev, bConfigurationNumber):
     r"""Set the current device configuration.
@@ -236,14 +235,13 @@ def get_interface(dev, bInterfaceNumber):
     bmRequestType = util.build_request_type(
                             util.CTRL_IN,
                             util.CTRL_TYPE_STANDARD,
-                            util.CTRL_RECIPIENT_INTERFACE
-                        )
+                            util.CTRL_RECIPIENT_INTERFACE)
+
     return dev.ctrl_transfer(
                 bmRequestType = bmRequestType,
                 bRequest = 0x0a,
                 wIndex = bInterfaceNumber,
-                data_or_wLength = 1
-            )[0]
+                data_or_wLength = 1)[0]
 
 def set_interface(dev, bInterfaceNumber, bAlternateSetting):
     r"""Set the alternate setting of the interface.

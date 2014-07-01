@@ -1,4 +1,4 @@
-# Copyright (C) 2009-2014 Wander Lairson Costa
+# Copyright (C) 2009-2014 Walker Inman
 #
 # The following terms apply to all files associated
 # with the software unless explicitly disclaimed in individual files.
