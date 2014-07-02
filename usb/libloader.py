@@ -1,4 +1,6 @@
-# Copyright (C) 2013-2014 André Erdmann 
+# -*- coding: utf-8 -*-
+#
+# Copyright (C) 2013-2014 André Erdmann
 #
 # The following terms apply to all files associated
 # with the software unless explicitly disclaimed in individual files.
