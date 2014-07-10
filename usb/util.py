@@ -166,7 +166,7 @@ def find_descriptor(desc, find_all=False, custom_match=None, **args):
     You can use any field of the Descriptor as a match criteria, and you
     can supply a customized match just like core.find() does. The
     find_descriptor function also accepts the find_all parameter to get
-    a list of descriptor instead of just one.
+    an iterator instead of just one descriptor.
     """
     def desc_iter(k, v):
         for d in desc:
@@ -185,7 +185,7 @@ def find_descriptor(desc, find_all=False, custom_match=None, **args):
     k, v = args.keys(), args.values()
 
     if find_all:
-        return [d for d in desc_iter(k, v)]
+        return desc_iter(k, v)
     else:
         try:
             return _interop._next(desc_iter(k, v))

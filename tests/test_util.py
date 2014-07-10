@@ -69,13 +69,13 @@ class FindDescriptorTest(unittest.TestCase):
 
         self.assertEqual(find_descriptor(d, bConfigurationValue=10), None)
         self.assertNotEqual(find_descriptor(d, bConfigurationValue=1), None)
-        self.assertEqual(len(find_descriptor(d, find_all=True, bConfigurationValue=10)), 0)
-        self.assertEqual(len(find_descriptor(d, find_all=True, bConfigurationValue=1)), 1)
-        self.assertEqual(len(find_descriptor(d, find_all=True)), d.bNumConfigurations)
+        self.assertEqual(len(list(find_descriptor(d, find_all=True, bConfigurationValue=10))), 0)
+        self.assertEqual(len(list(find_descriptor(d, find_all=True, bConfigurationValue=1))), 1)
+        self.assertEqual(len(list(find_descriptor(d, find_all=True))), d.bNumConfigurations)
         self.assertEqual(find_descriptor(d, custom_match = lambda c: c.bConfigurationValue == 10), None)
         self.assertNotEqual(find_descriptor(d, custom_match = lambda c: c.bConfigurationValue == 1), None)
-        self.assertEqual(len(find_descriptor(d, find_all=True, custom_match = lambda c: c.bConfigurationValue == 10)), 0)
-        self.assertEqual(len(find_descriptor(d, find_all=True, custom_match = lambda c: c.bConfigurationValue == 1)), 1)
+        self.assertEqual(len(list(find_descriptor(d, find_all=True, custom_match = lambda c: c.bConfigurationValue == 10))), 0)
+        self.assertEqual(len(list(find_descriptor(d, find_all=True, custom_match = lambda c: c.bConfigurationValue == 1))), 1)
         self.assertEqual(find_descriptor(d, custom_match = lambda c: c.bConfigurationValue == 10, bLength=9), None)
         self.assertNotEqual(find_descriptor(d, custom_match = lambda c: c.bConfigurationValue == 1, bLength=9), None)
 
