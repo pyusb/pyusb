@@ -2,6 +2,31 @@
 PyUSB News
 ==========
 
+What's new in PyUSB 1.0.0 (beta 2)?
+===================================
+
+- You can now customize the search path for USB libraries (by André Erdmann).
+- API improvements (more on that below).
+- legacy module fully functional.
+- Regressions tests for Python 2.4-3.4.
+
+WARNING: API breakage ahead!!!!!
+--------------------------------
+
+- `util.get_string` does not receive the length parameter anymore (by
+- the `find` and `find_descriptor` functions now return an iterator when
+  find_all is true.
+- Added the property `extra` for extra descriptors (by Prathmesh Prabhu).
+- New function `util.create_buffer`.
+- Now `read` and `ctrl_transfer` functions allow inplace reads.
+- New method `clear_halt`.
+- The functions `is_kernel_driver_active`, `detach_kernel_driver` and
+  `attach_kernel_driver` does not accept an Interface object anymore.
+- `write` and `read` does not receive the interface number anymore.
+- added the properties `vendor`, `product` and `serial_number` to the
+  Device class.
+- Support for `str` and `repr` conversions for descriptors (by Walker Inman).
+
 What's new in PyUSB 1.0.0 (beta 1)?
 ===================================
 
