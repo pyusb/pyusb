@@ -115,10 +115,13 @@ def load_library(lib, name=None, lib_cls=None):
         else:
             return ctypes.CDLL(lib)
     except Exception:
-        lib_msg = (
-            (('%s (%s)' % (name, lib)) if name else lib)
-            + ' could not be loaded'
-        )
+        if name:
+            lib_msg = '%s (%s)' % (name, lib)
+        else:
+            lib_msg = lib
+
+        lib_msg += ' could not be loaded'
+
         if sys.platform == 'cygwin':
             lib_msg += ' in cygwin'
         _LOGGER.error(lib_msg, exc_info=True)

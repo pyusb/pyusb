@@ -251,12 +251,16 @@ def _load_library(find_library=None):
     # On FreeBSD 8/9, libusb 1.0 and libusb 0.1 are in the same shared
     # object libusb.so, so if we found libusb library name, we must assure
     # it is 1.0 version. We just try to get some symbol from 1.0 version
+    if sys.platform == 'win32':
+        win_cls = WinDLL
+    else:
+        win_cls = None
+
     return usb.libloader.load_locate_library(
                 ('usb-1.0', 'libusb-1.0', 'usb'),
                 'cygusb-1.0.dll', 'Libusb 1',
-                win_cls=(WinDLL if sys.platform == 'win32' else None),
-                find_library=find_library, check_symbols=('libusb_init',)
-    )
+                win_cls=win_cls,
+                find_library=find_library, check_symbols=('libusb_init',))
 
 def _setup_prototypes(lib):
     # void libusb_set_debug (libusb_context *ctx, int level)

@@ -117,7 +117,7 @@ class LegacyTest(unittest.TestCase):
 
     def test_open_device(self):
         self.handle = self.dev.open()
-        self.assertIsNotNone(self.handle)
+        self.assertNotEquals(self.handle, None)
 
     def test_close_device(self):
         del self.handle

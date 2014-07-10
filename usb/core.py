@@ -314,6 +314,12 @@ class Endpoint(object):
 
     def __str__(self):
         headstr = "      " + self._str() + " "
+
+        if util.endpoint_direction(self.bEndpointAddress) == util.ENDPOINT_IN:
+            direction = "IN"
+        else:
+            direction = "OUT"
+
         return "%s%s\n" % (headstr, "=" * (60 - len(headstr))) + \
         "       %-17s:%#7x (7 bytes)\n" % (
                 "bLength", self.bLength) + \
@@ -321,8 +327,7 @@ class Endpoint(object):
                 "bDescriptorType", self.bDescriptorType,
                 _try_lookup(_lu.descriptors, self.bDescriptorType)) + \
         "       %-17s:%#7x %s\n" % (
-                "bEndpointAddress", self.bEndpointAddress,
-                "IN" if (0x80 & self.bEndpointAddress) else "OUT") + \
+                "bEndpointAddress", self.bEndpointAddress, direction) + \
         "       %-17s:%#7x %s\n" % (
                 "bmAttributes", self.bmAttributes,
                 _lu.ep_attributes[(self.bmAttributes & 0x3)]) + \
@@ -363,11 +368,15 @@ class Endpoint(object):
         self.device.clear_halt(self.bEndpointAddress)
 
     def _str(self):
+        if util.endpoint_direction(self.bEndpointAddress) == util.ENDPOINT_IN:
+            direction = "IN"
+        else:
+            direction = "OUT"
+
         return (
             "ENDPOINT 0x%X: %s %s" % (self.bEndpointAddress,
             _lu.ep_attributes[(self.bmAttributes & 0x3)],
-            "IN" if (0x80 & self.bEndpointAddress) else "OUT")
-            )
+            direction))
 
 class Interface(object):
     r"""Represent an interface object.
@@ -471,8 +480,12 @@ class Interface(object):
                 self.configuration)
 
     def _str(self):
-        return "INTERFACE %d%s: %s" % (self.bInterfaceNumber,
-            ", %d" % (self.bAlternateSetting) if self.bAlternateSetting else "",
+        if self.bAlternateSetting:
+            alt_setting = ", %d" % self.bAlternateSetting
+        else:
+            alt_setting = ""
+
+        return "INTERFACE %d%s: %s" % (self.bInterfaceNumber, alt_setting,
             _try_lookup(_lu.interface_classes, self.bInterfaceClass,
                 default = "Unknown Class"))
 
@@ -597,6 +610,16 @@ class Configuration(object):
 
     def _get_full_descriptor_str(self):
         headstr = "  " + self._str() + " "
+        if self.bmAttributes & (1<<6):
+            powered = "Self"
+        else:
+            powered = "Bus"
+
+        if self.bmAttributes & (1<<5):
+            remote_wakeup = ", Remote Wakeup"
+        else:
+            remote_wakeup = ""
+
         return "%s%s\n" % (headstr, "=" * (60 - len(headstr))) + \
         "   %-21s:%#7x (9 bytes)\n" % (
             "bLength", self.bLength) + \
@@ -613,9 +636,7 @@ class Configuration(object):
             "iConfiguration", self.iConfiguration,
             _try_get_string(self.device, self.iConfiguration)) + \
         "   %-21s:%#7x %s Powered%s\n" % (
-            "bmAttributes", self.bmAttributes,
-            "Self" if (self.bmAttributes & (1<<6)) else "Bus",
-            ", Remote Wakeup" if (self.bmAttributes & (1<<5)) else ""
+            "bmAttributes", self.bmAttributes, powered, remote_wakeup
             # bit 7 is high, bit 4..0 are 0
             ) + \
         "   %-21s:%#7x (%d mA)" % (
@@ -1026,6 +1047,17 @@ class Device(object):
 
     def _get_full_descriptor_str(self):
         headstr = self._str() + " "
+
+        if self.bcdUSB & 0xf:
+            low_bcd_usb = str(self.bcdUSB & 0xf)
+        else:
+            low_bcd_usb = ""
+
+        if self.bcdDevice & 0xf:
+            low_bcd_device = str(self.bcdDevice & 0xf)
+        else:
+            low_bcd_device = ""
+
         return "%s%s\n" %  (headstr, "=" * (60 - len(headstr))) + \
         " %-23s:%#7x (18 bytes)\n" % (
             "bLength", self.bLength) + \
@@ -1034,8 +1066,7 @@ class Device(object):
             _try_lookup(_lu.descriptors, self.bDescriptorType)) + \
         " %-23s:%#7x USB %d.%d%s\n" % (
             "bcdUSB", self.bcdUSB, (self.bcdUSB & 0xff00)>>8,
-            (self.bcdUSB & 0xf0) >> 4,
-            str(self.bcdUSB & 0xf) if (self.bcdUSB & 0xf) else "") + \
+            (self.bcdUSB & 0xf0) >> 4, low_bcd_usb) + \
         " %-23s:%#7x %s\n" % (
             "bDeviceClass", self.bDeviceClass,
             _try_lookup(_lu.device_classes, self.bDeviceClass)) + \
@@ -1051,8 +1082,7 @@ class Device(object):
             "idProduct", self.idProduct) + \
         " %-23s:%#7x Device %d.%d%s\n" % (
             "bcdDevice", self.bcdDevice, (self.bcdDevice & 0xff00)>>8,
-            (self.bcdDevice & 0xf0) >> 4,
-            str(self.bcdDevice & 0xf) if (self.bcdDevice & 0xf) else "") + \
+            (self.bcdDevice & 0xf0) >> 4, low_bcd_device) + \
         " %-23s:%#7x %s\n" % (
             "iManufacturer", self.iManufacturer,
             _try_get_string(self, self.iManufacturer)) + \
