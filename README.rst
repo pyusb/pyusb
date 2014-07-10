@@ -26,7 +26,7 @@ PyUSB supports libusb 0.1, libusb 1.0 and OpenUSB, but the user does not need
 to worry about that, unless in some corner cases.
 
 If you have any question about PyUSB, you can use the PyUSB mailing list
-hosted in the SourceForge. In the PyUSB website (http://pyusb.sourceforge.net)
+hosted in the SourceForge. In the PyUSB website (http://walac.github.io/pyusb)
 you can find instructions on how to subscribe to the mailing list.
 
 Installing PyUSB on GNU/Linux Systems
