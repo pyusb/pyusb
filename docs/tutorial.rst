@@ -25,7 +25,7 @@ Easiness:
     Communicating with an USB_ device has never been so easy! USB is a complex
     protocol, but PyUSB has good defaults for most common configurations.
 Support for isochronous transfers:
-    PyUSB supports isochronous transfers if the underline backend supports it.
+    PyUSB supports isochronous transfers if the underlying backend supports it.
 
 Although PyUSB makes USB programming less painful, it is assumed in this
 tutorial that you have a minimal USB protocol background. If you don't know
@@ -95,14 +95,14 @@ endpoint found::
 
 The first two lines import PyUSB package modules. ``usb.core`` is the main
 module, and ``usb.util`` contains utility functions. The next command searches
-our device and returns an instance object if it is found. If not, ``None`` is
-returned.  After, we set the configuration to use. Note that no argument
+for our device and returns an instance object if it is found. If not, ``None`` 
+is returned.  After, we set the configuration to use. Note that no argument
 indicating what configuration we want was supplied. As you will see, many PyUSB
 functions have defaults for most common devices. In this case, the
 configuration set is the first one found.
 
-Then, we look for the endpoint we are interested. We search it inside the first
-interface we have. After finding the endpoint, we send the data to it.
+Then, we look for the endpoint we are interested. We search for it inside the 
+first interface we have. After finding the endpoint, we send the data to it.
 
 If we know the endpoint address in advance, we could just call the ``write``
 function from the device object::
