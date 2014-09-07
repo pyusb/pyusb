@@ -44,7 +44,7 @@ You will first need to install the following packages:
 
 For example, the command::
 
-    $ sudo apt-get install python libusb
+    $ sudo apt-get install python libusb-1.0-0
 
 should install all these packages on most Debian-based systems with
 access to the proper package repositories.
