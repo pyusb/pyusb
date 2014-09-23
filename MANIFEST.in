@@ -1,2 +1,2 @@
-include LICENSE TODO ACKNOWLEDGEMENTS ChangeLog README.rst ReleaseNotes.rst
+include LICENSE ACKNOWLEDGEMENTS ChangeLog README.rst ReleaseNotes.rst
 recursive-include docs *.rst
