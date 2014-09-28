@@ -361,6 +361,50 @@ def _setup_prototypes(lib):
     # struct usb_bus *usb_get_busses(void);
     lib.usb_get_busses.restype = POINTER(_usb_bus)
 
+    # libusb-win32 only
+
+    # int usb_isochronous_setup_async(usb_dev_handle *dev,
+    #                                 void **context,
+    #                                 unsigned char ep,
+    #                                 int pktsize)
+    if hasattr(lib, 'usb_isochronous_setup_async'):
+        lib.usb_isochronous_setup_async.argtypes = \
+            [_usb_dev_handle, POINTER(c_void_p), c_uint8, c_int]
+
+    # int usb_bulk_setup_async(usb_dev_handle *dev,
+    #                          void **context,
+    #                          unsigned char ep)
+    if hasattr(lib, 'usb_bulk_setup_async'):
+        lib.usb_bulk_setup_async.argtypes = \
+            [_usb_dev_handle, POINTER(c_void_p), c_uint8]
+
+    # int usb_interrupt_setup_async(usb_dev_handle *dev,
+    #                               void **context,
+    #                               unsigned char ep)
+    if hasattr(lib, 'usb_interrupt_setup_async'):
+        lib.usb_interrupt_setup_async.argtypes = \
+            [_usb_dev_handle, POINTER(c_void_p), c_uint8]
+
+    # int usb_submit_async(void *context, char *bytes, int size)
+    if hasattr(lib, 'usb_submit_async'):
+        lib.usb_submit_async.argtypes = [c_void_p, c_char_p, c_int]
+
+    # int usb_reap_async(void *context, int timeout)
+    if hasattr(lib, 'usb_reap_async'):
+        lib.usb_reap_async.argtypes = [c_void_p, c_int]
+
+    # int usb_reap_async_nocancel(void *context, int timeout)
+    if hasattr(lib, 'usb_reap_async_nocancel'):
+        lib.usb_reap_async_nocancel.argtypes = [c_void_p, c_int]
+
+    # int usb_cancel_async(void *context)
+    if hasattr(lib, 'usb_cancel_async'):
+        lib.usb_cancel_async.argtypes = [c_void_p]
+
+    # int usb_free_async(void **context)
+    if hasattr(lib, 'usb_free_async'):
+        lib.usb_free_async.argtypes = [POINTER(c_void_p)]
+
 def _check(ret):
     if ret is None:
         errmsg = _lib.usb_strerror()
@@ -379,6 +423,9 @@ def _check(ret):
         else:
             return ret
     raise USBError(errmsg, ret)
+
+def _has_iso_transfer():
+    return hasattr(_lib, 'usb_isochronous_setup_async')
 
 # implementation of libusb 0.1.x backend
 class _LibUSB(usb.backend.IBackend):
@@ -508,6 +555,18 @@ class _LibUSB(usb.backend.IBackend):
                            timeout)
 
     @methodtrace(_logger)
+    def iso_write(self, dev_handle, ep, intf, data, timeout):
+        if not _has_iso_transfer():
+            return usb.backend.IBackend.iso_write(self, dev_handle, ep, intf, data, timeout)
+        return self.__iso_transfer(dev_handle, ep, intf, data, timeout)
+
+    @methodtrace(_logger)
+    def iso_read(self, dev_handle, ep, intf, buff, timeout):
+        if not _has_iso_transfer():
+            return usb.backend.IBackend.iso_read(self, dev_handle, ep, intf, buff, timeout)
+        return self.__iso_transfer(dev_handle, ep, intf, buff, timeout)
+
+    @methodtrace(_logger)
     def ctrl_transfer(self,
                       dev_handle,
                       bmRequestType,
@@ -563,6 +622,39 @@ class _LibUSB(usb.backend.IBackend):
                     timeout
                 )))
         return ret
+
+    def __iso_transfer(self, dev_handle, ep, intf, data, timeout):
+        context = c_void_p()
+        buff, length = data.buffer_info()
+        length *= data.itemsize
+
+        _check(_lib.usb_isochronous_setup_async(
+            dev_handle,
+            byref(context),
+            ep,
+            0))
+
+        transmitted = 0
+
+        try:
+            while transmitted < length:
+                _check(_lib.usb_submit_async(
+                    context,
+                    cast(buff + transmitted, c_char_p),
+                    length - transmitted))
+
+                ret = _check(_lib.usb_reap_async(context, timeout))
+                if not ret:
+                    return transmitted
+
+                transmitted += ret
+        except:
+            if not transmitted:
+                raise
+        finally:
+            _check(_lib.usb_free_async(byref(context)))
+
+        return transmitted
 
 def get_backend(find_library=None):
     global _lib

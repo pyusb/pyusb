@@ -38,13 +38,16 @@ import usb.util
 import usb.backend.libusb0 as libusb0
 import usb.backend.libusb1 as libusb1
 import usb.backend.openusb as openusb
+import time
+import sys
 
-data_list = (utils.get_array_data1(),
-             utils.get_array_data2(),
-             utils.get_list_data1(),
-             utils.get_list_data2(),
-             utils.get_str_data1(),
-             utils.get_str_data1())
+def make_data_list(length = 8):
+    return (utils.get_array_data1(length),
+            utils.get_array_data2(length),
+            utils.get_list_data1(length),
+            utils.get_list_data2(length),
+            utils.get_str_data1(length),
+            utils.get_str_data1(length))
 
 class DeviceTest(unittest.TestCase):
     @methodtrace(utils.logger)
@@ -118,10 +121,16 @@ class DeviceTest(unittest.TestCase):
     def test_write_read(self):
         altsettings = (devinfo.INTF_BULK, devinfo.INTF_INTR, devinfo.INTF_ISO)
         eps = (devinfo.EP_BULK, devinfo.EP_INTR, devinfo.EP_ISO)
+        data_len = (8, 8, 64)
 
-        for alt in altsettings:
+        def delay(alt):
+            # Hack to avoid two consecutive isochronous transfers to fail
+            if alt == devinfo.INTF_ISO and utils.is_windows():
+                time.sleep(0.5)
+
+        for alt, length in zip(altsettings, data_len):
             self.dev.set_interface_altsetting(0, alt)
-            for data in data_list:
+            for data in make_data_list(length):
                 adata = utils.to_array(data)
                 length = utils.data_len(data)
                 buff = usb.util.create_buffer(length)
@@ -151,6 +160,8 @@ class DeviceTest(unittest.TestCase):
                                     str(alt)
                                 )
 
+                delay(alt)
+
                 try:
                     ret = self.dev.write(eps[alt], data)
                 except NotImplementedError:
@@ -177,6 +188,9 @@ class DeviceTest(unittest.TestCase):
                                     str(adata) + ', in interface = ' + \
                                     str(alt)
                                 )
+
+                delay(alt)
+
     @methodtrace(utils.logger)
     def test_write_array(self):
         a = usb._interop.as_array('test')
@@ -190,7 +204,7 @@ class DeviceTest(unittest.TestCase):
 
     @methodtrace(utils.logger)
     def test_ctrl_transfer(self):
-        for data in data_list:
+        for data in make_data_list():
             length = utils.data_len(data)
             adata = utils.to_array(data)
 
@@ -337,7 +351,7 @@ class EndpointTest(unittest.TestCase):
     @methodtrace(utils.logger)
     def test_write_read(self):
         self.dev.set_interface_altsetting(0, 0)
-        for data in data_list:
+        for data in make_data_list():
             adata = utils.to_array(data)
             length = utils.data_len(data)
             buff = usb.util.create_buffer(length)
