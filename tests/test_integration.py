@@ -33,6 +33,7 @@ import unittest
 import usb.core
 import devinfo
 import usb._interop
+from usb._debug import methodtrace
 import usb.util
 import usb.backend.libusb0 as libusb0
 import usb.backend.libusb1 as libusb1
@@ -46,10 +47,12 @@ data_list = (utils.get_array_data1(),
              utils.get_str_data1())
 
 class DeviceTest(unittest.TestCase):
+    @methodtrace(utils.logger)
     def __init__(self, dev):
         unittest.TestCase.__init__(self)
         self.dev = dev
 
+    @methodtrace(utils.logger)
     def runTest(self):
         try:
             self.test_attributes()
@@ -64,6 +67,7 @@ class DeviceTest(unittest.TestCase):
         finally:
             usb.util.dispose_resources(self.dev)
 
+    @methodtrace(utils.logger)
     def test_attributes(self):
         self.assertEqual(self.dev.bLength, 18)
         self.assertEqual(self.dev.bDescriptorType, usb.util.DESC_TYPE_DEVICE)
@@ -80,6 +84,7 @@ class DeviceTest(unittest.TestCase):
         self.assertEqual(self.dev.bDeviceSubClass, 0x00)
         self.assertEqual(self.dev.bDeviceProtocol, 0x00)
 
+    @methodtrace(utils.logger)
     def test_timeout(self):
         def set_invalid_timeout():
             self.dev.default_timeout = -1
@@ -91,21 +96,25 @@ class DeviceTest(unittest.TestCase):
         self.assertRaises(ValueError, set_invalid_timeout)
         self.assertEqual(self.dev.default_timeout, tmo)
 
+    @methodtrace(utils.logger)
     def test_set_configuration(self):
         cfg = self.dev[0].bConfigurationValue
         self.dev.set_configuration(cfg)
         self.dev.set_configuration()
         self.assertEqual(cfg, self.dev.get_active_configuration().bConfigurationValue)
 
+    @methodtrace(utils.logger)
     def test_set_interface_altsetting(self):
         intf = self.dev.get_active_configuration()[(0,0)]
         self.dev.set_interface_altsetting(intf.bInterfaceNumber, intf.bAlternateSetting)
         self.dev.set_interface_altsetting()
 
+    @methodtrace(utils.logger)
     def test_reset(self):
         self.dev.reset()
         utils.delay_after_reset()
 
+    @methodtrace(utils.logger)
     def test_write_read(self):
         altsettings = (devinfo.INTF_BULK, devinfo.INTF_INTR, devinfo.INTF_ISO)
         eps = (devinfo.EP_BULK, devinfo.EP_INTR, devinfo.EP_ISO)
@@ -168,6 +177,7 @@ class DeviceTest(unittest.TestCase):
                                     str(adata) + ', in interface = ' + \
                                     str(alt)
                                 )
+    @methodtrace(utils.logger)
     def test_write_array(self):
         a = usb._interop.as_array('test')
         self.dev.set_interface_altsetting(0, devinfo.INTF_BULK)
@@ -178,6 +188,7 @@ class DeviceTest(unittest.TestCase):
             self.dev.read(devinfo.EP_BULK | usb.util.ENDPOINT_IN, len(a)),
             a))
 
+    @methodtrace(utils.logger)
     def test_ctrl_transfer(self):
         for data in data_list:
             length = utils.data_len(data)
@@ -229,21 +240,27 @@ class DeviceTest(unittest.TestCase):
             self.assertTrue(utils.array_equals(buff, adata),
                              str(buff) + ' != ' + str(adata))
 
+    @methodtrace(utils.logger)
     def test_clear_halt(self):
         self.dev.set_interface_altsetting(0, 0)
         self.dev.clear_halt(0x01)
         self.dev.clear_halt(0x81)
 
 class ConfigurationTest(unittest.TestCase):
+    @methodtrace(utils.logger)
     def __init__(self, dev):
         unittest.TestCase.__init__(self)
         self.cfg = dev[0]
+
+    @methodtrace(utils.logger)
     def runTest(self):
         try:
             self.test_attributes()
             self.test_set()
         finally:
             usb.util.dispose_resources(self.cfg.device)
+
+    @methodtrace(utils.logger)
     def test_attributes(self):
         self.assertEqual(self.cfg.bLength, 9)
         self.assertEqual(self.cfg.bDescriptorType, usb.util.DESC_TYPE_CONFIG)
@@ -253,14 +270,19 @@ class ConfigurationTest(unittest.TestCase):
         self.assertEqual(self.cfg.iConfiguration, 0x00)
         self.assertEqual(self.cfg.bmAttributes, 0xC0)
         self.assertEqual(self.cfg.bMaxPower, 50)
+
+    @methodtrace(utils.logger)
     def test_set(self):
         self.cfg.set()
 
 class InterfaceTest(unittest.TestCase):
+    @methodtrace(utils.logger)
     def __init__(self, dev):
         unittest.TestCase.__init__(self)
         self.dev = dev
         self.intf = dev[0][(0,0)]
+
+    @methodtrace(utils.logger)
     def runTest(self):
         try:
             self.dev.set_configuration()
@@ -268,6 +290,8 @@ class InterfaceTest(unittest.TestCase):
             self.test_set_altsetting()
         finally:
             usb.util.dispose_resources(self.intf.device)
+
+    @methodtrace(utils.logger)
     def test_attributes(self):
         self.assertEqual(self.intf.bLength, 9)
         self.assertEqual(self.intf.bDescriptorType, usb.util.DESC_TYPE_INTERFACE)
@@ -278,16 +302,21 @@ class InterfaceTest(unittest.TestCase):
         self.assertEqual(self.intf.bInterfaceSubClass, 0x00)
         self.assertEqual(self.intf.bInterfaceProtocol, 0x00)
         self.assertEqual(self.intf.iInterface, 0x00)
+
+    @methodtrace(utils.logger)
     def test_set_altsetting(self):
         self.intf.set_altsetting()
 
 class EndpointTest(unittest.TestCase):
+    @methodtrace(utils.logger)
     def __init__(self, dev):
         unittest.TestCase.__init__(self)
         self.dev = dev
         intf = dev[0][(0,0)]
         self.ep_out = usb.util.find_descriptor(intf, bEndpointAddress=0x01)
         self.ep_in = usb.util.find_descriptor(intf, bEndpointAddress=0x81)
+
+    @methodtrace(utils.logger)
     def runTest(self):
         try:
             self.dev.set_configuration()
@@ -295,6 +324,8 @@ class EndpointTest(unittest.TestCase):
             self.test_write_read()
         finally:
             usb.util.dispose_resources(self.dev)
+
+    @methodtrace(utils.logger)
     def test_attributes(self):
         self.assertEqual(self.ep_out.bLength, 7)
         self.assertEqual(self.ep_out.bDescriptorType, usb.util.DESC_TYPE_ENDPOINT)
@@ -302,6 +333,8 @@ class EndpointTest(unittest.TestCase):
         self.assertEqual(self.ep_out.bmAttributes, 0x02)
         self.assertEqual(self.ep_out.wMaxPacketSize, 16)
         self.assertEqual(self.ep_out.bInterval, 0)
+
+    @methodtrace(utils.logger)
     def test_write_read(self):
         self.dev.set_interface_altsetting(0, 0)
         for data in data_list:

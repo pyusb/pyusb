@@ -33,12 +33,15 @@ import usb.util
 import usb.backend.libusb0 as libusb0
 import usb.backend.libusb1 as libusb1
 import usb.backend.openusb as openusb
+from usb._debug import methodtrace
 
 class BackendTest(unittest.TestCase):
+    @methodtrace(utils.logger)
     def __init__(self, backend):
         unittest.TestCase.__init__(self)
         self.backend = backend
 
+    @methodtrace(utils.logger)
     def runTest(self):
         try:
             self.test_enumerate_devices()
@@ -66,6 +69,7 @@ class BackendTest(unittest.TestCase):
         self.test_close_device()
         #utils.delay_after_reset()
 
+    @methodtrace(utils.logger)
     def test_enumerate_devices(self):
         for d in self.backend.enumerate_devices():
             desc = self.backend.get_device_descriptor(d)
@@ -74,6 +78,7 @@ class BackendTest(unittest.TestCase):
                 return
         self.fail('PyUSB test device not found')
 
+    @methodtrace(utils.logger)
     def test_get_device_descriptor(self):
         dsc = self.backend.get_device_descriptor(self.dev)
         self.assertEqual(dsc.bLength, 18)
@@ -91,6 +96,7 @@ class BackendTest(unittest.TestCase):
         self.assertEqual(dsc.bDeviceSubClass, 0x00)
         self.assertEqual(dsc.bDeviceProtocol, 0x00)
 
+    @methodtrace(utils.logger)
     def test_get_configuration_descriptor(self):
         cfg = self.backend.get_configuration_descriptor(self.dev, 0)
         self.assertEqual(cfg.bLength, 9)
@@ -102,6 +108,7 @@ class BackendTest(unittest.TestCase):
         self.assertEqual(cfg.bmAttributes, 0xC0)
         self.assertEqual(cfg.bMaxPower, 50)
 
+    @methodtrace(utils.logger)
     def test_get_interface_descriptor(self):
         intf = self.backend.get_interface_descriptor(self.dev, 0, 0, 0)
         self.assertEqual(intf.bLength, 9)
@@ -114,6 +121,7 @@ class BackendTest(unittest.TestCase):
         self.assertEqual(intf.bInterfaceProtocol, 0x00)
         self.assertEqual(intf.iInterface, 0x00)
 
+    @methodtrace(utils.logger)
     def test_get_endpoint_descriptor(self):
         ep = self.backend.get_endpoint_descriptor(self.dev, 0, 0, 0, 0)
         self.assertEqual(ep.bLength, 7)
@@ -123,30 +131,37 @@ class BackendTest(unittest.TestCase):
         self.assertEqual(ep.wMaxPacketSize, 16)
         self.assertEqual(ep.bInterval, 0)
 
+    @methodtrace(utils.logger)
     def test_open_device(self):
         self.handle = self.backend.open_device(self.dev)
 
+    @methodtrace(utils.logger)
     def test_close_device(self):
         self.backend.close_device(self.handle)
 
+    @methodtrace(utils.logger)
     def test_set_configuration(self):
         cfg = self.backend.get_configuration_descriptor(self.dev, 0)
         self.backend.set_configuration(self.handle, cfg.bConfigurationValue)
 
+    @methodtrace(utils.logger)
     def test_set_interface_altsetting(self):
         intf = self.backend.get_interface_descriptor(self.dev, 0, 0, 0)
         self.backend.set_interface_altsetting(self.handle,
                                               intf.bInterfaceNumber,
                                               intf.bAlternateSetting)
 
+    @methodtrace(utils.logger)
     def test_claim_interface(self):
         intf = self.backend.get_interface_descriptor(self.dev, 0, 0, 0)
         self.backend.claim_interface(self.handle, intf.bInterfaceNumber)
 
+    @methodtrace(utils.logger)
     def test_release_interface(self):
         intf = self.backend.get_interface_descriptor(self.dev, 0, 0, 0)
         self.backend.release_interface(self.handle, intf.bInterfaceNumber)
 
+    @methodtrace(utils.logger)
     def test_bulk_write_read(self):
         self.backend.set_interface_altsetting(
                 self.handle,
@@ -160,6 +175,7 @@ class BackendTest(unittest.TestCase):
                 devinfo.EP_BULK
             )
 
+    @methodtrace(utils.logger)
     def test_intr_write_read(self):
         self.backend.set_interface_altsetting(
                 self.handle,
@@ -173,6 +189,7 @@ class BackendTest(unittest.TestCase):
                 devinfo.EP_INTR
             )
 
+    @methodtrace(utils.logger)
     def test_iso_write_read(self):
         self.backend.set_interface_altsetting(
                 self.handle,
@@ -186,10 +203,12 @@ class BackendTest(unittest.TestCase):
                 devinfo.EP_ISO
             )
 
+    @methodtrace(utils.logger)
     def test_clear_halt(self):
         self.backend.clear_halt(self.handle, 0x01)
         self.backend.clear_halt(self.handle, 0x81)
 
+    @methodtrace(utils.logger)
     def test_ctrl_transfer(self):
         for data in (utils.get_array_data1(), utils.get_array_data2()):
             length = len(data) * data.itemsize
@@ -220,6 +239,7 @@ class BackendTest(unittest.TestCase):
                              data,
                              'Failed to read data: ' + str(data) + ' != ' + str(ret))
 
+    @methodtrace(utils.logger)
     def test_reset_device(self):
         self.backend.reset_device(self.handle)
 

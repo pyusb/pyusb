@@ -29,6 +29,7 @@
 import sys
 import os.path
 import operator
+import logging
 from ctypes import c_ubyte, POINTER, cast
 
 parent_dir = os.path.split(os.getcwd())[0]

@@ -32,11 +32,14 @@ import devinfo
 import struct
 import usb
 import usb.core
+from usb._debug import methodtrace
 
 class LegacyTest(unittest.TestCase):
+    @methodtrace(utils.logger)
     def __init__(self):
         unittest.TestCase.__init__(self)
 
+    @methodtrace(utils.logger)
     def runTest(self):
         try:
             self.test_find_device()
@@ -65,6 +68,7 @@ class LegacyTest(unittest.TestCase):
         self.test_release_interface()
         self.test_close_device()
 
+    @methodtrace(utils.logger)
     def test_find_device(self):
         busses = usb.busses()
         for bus in busses:
@@ -74,6 +78,7 @@ class LegacyTest(unittest.TestCase):
                     return
         self.fail('PyUSB test device not found')
 
+    @methodtrace(utils.logger)
     def test_device_descriptor(self):
         self.assertEqual(self.dev.usbVersion, '02.00')
         self.assertEqual(self.dev.idVendor, devinfo.ID_VENDOR)
@@ -88,6 +93,7 @@ class LegacyTest(unittest.TestCase):
         self.assertEqual(self.dev.deviceSubClass, 0x00)
         self.assertEqual(self.dev.deviceProtocol, 0x00)
 
+    @methodtrace(utils.logger)
     def test_configuration_descriptor(self):
         cfg = self.dev.configurations[0]
         self.assertEqual(cfg.totalLength, 78)
@@ -98,6 +104,7 @@ class LegacyTest(unittest.TestCase):
         self.assertEqual(cfg.selfPowered, 1)
         self.assertEqual(cfg.maxPower, 100)
 
+    @methodtrace(utils.logger)
     def test_interface_descriptor(self):
         intf = self.dev.configurations[0].interfaces[0][0]
         self.assertEqual(intf.interfaceNumber, 0)
@@ -108,6 +115,7 @@ class LegacyTest(unittest.TestCase):
         self.assertEqual(intf.interfaceProtocol, 0x00)
         self.assertEqual(intf.iInterface, 0x00)
 
+    @methodtrace(utils.logger)
     def test_endpoint_descriptor(self):
         ep = self.dev.configurations[0].interfaces[0][0].endpoints[0]
         self.assertEqual(ep.address, 0x01)
@@ -115,25 +123,32 @@ class LegacyTest(unittest.TestCase):
         self.assertEqual(ep.maxPacketSize, 16)
         self.assertEqual(ep.interval, 0)
 
+    @methodtrace(utils.logger)
     def test_open_device(self):
         self.handle = self.dev.open()
         self.assertNotEquals(self.handle, None)
 
+    @methodtrace(utils.logger)
     def test_close_device(self):
         del self.handle
 
+    @methodtrace(utils.logger)
     def test_set_configuration(self):
         self.handle.setConfiguration(1)
 
+    @methodtrace(utils.logger)
     def test_set_interface_altsetting(self):
         self.handle.setAltInterface(0)
 
+    @methodtrace(utils.logger)
     def test_claim_interface(self):
         self.handle.claimInterface(0)
 
+    @methodtrace(utils.logger)
     def test_release_interface(self):
         self.handle.releaseInterface()
 
+    @methodtrace(utils.logger)
     def test_bulk_write_read(self):
         self.handle.setAltInterface(devinfo.INTF_BULK)
 
@@ -142,6 +157,7 @@ class LegacyTest(unittest.TestCase):
                 self.handle.bulkRead,
                 devinfo.EP_BULK)
 
+    @methodtrace(utils.logger)
     def test_intr_write_read(self):
         self.handle.setAltInterface(devinfo.INTF_INTR)
 
@@ -150,10 +166,12 @@ class LegacyTest(unittest.TestCase):
                 self.handle.interruptRead,
                 devinfo.EP_INTR)
 
+    @methodtrace(utils.logger)
     def test_clear_halt(self):
         self.handle.clearHalt(0x01)
         self.handle.clearHalt(0x81)
 
+    @methodtrace(utils.logger)
     def test_ctrl_transfer(self):
         for data in (utils.get_array_data1(), utils.get_array_data2()):
             length = len(data) * data.itemsize
@@ -182,12 +200,14 @@ class LegacyTest(unittest.TestCase):
                              data,
                              'Failed to read data: ' + str(data) + ' != ' + str(ret))
 
+    @methodtrace(utils.logger)
     def test_get_string(self):
         manufacturer_str = 'Travis Robinson'.encode('ascii')
         product_str = 'Benchmark Device'.encode('ascii')
         self.assertEqual(self.handle.getString(self.dev.iManufacturer, 0), manufacturer_str)
         self.assertEqual(self.handle.getString(self.dev.iProduct, 0), product_str)
 
+    @methodtrace(utils.logger)
     def test_get_descriptor(self):
         dev = usb.core.find(idVendor=devinfo.ID_VENDOR,
                             idProduct=devinfo.ID_PRODUCT)

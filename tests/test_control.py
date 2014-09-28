@@ -35,13 +35,16 @@ import usb.control
 import usb.backend.libusb0 as libusb0
 import usb.backend.libusb1 as libusb1
 import usb.backend.openusb as openusb
+from usb._debug import methodtrace
 import sys
 
 class ControlTest(unittest.TestCase):
+    @methodtrace(utils.logger)
     def __init__(self, dev):
         unittest.TestCase.__init__(self)
         self.dev = dev
 
+    @methodtrace(utils.logger)
     def runTest(self):
         try:
             self.dev.set_configuration()
@@ -57,12 +60,14 @@ class ControlTest(unittest.TestCase):
         finally:
             usb.util.dispose_resources(self.dev)
 
+    @methodtrace(utils.logger)
     def test_get_status(self):
         self.assertEqual(usb.control.get_status(self.dev), 1)
         self.assertEqual(usb.control.get_status(self.dev, self.dev[0][0,0]), 0)
         self.assertEqual(usb.control.get_status(self.dev, self.dev[0][0,0][0]), 0)
         self.assertRaises(ValueError, usb.control.get_status, (self.dev, 0), 0)
 
+    @methodtrace(utils.logger)
     def test_clearset_feature(self):
         e = self.dev[0][0,0][0]
         self.dev.set_interface_altsetting(0, 0)
@@ -72,6 +77,7 @@ class ControlTest(unittest.TestCase):
         usb.control.clear_feature(self.dev, usb.control.ENDPOINT_HALT, e)
         self.assertEqual(usb.control.get_status(self.dev, e), 0)
 
+    @methodtrace(utils.logger)
     def test_getset_descriptor(self):
         # TODO: test set_descriptor
         dev_fmt = 'BBHBBBBHHHBBBB'
@@ -97,10 +103,12 @@ class ControlTest(unittest.TestCase):
                 )
         self.assertEqual(struct.unpack(dev_fmt, ret.tostring()), dev_descr)
 
+    @methodtrace(utils.logger)
     def test_getset_configuration(self):
         usb.control.set_configuration(self.dev, 1)
         self.assertEqual(usb.control.get_configuration(self.dev), 1)
 
+    @methodtrace(utils.logger)
     def test_getset_interface(self):
         i = self.dev[0][0,0]
         usb.control.set_interface(
@@ -116,6 +124,7 @@ class ControlTest(unittest.TestCase):
 
     # Although get_string is implemented in the util module,
     # we test it here for convenience
+    @methodtrace(utils.logger)
     def test_get_string(self):
         manufacturer_str = 'Travis Robinson'.encode('utf-16-le').decode('utf-16-le')
         product_str = 'Benchmark Device'.encode('utf-16-le').decode('utf-16-le')

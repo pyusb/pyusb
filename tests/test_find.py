@@ -29,6 +29,7 @@
 import utils
 import usb.backend
 from usb.core import find
+from usb._debug import methodtrace
 import usb.util
 import unittest
 import devinfo
@@ -64,6 +65,7 @@ class _MyBackend(usb.backend.IBackend):
         return self.devices[dev]
 
 class FindTest(unittest.TestCase):
+    @methodtrace(utils.logger)
     def test_find(self):
         b = _MyBackend()
         self.assertEqual(find(backend=b, idVendor=1), None)

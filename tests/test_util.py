@@ -30,6 +30,7 @@ import utils
 import unittest
 from usb.util import *
 from devinfo import *
+from usb._debug import methodtrace
 import usb.backend
 
 class _ConfigurationDescriptor(object):
@@ -62,6 +63,7 @@ class _DeviceDescriptor(object):
         self.bDeviceProtocol = 0xff
 
 class FindDescriptorTest(unittest.TestCase):
+    @methodtrace(utils.logger)
     def runTest(self):
         d = usb.core.find(idVendor=ID_VENDOR)
         if d is None:
@@ -85,20 +87,29 @@ class FindDescriptorTest(unittest.TestCase):
         self.assertTrue(isinstance(intf, usb.core.Interface))
 
 class UtilTest(unittest.TestCase):
+    @methodtrace(utils.logger)
     def test_endpoint_address(self):
         self.assertEqual(endpoint_address(0x01), 0x01)
         self.assertEqual(endpoint_address(0x81), 0x01)
+
+    @methodtrace(utils.logger)
     def test_endpoint_direction(self):
         self.assertEqual(endpoint_direction(0x01), ENDPOINT_OUT)
         self.assertEqual(endpoint_direction(0x81), ENDPOINT_IN)
+
+    @methodtrace(utils.logger)
     def test_endpoint_type(self):
         self.assertEqual(endpoint_type(ENDPOINT_TYPE_CTRL), ENDPOINT_TYPE_CTRL)
         self.assertEqual(endpoint_type(ENDPOINT_TYPE_ISO), ENDPOINT_TYPE_ISO)
         self.assertEqual(endpoint_type(ENDPOINT_TYPE_INTR), ENDPOINT_TYPE_INTR)
         self.assertEqual(endpoint_type(ENDPOINT_TYPE_BULK), ENDPOINT_TYPE_BULK)
+
+    @methodtrace(utils.logger)
     def test_ctrl_direction(self):
         self.assertEqual(ctrl_direction(CTRL_OUT), CTRL_OUT)
         self.assertEqual(ctrl_direction(CTRL_IN), CTRL_IN)
+
+    @methodtrace(utils.logger)
     def test_build_request_type(self):
         self.assertEqual(build_request_type(CTRL_OUT, CTRL_TYPE_STANDARD, CTRL_RECIPIENT_DEVICE), 0x00)
         self.assertEqual(build_request_type(CTRL_OUT, CTRL_TYPE_STANDARD, CTRL_RECIPIENT_INTERFACE), 0x01)
