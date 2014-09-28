@@ -135,6 +135,10 @@ class DeviceHandle(object):
         self.dev = dev
         self.__claimed_interface = None
 
+    def __del__(self):
+        util.dispose_resources(self.dev)
+        self.dev = None
+
     def bulkWrite(self, endpoint, buffer, timeout = 100):
         r"""Perform a bulk write request to the endpoint specified.
 
