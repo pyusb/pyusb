@@ -205,7 +205,7 @@ First, let's give a look on the final code to find all printers connected::
 
             return False
 
-    printers = usb.core.find(find_all=1, custom_match=find_all(7))
+    printers = usb.core.find(find_all=1, custom_match=find_class(7))
 
 The ``custom_match`` parameter accepts any callable object that receives the
 device object. It must return true for a matching device, and false for a
