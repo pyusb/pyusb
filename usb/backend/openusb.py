@@ -34,6 +34,7 @@ import logging
 import errno
 import sys
 import usb._interop as _interop
+import usb._objfinalizer as _objfinalizer
 import usb.util as util
 import usb.libloader
 from usb.core import USBError
@@ -506,14 +507,14 @@ def _check(ret):
         raise USBError(_lib.openusb_strerror(ret), ret, _openusb_errno[ret])
     return ret
 
-class _Context(object):
+class _Context(_objfinalizer.AutoFinalizedObject):
     def __init__(self):
         self.handle = _openusb_handle()
         _check(_lib.openusb_init(0, byref(self.handle)))
-    def __del__(self):
+    def _finalize_object(self):
         _lib.openusb_fini(self.handle)
 
-class _BusIterator(object):
+class _BusIterator(_objfinalizer.AutoFinalizedObject):
     def __init__(self):
         self.buslist = POINTER(_openusb_busid)()
         num_busids = c_uint32()
@@ -524,10 +525,10 @@ class _BusIterator(object):
     def __iter__(self):
         for i in range(self.num_busids):
             yield self.buslist[i]
-    def __del__(self):
+    def _finalize_object(self):
         _lib.openusb_free_busid_list(self.buslist)
 
-class _DevIterator(object):
+class _DevIterator(_objfinalizer.AutoFinalizedObject):
     def __init__(self, busid):
         self.devlist = POINTER(_openusb_devid)()
         num_devids = c_uint32()
@@ -539,7 +540,7 @@ class _DevIterator(object):
     def __iter__(self):
         for i in range(self.num_devids):
             yield self.devlist[i]
-    def __del__(self):
+    def _finalize_object(self):
         _lib.openusb_free_devid_list(self.devlist)
 
 class _OpenUSB(usb.backend.IBackend):

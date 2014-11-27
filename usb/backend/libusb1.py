@@ -32,6 +32,7 @@ import sys
 import logging
 from usb._debug import methodtrace
 import usb._interop as _interop
+import usb._objfinalizer as _objfinalizer
 import errno
 import math
 from usb.core import USBError
@@ -562,10 +563,10 @@ def _check(ret):
     return ret
 
 # wrap a device
-class _Device(object):
+class _Device(_objfinalizer.AutoFinalizedObject):
     def __init__(self, devid):
         self.devid = _lib.libusb_ref_device(devid)
-    def __del__(self):
+    def _finalize_object(self):
         _lib.libusb_unref_device(self.devid)
 
 # wrap a descriptor and keep a reference to another object
@@ -578,17 +579,17 @@ class _WrapDescriptor(object):
         return getattr(self.desc, name)
 
 # wrap a configuration descriptor
-class _ConfigDescriptor(object):
+class _ConfigDescriptor(_objfinalizer.AutoFinalizedObject):
     def __init__(self, desc):
         self.desc = desc
-    def __del__(self):
+    def _finalize_object(self):
         _lib.libusb_free_config_descriptor(self.desc)
     def __getattr__(self, name):
         return getattr(self.desc.contents, name)
 
 
 # iterator for libusb devices
-class _DevIterator(object):
+class _DevIterator(_objfinalizer.AutoFinalizedObject):
     def __init__(self, ctx):
         self.dev_list = POINTER(c_void_p)()
         self.num_devs = _check(_lib.libusb_get_device_list(
@@ -598,7 +599,7 @@ class _DevIterator(object):
     def __iter__(self):
         for i in range(self.num_devs):
             yield _Device(self.dev_list[i])
-    def __del__(self):
+    def _finalize_object(self):
         _lib.libusb_free_device_list(self.dev_list, 1)
 
 class _DeviceHandle(object):
@@ -607,7 +608,7 @@ class _DeviceHandle(object):
         self.devid = dev.devid
         _check(_lib.libusb_open(self.devid, byref(self.handle)))
 
-class _IsoTransferHandler(object):
+class _IsoTransferHandler(_objfinalizer.AutoFinalizedObject):
     def __init__(self, dev_handle, ep, buff, timeout):
         address, length = buff.buffer_info()
 
@@ -628,7 +629,7 @@ class _IsoTransferHandler(object):
 
         self.__set_packets_length(length, packet_length)
 
-    def __del__(self):
+    def _finalize_object(self):
         _lib.libusb_free_transfer(self.transfer)
 
     def submit(self, ctx = None):
@@ -670,7 +671,7 @@ class _LibUSB(usb.backend.IBackend):
         _check(self.lib.libusb_init(byref(self.ctx)))
 
     @methodtrace(_logger)
-    def __del__(self):
+    def _finalize_object(self):
         self.lib.libusb_exit(self.ctx)
 
 

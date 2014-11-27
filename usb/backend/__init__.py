@@ -71,6 +71,8 @@ defaults backend according to its internal rules. For details, consult the
 find() function documentation.
 """
 
+import usb._objfinalizer as _objfinalizer
+
 __author__ = 'Wander Lairson Costa'
 
 __all__ = ['IBackend', 'libusb01', 'libusb10', 'openusb']
@@ -78,7 +80,7 @@ __all__ = ['IBackend', 'libusb01', 'libusb10', 'openusb']
 def _not_implemented(func):
     raise NotImplementedError(func.__name__)
 
-class IBackend(object):
+class IBackend(_objfinalizer.AutoFinalizedObject):
     r"""Backend interface.
 
     IBackend is the basic interface for backend implementations. By default,
