@@ -710,7 +710,7 @@ class _LibUSB(usb.backend.IBackend):
             written = dev_desc.port_numbers = self.lib.libusb_get_port_numbers(
                     dev.devid, buff, len(buff))
             if written > 0:
-                dev_desc.port_numbers = ".".join(map(str, buff[:written]))
+                dev_desc.port_numbers = tuple(buff[:written])
             else:
                 dev_desc.port_numbers = None
         except AttributeError:
