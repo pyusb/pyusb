@@ -185,6 +185,7 @@ class _DeviceDescriptor:
         self.bus = dev.bus[0].location
 
         self.port_number = None
+        self.port_numbers = None
 _lib = None
 
 def _load_library(find_library=None):

@@ -736,7 +736,8 @@ class Device(_objfinalizer.AutoFinalizedObject):
                     'bNumConfigurations',
                     'address',
                     'bus',
-                    'port_number'
+                    'port_number',
+                    'port_numbers',
                 )
             )
 
