@@ -545,6 +545,19 @@ def _setup_prototypes(lib):
     except AttributeError:
         pass
 
+    try:
+        # int libusb_get_port_numbers(libusb_device *dev,
+        #                             uint8_t* port_numbers,
+        #                             int port_numbers_len)
+        lib.libusb_get_port_numbers.argtypes = [
+                c_void_p,
+                POINTER(c_uint8),
+                c_int
+            ]
+        lib.libusb_get_port_numbers.restype = c_int
+    except AttributeError:
+        pass
+
     #int libusb_handle_events(libusb_context *ctx);
     lib.libusb_handle_events.argtypes = [c_void_p]
 
@@ -690,6 +703,18 @@ class _LibUSB(usb.backend.IBackend):
             dev_desc.port_number = self.lib.libusb_get_port_number(dev.devid)
         except AttributeError:
             dev_desc.port_number = None
+
+        # Only available in newer versions of libusb
+        try:
+            buff = (c_uint8 * 7)()  # USB 3.0 maximum depth is 7
+            written = dev_desc.port_numbers = self.lib.libusb_get_port_numbers(
+                    dev.devid, buff, len(buff))
+            if written > 0:
+                dev_desc.port_numbers = ".".join(map(str, buff[:written]))
+            else:
+                dev_desc.port_numbers = None
+        except AttributeError:
+            dev_desc.port_numbers = None
 
         return dev_desc
 

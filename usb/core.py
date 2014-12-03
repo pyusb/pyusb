@@ -735,7 +735,8 @@ class Device(object):
                     'bNumConfigurations',
                     'address',
                     'bus',
-                    'port_number'
+                    'port_number',
+                    'port_numbers',
                 )
             )
 
