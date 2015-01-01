@@ -29,6 +29,7 @@
 import usb.core as core
 import usb.util as util
 import usb._interop as _interop
+import usb._objfinalizer as _objfinalizer
 import usb.control as control
 
 __author__ = 'Wander Lairson Costa'
@@ -130,12 +131,12 @@ class Configuration(object):
                                     lambda i: i.alternateSetting)
                         ]
 
-class DeviceHandle(object):
+class DeviceHandle(_objfinalizer.AutoFinalizedObject):
     def __init__(self, dev):
         self.dev = dev
         self.__claimed_interface = None
 
-    def __del__(self):
+    def _finalize_object(self):
         util.dispose_resources(self.dev)
         self.dev = None
 
