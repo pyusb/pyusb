@@ -789,6 +789,11 @@ class Device(_objfinalizer.AutoFinalizedObject):
             self._manufacturer = util.get_string(self, self.iManufacturer)
         return self._manufacturer
 
+    @property
+    def backend(self):
+        """Return the backend being used by the device."""
+        return self._ctx.backend
+
     def set_configuration(self, configuration = None):
         r"""Set the active configuration.
 
