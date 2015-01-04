@@ -97,7 +97,7 @@ LIBUSB_ERROR_NOT_SUPPORTED = -12
 LIBUSB_ERROR_OTHER = -99
 
 # map return codes to strings
-_str_error = {
+_str_error_map = {
     LIBUSB_SUCCESS:'Success (no error)',
     LIBUSB_ERROR_IO:'Input/output error',
     LIBUSB_ERROR_INVALID_PARAM:'Invalid parameter',
@@ -166,6 +166,12 @@ _transfer_errno = {
     LIBUSB_TRANSFER_NO_DEVICE:errno.__dict__.get('ENODEV', None),
     LIBUSB_TRANSFER_OVERFLOW:errno.__dict__.get('EOVERFLOW', None)
 }
+
+def _strerror(errcode):
+    try:
+        return _lib.libusb_strerror(errcode).decode('utf8')
+    except AttributeError:
+        return _str_error_map[errcode]
 
 # Data structures
 
@@ -468,6 +474,14 @@ def _setup_prototypes(lib):
     # int libusb_submit_transfer(struct libusb_transfer *transfer);
     lib.libusb_submit_transfer.argtypes = [POINTER(_libusb_transfer)]
 
+    if hasattr(lib, 'libusb_strerror'):
+        # const char *libusb_strerror(enum libusb_error errcode)
+        lib.libusb_strerror.argtypes = [c_uint]
+        lib.libusb_strerror.restype = c_char_p
+
+        # int libusb_clear_halt(libusb_device_handle *dev, unsigned char endpoint)
+        lib.libusb_clear_halt.argtypes = [_libusb_device_handle, c_ubyte]
+
     # void libusb_set_iso_packet_lengths(
     #               libusb_transfer* transfer,
     #               unsigned int length
@@ -569,9 +583,9 @@ def _check(ret):
 
     if ret < 0:
         if ret == LIBUSB_ERROR_NOT_SUPPORTED:
-            raise NotImplementedError(_str_error[ret])
+            raise NotImplementedError(_strerror(ret))
         else:
-            raise USBError(_str_error[ret], ret, _libusb_errno[ret])
+            raise USBError(_strerror(ret), ret, _libusb_errno[ret])
 
     return ret
 
