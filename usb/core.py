@@ -733,6 +733,7 @@ class Device(_objfinalizer.AutoFinalizedObject):
                     'iManufacturer',
                     'iProduct',
                     'iSerialNumber',
+                    'iSpeed',
                     'bNumConfigurations',
                     'address',
                     'bus',
@@ -758,9 +759,20 @@ class Device(_objfinalizer.AutoFinalizedObject):
             self.port_number = None
 
         if getattr(desc, 'speed', None):
-            self.speed = int(desc.speed)
+            self.iSpeed = int(desc.speed)
+            if self.iSpeed == 1:
+                self.speed = 'low'
+            elif self.iSpeed == 2:
+                self.speed = 'full'
+            elif self.iSpeed == 3:
+                self.speed = 'high'
+            elif self.iSpeed == 4:
+                self.speed = 'super'
+            else:
+                self.speed = 'unknown'
         else:
-            self.speed = None
+            self.iSpeed = None
+            self.speed = 'unknown' 
 
     @property
     def serial_number(self):

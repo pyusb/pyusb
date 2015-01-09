@@ -733,8 +733,10 @@ class _LibUSB(usb.backend.IBackend):
 
         try:
             dev_desc.speed = self.lib.libusb_get_device_speed(dev.devid)
+            dev_desc.iSpeed = None
         except Exception:
             dev_desc.speed = None
+            dev_desc.iSpeed = None
 
         return dev_desc
 
