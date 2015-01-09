@@ -731,6 +731,11 @@ class _LibUSB(usb.backend.IBackend):
         except AttributeError:
             dev_desc.port_numbers = None
 
+        try:
+            dev_desc.speed = self.lib.libusb_get_device_speed(dev.devid)
+        except Exception:
+            dev_desc.speed = None
+
         return dev_desc
 
     @methodtrace(_logger)
