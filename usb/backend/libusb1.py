@@ -666,6 +666,12 @@ class _IsoTransferHandler(_objfinalizer.AutoFinalizedObject):
         while not self.__callback_done:
             _check(_lib.libusb_handle_events(ctx))
 
+        status = int(self.transfer.contents.status)
+        if status != LIBUSB_TRANSFER_COMPLETED:
+            raise usb.USBError(_str_transfer_error[status],
+                               status,
+                               _transfer_errno[status])
+
         return self.__compute_size_transf_data()
 
     def __compute_size_transf_data(self):
@@ -677,16 +683,13 @@ class _IsoTransferHandler(_objfinalizer.AutoFinalizedObject):
         r = n % packet_length
         if r:
             iso_packets = _get_iso_packet_list(self.transfer.contents)
-            iso_packets[-1].length = r
+            # When the device is disconnected, this list may
+            # return with length 0
+            if len(iso_packets):
+                iso_packets[-1].length = r
 
     def __callback(self, transfer):
-        if transfer.contents.status == LIBUSB_TRANSFER_COMPLETED:
-            self.__callback_done = 1
-        else:
-            status = int(transfer.contents.status)
-            raise usb.USBError(_str_transfer_error[status],
-                               status,
-                               _transfer_errno[status])
+        self.__callback_done = 1
 
 # implementation of libusb 1.0 backend
 class _LibUSB(usb.backend.IBackend):
