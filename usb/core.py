@@ -220,7 +220,12 @@ class _ResourceManager(object):
     def release_all_interfaces(self, device):
         claimed = copy.copy(self._claimed_intf)
         for i in claimed:
-            self.managed_release_interface(device, i)
+            try:
+                self.managed_release_interface(device, i)
+            except USBError:
+                # Ignore errors when releasing the interfaces
+                # When the device is disconnected, the call may fail
+                pass
 
     def dispose(self, device, close_handle = True):
         self.release_all_interfaces(device)
