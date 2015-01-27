@@ -738,6 +738,7 @@ class Device(_objfinalizer.AutoFinalizedObject):
                     'bus',
                     'port_number',
                     'port_numbers',
+                    'speed',
                 )
             )
 
@@ -755,6 +756,11 @@ class Device(_objfinalizer.AutoFinalizedObject):
             self.port_number = int(desc.port_number)
         else:
             self.port_number = None
+
+        if desc.speed is not None:
+            self.speed = int(desc.speed)
+        else:
+            self.speed = None 
 
     @property
     def serial_number(self):

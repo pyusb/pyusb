@@ -712,6 +712,7 @@ class _LibUSB(usb.backend.IBackend):
         _check(self.lib.libusb_get_device_descriptor(dev.devid, byref(dev_desc)))
         dev_desc.bus = self.lib.libusb_get_bus_number(dev.devid)
         dev_desc.address = self.lib.libusb_get_device_address(dev.devid)
+        dev_desc.speed = self.lib.libusb_get_device_speed(dev.devid)
 
         # Only available in newer versions of libusb
         try:
