@@ -89,6 +89,13 @@ _CTRL_DIR_MASK = 0x80
 # For compatibility between Python 2 and 3
 _dummy_s = '\x00'.encode('utf-8')
 
+# speed type
+SPEED_LOW = 1
+SPEED_FULL = 2
+SPEED_HIGH = 3
+SPEED_SUPER = 4
+SPEED_UNKNOWN = 0
+
 def endpoint_address(address):
     r"""Return the endpoint absolute address.
 
