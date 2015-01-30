@@ -562,6 +562,7 @@ class _OpenUSB(usb.backend.IBackend):
         desc.address = None
         desc.port_number = None
         desc.port_numbers = None
+        desc.speed = None
         return desc
 
     @methodtrace(_logger)

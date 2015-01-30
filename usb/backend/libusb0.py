@@ -186,6 +186,8 @@ class _DeviceDescriptor:
 
         self.port_number = None
         self.port_numbers = None
+        self.speed = None
+
 _lib = None
 
 def _load_library(find_library=None):
