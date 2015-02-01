@@ -157,8 +157,10 @@ class _ResourceManager(object):
             i = intf
 
         if i in self._claimed_intf:
-            self.backend.release_interface(self.handle, i)
-            self._claimed_intf.remove(i)
+            try:
+                self.backend.release_interface(self.handle, i)
+            finally:
+                self._claimed_intf.remove(i)
 
     def managed_set_interface(self, device, intf, alt):
         if isinstance(intf, Interface):
@@ -765,7 +767,7 @@ class Device(_objfinalizer.AutoFinalizedObject):
         if desc.speed is not None:
             self.speed = int(desc.speed)
         else:
-            self.speed = None 
+            self.speed = None
 
     @property
     def serial_number(self):
