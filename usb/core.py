@@ -977,7 +977,9 @@ class Device(_objfinalizer.AutoFinalizedObject):
         # Thanks to Johannes Stezenbach to point me out that we need to
         # claim the recipient interface
         recipient = bmRequestType & 3
-        if recipient == util.CTRL_RECIPIENT_INTERFACE:
+        rqtype = bmRequestType & (3 << 5)
+        if recipient == util.CTRL_RECIPIENT_INTERFACE \
+                and rqtype == util.CTRL_TYPE_STANDARD:
             interface_number = wIndex & 0xff
             self._ctx.managed_claim_interface(self, interface_number)
 
