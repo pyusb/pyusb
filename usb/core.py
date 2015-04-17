@@ -956,7 +956,7 @@ class Device(_objfinalizer.AutoFinalizedObject):
 
         Control requests may or may not have a data payload to write/read.
         In cases which it has, the direction bit of the bmRequestType
-        field is used to infere the desired request direction. For
+        field is used to infer the desired request direction. For
         host to device requests (OUT), data_or_wLength parameter is
         the data payload to send, and it must be a sequence type convertible
         to an array object. In this case, the return value is the number
