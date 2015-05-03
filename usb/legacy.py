@@ -28,9 +28,10 @@
 
 import usb.core as core
 import usb.util as util
-import usb._interop as _interop
 import usb._objfinalizer as _objfinalizer
 import usb.control as control
+
+from itertools import groupby
 
 __author__ = 'Wander Lairson Costa'
 
@@ -123,8 +124,8 @@ class Configuration(object):
         self.totalLength = cfg.wTotalLength
         self.value = cfg.bConfigurationValue
         self.interfaces = [
-                            list(g) for k, g in _interop._groupby(
-                                    _interop._sorted(
+                            list(g) for k, g in groupby(
+                                    sorted(
                                         [Interface(i) for i in cfg],
                                         key=lambda i: i.interfaceNumber
                                     ),
@@ -341,7 +342,7 @@ class Bus(object):
 
 def busses():
     r"""Return a tuple with the usb busses."""
-    return (Bus(g) for k, g in _interop._groupby(
-            _interop._sorted(core.find(find_all=True), key=lambda d: d.bus),
+    return (Bus(g) for k, g in groupby(
+            sorted(core.find(find_all=True), key=lambda d: d.bus),
             lambda d: d.bus))
 

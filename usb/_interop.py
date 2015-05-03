@@ -34,10 +34,10 @@
 import sys
 import array
 
-__all__ = ['_reduce', '_set', '_next', '_groupby', '_sorted', '_update_wrapper']
+__all__ = ['_reduce', '_set', '_next', '_update_wrapper']
 
-# we support Python >= 2.3
-assert sys.hexversion >= 0x020300f0
+# we support Python >= 2.4
+assert sys.hexversion >= 0x020400f0
 
 # On Python 3, reduce became a functools module function
 try:
@@ -61,58 +61,7 @@ def _next(iter):
     except NameError:
         return iter.next()
 
-# groupby is available only since 2.4 version
-try:
-    import itertools
-    _groupby = itertools.groupby
-except (ImportError, AttributeError):
-    # stolen from Python docs
-    class _groupby(object):
-        # [k for k, g in groupby('AAAABBBCCDAABBB')] --> A B C D A B
-        # [list(g) for k, g in groupby('AAAABBBCCD')] --> AAAA BBB CC D
-        def __init__(self, iterable, key=None):
-            if key is None:
-                key = lambda x: x
-            self.keyfunc = key
-            self.it = iter(iterable)
-            self.tgtkey = self.currkey = self.currvalue = object()
-        def __iter__(self):
-            return self
-        def next(self):
-            while self.currkey == self.tgtkey:
-                self.currvalue = _next(self.it)    # Exit on StopIteration
-                self.currkey = self.keyfunc(self.currvalue)
-            self.tgtkey = self.currkey
-            return (self.currkey, self._grouper(self.tgtkey))
-        def _grouper(self, tgtkey):
-            while self.currkey == tgtkey:
-                yield self.currvalue
-                self.currvalue = _next(self.it)    # Exit on StopIteration
-                self.currkey = self.keyfunc(self.currvalue)
-
-# builtin sorted function is only availale since 2.4 version
-try:
-    _sorted = sorted
-except NameError:
-    def _sorted(l, key=None, reverse=False):
-        # sort function on Python 2.3 does not
-        # support 'key' parameter
-        class KeyToCmp(object):
-            def __init__(self, K):
-                self.key = K
-            def __call__(self, x, y):
-                kx = self.key(x)
-                ky = self.key(y)
-                if kx < ky:
-                    return reverse and 1 or -1
-                elif kx > ky:
-                    return reverse and -1 or 1
-                else:
-                    return 0
-        tmp = list(l)
-        tmp.sort(KeyToCmp(key))
-        return tmp
-
+# functools appeared in 2.5
 try:
     import functools
     _update_wrapper = functools.update_wrapper
@@ -123,6 +72,9 @@ except (ImportError, AttributeError):
         wrapper.__doc__ = wrapped.__doc__
         wrapper.__dict__ = wrapped.__dict__
 
+# this is used (as of May 2015) twice in core, once in backend/openusb, and in
+# some unit test code. It would probably be clearer if written in terms of some
+# definite 3.2+ API (bytearrays?) with a fallback provided for 2.4+.
 def as_array(data=None):
     if data is None:
         return array.array('B')
@@ -136,6 +88,6 @@ def as_array(data=None):
         # When you pass a unicode string or a character sequence,
         # you get a TypeError if the first parameter does not match
         a = array.array('B')
-        a.fromstring(data)
+        a.fromstring(data) # deprecated since 3.2
         return a
 
