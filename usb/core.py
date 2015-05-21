@@ -720,6 +720,7 @@ class Device(_objfinalizer.AutoFinalizedObject):
         self._ctx = _ResourceManager(dev, backend)
         self.__default_timeout = _DEFAULT_TIMEOUT
         self._serial_number, self._product, self._manufacturer = None, None, None
+        self._langids = None
 
         desc = backend.get_device_descriptor(dev)
 
@@ -768,6 +769,25 @@ class Device(_objfinalizer.AutoFinalizedObject):
             self.speed = int(desc.speed)
         else:
             self.speed = None
+
+    @property
+    def langids(self):
+        """ Return the USB device's supported language ID codes.
+
+        These are 16-bit codes familiar to Windows developers, where for
+        example instead of en-US you say 0x0409. USB_LANGIDS.pdf on the usb.org
+        developer site for more info. String requests using a LANGID not
+        in this array should not be sent to the device.
+
+        This property will cause some USB traffic the first time it is accessed
+        and cache the resulting value for future use.
+        """
+        if self._langids is None:
+            try:
+                self._langids = util.get_langids(self)
+            except USBError:
+                self._langids = ()
+        return self._langids
 
     @property
     def serial_number(self):

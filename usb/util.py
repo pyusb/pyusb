@@ -39,6 +39,7 @@ find_descriptor - find an inner descriptor.
 claim_interface - explicitly claim an interface.
 release_interface - explicitly release an interface.
 dispose_resources - release internal resources allocated by the object.
+get_langids - retrieve the list of supported string languages from the device.
 get_string - retrieve a string descriptor from the device.
 """
 
@@ -241,35 +242,90 @@ def dispose_resources(device):
     """
     device._ctx.dispose(device)
 
+def get_langids(dev):
+    r"""Retrieve the list of supported Language IDs from the device.
+
+    Most client code should not call this function directly, but instead use
+    the langids property on the Device object, which will call this function as
+    needed and cache the result.
+
+    USB LANGIDs are 16-bit integers familiar to Windows developers, where
+    for example instead of en-US you say 0x0409. See the file USB_LANGIDS.pdf
+    somewhere on the usb.org site for a list, which does not claim to be
+    complete. It requires "system software must allow the enumeration and
+    selection of LANGIDs that are not currently on this list." It also requires
+    "system software should never request a LANGID not defined in the LANGID
+    code array (string index = 0) presented by a device." Client code can
+    check this tuple before issuing string requests for a specific language ID.
+
+    dev is the Device object whose supported language IDs will be retrieved.
+
+    The return value is a tuple of integer LANGIDs, possibly empty if the
+    device does not support strings at all (which USB 3.1 r1.0 section
+    9.6.9 allows). In that case client code should not request strings at all.
+
+    A USBError may be raised from this function for some devices that have no
+    string support, instead of returning an empty tuple. The accessor for the
+    langids property on Device catches that case and supplies an empty tuple,
+    so client code can ignore this detail by using the langids property instead
+    of directly calling this function.
+    """
+    from usb.control import get_descriptor
+    buf = get_descriptor(
+                dev,
+                254,
+                DESC_TYPE_STRING,
+                0
+            )
+
+    # The array is retrieved by asking for string descriptor zero, which is
+    # never the index of a real string. The returned descriptor has bLength
+    # and bDescriptorType bytes followed by pairs of bytes representing
+    # little-endian LANGIDs. That is, buf[0] contains the length of the
+    # returned array, buf[2] is the least-significant byte of the first LANGID
+    # (if any), buf[3] is the most-significant byte, and in general the LSBs of
+    # all the LANGIDs are given by buf[2:buf[0]:2] and MSBs by buf[3:buf[0]:2].
+    # If the length of buf came back odd, something is wrong.
+
+    if len(buf) < 4 or buf[0] < 4 or buf[0]&1 != 0:
+        return ()
+
+    return tuple(map(lambda x,y: x+(y<<8), buf[2:buf[0]:2], buf[3:buf[0]:2]))
+
 def get_string(dev, index, langid = None):
     r"""Retrieve a string descriptor from the device.
 
-    dev is the Device object which the string will be
-    read from.
+    dev is the Device object which the string will be read from.
 
     index is the string descriptor index and langid is the Language
     ID of the descriptor. If langid is omitted, the string descriptor
     of the first Language ID will be returned.
 
-    The return value is the unicode string present in the descriptor.
+    Zero is never the index of a real string. The USB spec allows a device to
+    use zero in a string index field to indicate that no string is provided.
+    So the caller does not have to treat that case specially, this function
+    returns None if passed an index of zero, and generates no traffic
+    to the device.
+
+    The return value is the unicode string present in the descriptor, or None
+    if the requested index was zero.
+
+    It is a ValueError to request a real string (index not zero), if: the
+    device's langid tuple is empty, or with an explicit langid the device does
+    not support.
     """
+    if 0 == index:
+        return None
+
     from usb.control import get_descriptor
+    langids = dev.langids
+
+    if 0 == len(langids):
+        raise ValueError("The device has no langid")
     if langid is None:
-	# Asking for the zero'th index is special - it returns a string
-	# descriptor that contains all the language IDs supported by the device.
-	# Typically there aren't many - often only one. The language IDs are 16
-	# bit numbers, and they start at the third byte in the descriptor. See
-	# USB 2.0 specification section 9.6.7 for more information.
-        #
-        # Note from libusb 1.0 sources (descriptor.c)
-        buf = get_descriptor(
-                    dev,
-                    254,
-                    DESC_TYPE_STRING,
-                    0
-                )
-        assert len(buf) >= 4
-        langid = buf[2] | (buf[3] << 8)
+        langid = langids[0]
+    elif langid not in langids:
+        raise ValueError("The device does not support the specified langid")
 
     buf = get_descriptor(
                 dev,
