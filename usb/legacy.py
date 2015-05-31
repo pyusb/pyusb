@@ -256,6 +256,9 @@ class DeviceHandle(_objfinalizer.AutoFinalizedObject):
         Arguments:
             configuration: a configuration value or a Configuration object.
         """
+        if isinstance(configuration, Configuration):
+           configuration = configuration.value
+
         self.dev.set_configuration(configuration)
 
     def setAltInterface(self, alternate):
