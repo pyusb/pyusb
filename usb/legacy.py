@@ -267,6 +267,9 @@ class DeviceHandle(_objfinalizer.AutoFinalizedObject):
         Arguments:
             alternate: an alternate setting number or an Interface object.
         """
+        if isinstance(alternate, Interface):
+           alternate = alternate.alternateSetting
+
         self.dev.set_interface_altsetting(self.__claimed_interface, alternate)
 
     def getString(self, index, length, langid = None):
