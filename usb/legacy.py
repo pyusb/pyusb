@@ -256,7 +256,7 @@ class DeviceHandle(_objfinalizer.AutoFinalizedObject):
         Arguments:
             configuration: a configuration value or a Configuration object.
         """
-        self.dev.set_configuration(configuration)
+        self.dev.set_configuration(configuration.value)
 
     def setAltInterface(self, alternate):
         r"""Sets the active alternate setting of the current interface.
