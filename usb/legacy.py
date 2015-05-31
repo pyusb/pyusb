@@ -264,7 +264,7 @@ class DeviceHandle(_objfinalizer.AutoFinalizedObject):
         Arguments:
             alternate: an alternate setting number or an Interface object.
         """
-        self.dev.set_interface_altsetting(self.__claimed_interface, alternate)
+        self.dev.set_interface_altsetting(self.__claimed_interface, alternate.alternateSetting)
 
     def getString(self, index, length, langid = None):
         r"""Retrieve the string descriptor specified by index
