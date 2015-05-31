@@ -256,7 +256,7 @@ class DeviceHandle(_objfinalizer.AutoFinalizedObject):
         Arguments:
             configuration: a configuration value or a Configuration object.
         """
-        self.dev.set_configuration(configuration)
+        self.dev.set_configuration(configuration.value)
 
     def setAltInterface(self, alternate):
         r"""Sets the active alternate setting of the current interface.
@@ -264,7 +264,7 @@ class DeviceHandle(_objfinalizer.AutoFinalizedObject):
         Arguments:
             alternate: an alternate setting number or an Interface object.
         """
-        self.dev.set_interface_altsetting(self.__claimed_interface, alternate)
+        self.dev.set_interface_altsetting(self.__claimed_interface, alternate.alternateSetting)
 
     def getString(self, index, length, langid = None):
         r"""Retrieve the string descriptor specified by index
