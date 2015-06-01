@@ -303,6 +303,9 @@ class DeviceHandle(_objfinalizer.AutoFinalizedObject):
         Arguments:
             interface: interface number or an Interface object.
         """
+        if isinstance(interface, Interface):
+            interface = interface.interfaceNumber
+
         self.dev.detach_kernel_driver(interface)
 
 class Device(object):
