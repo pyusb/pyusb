@@ -225,12 +225,10 @@ class DeviceHandle(_objfinalizer.AutoFinalizedObject):
             interface: interface number or an Interface object.
         """
         if isinstance(interface, Interface):
-            if_num = interface.interfaceNumber
-        else:
-            if_num = interface
+            interface = interface.interfaceNumber
 
-        util.claim_interface(self.dev, if_num)
-        self.__claimed_interface = if_num
+        util.claim_interface(self.dev, interface)
+        self.__claimed_interface = interface
 
     def releaseInterface(self):
         r"""Release an interface previously claimed with claimInterface."""
@@ -256,6 +254,9 @@ class DeviceHandle(_objfinalizer.AutoFinalizedObject):
         Arguments:
             configuration: a configuration value or a Configuration object.
         """
+        if isinstance(configuration, Configuration):
+           configuration = configuration.value
+
         self.dev.set_configuration(configuration)
 
     def setAltInterface(self, alternate):
@@ -264,6 +265,9 @@ class DeviceHandle(_objfinalizer.AutoFinalizedObject):
         Arguments:
             alternate: an alternate setting number or an Interface object.
         """
+        if isinstance(alternate, Interface):
+           alternate = alternate.alternateSetting
+
         self.dev.set_interface_altsetting(self.__claimed_interface, alternate)
 
     def getString(self, index, length, langid = None):
@@ -297,6 +301,9 @@ class DeviceHandle(_objfinalizer.AutoFinalizedObject):
         Arguments:
             interface: interface number or an Interface object.
         """
+        if isinstance(interface, Interface):
+            interface = interface.interfaceNumber
+
         self.dev.detach_kernel_driver(interface)
 
 class Device(object):
