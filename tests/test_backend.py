@@ -34,6 +34,8 @@ import usb.backend.libusb0 as libusb0
 import usb.backend.libusb1 as libusb1
 import usb.backend.openusb as openusb
 from usb._debug import methodtrace
+import time
+import sys
 
 class BackendTest(unittest.TestCase):
     @methodtrace(utils.logger)
@@ -191,17 +193,17 @@ class BackendTest(unittest.TestCase):
 
     @methodtrace(utils.logger)
     def test_iso_write_read(self):
-        self.backend.set_interface_altsetting(
+        if utils.is_iso_test_allowed():
+            self.backend.set_interface_altsetting(
                 self.handle,
                 0,
-                devinfo.INTF_ISO
-            )
+                devinfo.INTF_ISO)
 
-        self.__write_read(
+            self.__write_read(
                 self.backend.iso_write,
                 self.backend.iso_read,
-                devinfo.EP_ISO
-            )
+                devinfo.EP_ISO,
+                64)
 
     @methodtrace(utils.logger)
     def test_clear_halt(self):
@@ -243,9 +245,9 @@ class BackendTest(unittest.TestCase):
     def test_reset_device(self):
         self.backend.reset_device(self.handle)
 
-    def __write_read(self, write_fn, read_fn, ep):
+    def __write_read(self, write_fn, read_fn, ep, length = 8):
         intf = self.backend.get_interface_descriptor(self.dev, 0, 0, 0).bInterfaceNumber
-        for data in (utils.get_array_data1(), utils.get_array_data2()):
+        for data in (utils.get_array_data1(length), utils.get_array_data2(length)):
             length = len(data) * data.itemsize
 
             try:
@@ -275,6 +277,9 @@ class BackendTest(unittest.TestCase):
                                 str(data) + \
                                 ', in EP = ' + \
                                 str(ep))
+
+            if utils.is_windows():
+                time.sleep(0.5)
 
 def get_suite():
     suite = unittest.TestSuite()

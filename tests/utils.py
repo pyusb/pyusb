@@ -27,6 +27,7 @@
 # MODIFICATIONS.
 
 import sys
+import os
 import os.path
 import operator
 import logging
@@ -115,3 +116,9 @@ def array_equals(a1, a2):
         p2 = cast(a2.buffer_info()[0], c_ubyte_p)
         # we do a item by item compare we unicode is involved
         return all(map(operator.eq, p1[:l1], p2[:l2]))
+
+def is_windows():
+    return 'getwindowsversion' in dir(sys)
+
+def is_iso_test_allowed():
+    return int(os.getenv('PYUSB_TEST_ISO_TRANSFER', 1))
