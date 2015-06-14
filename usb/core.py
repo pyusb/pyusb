@@ -256,6 +256,9 @@ class USBError(IOError):
         IOError.__init__(self, errno, strerror)
         self.backend_error_code = error_code
 
+class NoBackendError(ValueError):
+    r"Exception class when a valid backend is not found."
+    pass
 
 class Endpoint(object):
     r"""Represent an endpoint object.
@@ -1238,7 +1241,7 @@ def find(find_all=False, backend = None, custom_match = None, **args):
                 _logger.info('find(): using backend "%s"', m.__name__)
                 break
         else:
-            raise ValueError('No backend available')
+            raise NoBackendError('No backend available')
 
     k, v = args.keys(), args.values()
 
