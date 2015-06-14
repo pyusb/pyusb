@@ -119,9 +119,14 @@ class DeviceTest(unittest.TestCase):
 
     @methodtrace(utils.logger)
     def test_write_read(self):
-        altsettings = (devinfo.INTF_BULK, devinfo.INTF_INTR, devinfo.INTF_ISO)
-        eps = (devinfo.EP_BULK, devinfo.EP_INTR, devinfo.EP_ISO)
-        data_len = (8, 8, 64)
+        altsettings = [devinfo.INTF_BULK, devinfo.INTF_INTR]
+        eps = [devinfo.EP_BULK, devinfo.EP_INTR]
+        data_len = [8, 8]
+
+        if utils.is_iso_test_allowed():
+            altsettings.append(devinfo.INTF_ISO)
+            eps.append(devinfo.EP_ISO)
+            data_len.append(64)
 
         def delay(alt):
             # Hack to avoid two consecutive isochronous transfers to fail
@@ -142,23 +147,23 @@ class DeviceTest(unittest.TestCase):
 
                 self.assertEqual(ret, length)
 
-                self.assertEqual(ret,
-                                 length,
-                                 'Failed to write data: ' + \
-                                    str(data) + ', in interface = ' + \
-                                    str(alt)
-                                )
+                self.assertEqual(
+                    ret,
+                    length,
+                    'Failed to write data: ' + \
+                        str(data) + ', in interface = ' + \
+                        str(alt))
 
                 try:
                     ret = self.dev.read(eps[alt] | usb.util.ENDPOINT_IN, length)
                 except NotImplementedError:
                     continue
 
-                self.assertTrue(utils.array_equals(ret, adata),
-                                 str(ret) + ' != ' + \
-                                    str(adata) + ', in interface = ' + \
-                                    str(alt)
-                                )
+                self.assertTrue(
+                    utils.array_equals(ret, adata),
+                    str(ret) + ' != ' + \
+                        str(adata) + ', in interface = ' + \
+                        str(alt))
 
                 delay(alt)
 
@@ -169,12 +174,12 @@ class DeviceTest(unittest.TestCase):
 
                 self.assertEqual(ret, length)
 
-                self.assertEqual(ret,
-                                 length,
-                                 'Failed to write data: ' + \
-                                    str(data) + ', in interface = ' + \
-                                    str(alt)
-                                )
+                self.assertEqual(
+                    ret,
+                    length,
+                    'Failed to write data: ' + \
+                        str(data) + ', in interface = ' + \
+                        str(alt))
 
                 try:
                     ret = self.dev.read(eps[alt] | usb.util.ENDPOINT_IN, buff)
@@ -183,11 +188,11 @@ class DeviceTest(unittest.TestCase):
 
                 self.assertEqual(ret, length)
 
-                self.assertTrue(utils.array_equals(buff, adata),
-                                 str(buff) + ' != ' + \
-                                    str(adata) + ', in interface = ' + \
-                                    str(alt)
-                                )
+                self.assertTrue(
+                    utils.array_equals(buff, adata),
+                     str(buff) + ' != ' + \
+                        str(adata) + ', in interface = ' + \
+                        str(alt))
 
                 delay(alt)
 

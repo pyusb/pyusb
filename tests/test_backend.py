@@ -193,12 +193,13 @@ class BackendTest(unittest.TestCase):
 
     @methodtrace(utils.logger)
     def test_iso_write_read(self):
-        self.backend.set_interface_altsetting(
+        if utils.is_iso_test_allowed():
+            self.backend.set_interface_altsetting(
                 self.handle,
                 0,
                 devinfo.INTF_ISO)
 
-        self.__write_read(
+            self.__write_read(
                 self.backend.iso_write,
                 self.backend.iso_read,
                 devinfo.EP_ISO,

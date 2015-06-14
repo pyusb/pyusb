@@ -27,6 +27,7 @@
 # MODIFICATIONS.
 
 import sys
+import os
 import os.path
 import operator
 import logging
@@ -118,3 +119,6 @@ def array_equals(a1, a2):
 
 def is_windows():
     return 'getwindowsversion' in dir(sys)
+
+def is_iso_test_allowed():
+    return int(os.getenv('PYUSB_TEST_ISO_TRANSFER', 1))
