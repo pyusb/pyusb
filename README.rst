@@ -56,6 +56,14 @@ with the command::
 
 Run it as root from within the same directory as this README file.
 
+You can also use `pip <https://docs.python.org/3/installing/>`_ to
+install PyUSB::
+
+    $ sudo pip install pyusb --pre
+
+Just bear in mind that you still follow to procedure to install the
+libusb library.
+
 Installing PyUSB on Windows
 ===========================
 
@@ -69,8 +77,9 @@ the Python install directory to your PATH environment variable or
 give the complete path to the Python interpreter.
 
 Remember that you need libusb (1.0 or 0.1) or OpenUSB running on your
-system. For Windows users, libusb 1.0 is still experimental, so it is
-recommended libusb-win32 package. Check the libusb website for updates
+system. For Windows users, libusb 0.1 is provided through
+`libusb-win32 <http://libubs-win32.sourceforge.net>`_
+package. Check the libusb website for updates
 (http://www.libusb.org).
 
 Reporting bugs/Submitting patches
