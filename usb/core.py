@@ -141,6 +141,9 @@ class _ResourceManager(object):
         else:
             cfg = util.find_descriptor(device, bConfigurationValue=config)
 
+        if cfg is None:
+            raise ValueError("Invalid configuration " + str(config))
+
         self.managed_open()
         self.backend.set_configuration(self.handle, cfg.bConfigurationValue)
 
