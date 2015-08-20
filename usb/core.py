@@ -51,6 +51,8 @@ import usb._objfinalizer as _objfinalizer
 import usb._lookup as _lu
 import logging
 import array
+import threading
+import functools
 
 _logger = logging.getLogger('usb.core')
 
@@ -92,6 +94,16 @@ class _DescriptorInfo(str):
     def __repr__(self):
         return self
 
+def synchronized(f):
+    @functools.wraps(f)
+    def wrapper(self, *args, **kwargs):
+        try:
+            self.lock.acquire()
+            return f(self, *args, **kwargs)
+        finally:
+            self.lock.release()
+    return wrapper
+
 class _ResourceManager(object):
     def __init__(self, dev, backend):
         self.backend = backend
@@ -100,17 +112,21 @@ class _ResourceManager(object):
         self.handle = None
         self._claimed_intf = _interop._set()
         self._ep_info = {}
+        self.lock = threading.RLock()
 
+    @synchronized
     def managed_open(self):
         if self.handle is None:
             self.handle = self.backend.open_device(self.dev)
         return self.handle
 
+    @synchronized
     def managed_close(self):
         if self.handle is not None:
             self.backend.close_device(self.handle)
             self.handle = None
 
+    @synchronized
     def managed_set_configuration(self, device, config):
         if config is None:
             cfg = device[0]
@@ -135,6 +151,7 @@ class _ResourceManager(object):
 
         self._ep_info.clear()
 
+    @synchronized
     def managed_claim_interface(self, device, intf):
         self.managed_open()
 
@@ -147,6 +164,7 @@ class _ResourceManager(object):
             self.backend.claim_interface(self.handle, i)
             self._claimed_intf.add(i)
 
+    @synchronized
     def managed_release_interface(self, device, intf):
         if intf is None:
             cfg = self.get_active_configuration(device)
@@ -162,6 +180,7 @@ class _ResourceManager(object):
             finally:
                 self._claimed_intf.remove(i)
 
+    @synchronized
     def managed_set_interface(self, device, intf, alt):
         if isinstance(intf, Interface):
             i = intf
@@ -181,6 +200,7 @@ class _ResourceManager(object):
 
         self.backend.set_interface_altsetting(self.handle, i.bInterfaceNumber, alt)
 
+    @synchronized
     def setup_request(self, device, endpoint):
         # we need the endpoint address, but the "endpoint" parameter
         # can be either the a Endpoint object or the endpoint address itself
@@ -194,6 +214,7 @@ class _ResourceManager(object):
         return (intf, ep)
 
     # Find the interface and endpoint objects which endpoint address belongs to
+    @synchronized
     def get_interface_and_endpoint(self, device, endpoint_address):
         try:
             return self._ep_info[endpoint_address]
@@ -206,6 +227,7 @@ class _ResourceManager(object):
 
             raise ValueError('Invalid endpoint address ' + hex(endpoint_address))
 
+    @synchronized
     def get_active_configuration(self, device):
         if self._active_cfg_index is None:
             self.managed_open()
@@ -219,6 +241,7 @@ class _ResourceManager(object):
             return cfg
         return device[self._active_cfg_index]
 
+    @synchronized
     def release_all_interfaces(self, device):
         claimed = copy.copy(self._claimed_intf)
         for i in claimed:
@@ -229,6 +252,7 @@ class _ResourceManager(object):
                 # When the device is disconnected, the call may fail
                 pass
 
+    @synchronized
     def dispose(self, device, close_handle = True):
         self.release_all_interfaces(device)
         if close_handle:
