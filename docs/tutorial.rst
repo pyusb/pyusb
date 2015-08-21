@@ -325,9 +325,13 @@ descriptor with its `bConfigurationValue` field equals to 5 [#]_, the following
 calls below will work equally::
 
     >>> dev.set_configuration(5)
+    # or
     >>> dev.set_configuration() # we assume the configuration 5 is the first one
-    >>> cfg = util.find_descriptor(dev, bConfiguration=5)
+    # or
+    >>> cfg = util.find_descriptor(dev, bConfigurationValue=5)
     >>> cfg.set()
+    # or
+    >>> cfg = util.find_descriptor(dev, bConfigurationValue=5)
     >>> dev.set_configuration(cfg)
 
 Wow! You can use a ``Configuration`` object as a parameter to
