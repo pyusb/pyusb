@@ -553,9 +553,12 @@ def _setup_prototypes(lib):
     lib.libusb_get_device_address.argtypes = [c_void_p]
     lib.libusb_get_device_address.restype = c_uint8
 
-    # uint8_t libusb_get_device_speed(libusb_device *dev)
-    lib.libusb_get_device_speed.argtypes = [c_void_p]
-    lib.libusb_get_device_speed.restype = c_uint8
+    try:
+        # uint8_t libusb_get_device_speed(libusb_device *dev)
+        lib.libusb_get_device_speed.argtypes = [c_void_p]
+        lib.libusb_get_device_speed.restype = c_uint8
+    except AttributeError:
+        pass
 
     try:
         # uint8_t libusb_get_port_number(libusb_device *dev)
