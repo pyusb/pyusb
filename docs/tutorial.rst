@@ -593,7 +593,7 @@ Subscribe instructions can be found at the PyUSB_ website.
        no choice.
 
 .. _libusb: http://www.libusb.org
-.. _OpenUSB: http://openusb.wiki.sourceforge.net
+.. _OpenUSB: http://sourceforge.net/p/openusb/wiki/Home/
 .. _USB: http://www.usb.org
 .. _PyUSB: http://pyusb.wiki.sourceforge.net
 .. _Python: http://www.python.org
