@@ -1029,7 +1029,7 @@ class Device(_objfinalizer.AutoFinalizedObject):
         recipient = bmRequestType & 3
         rqtype = bmRequestType & (3 << 5)
         if recipient == util.CTRL_RECIPIENT_INTERFACE \
-                and rqtype == util.CTRL_TYPE_STANDARD:
+                and rqtype != util.CTRL_TYPE_VENDOR:
             interface_number = wIndex & 0xff
             self._ctx.managed_claim_interface(self, interface_number)
 
