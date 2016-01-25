@@ -177,27 +177,17 @@ def find_descriptor(desc, find_all=False, custom_match=None, **args):
     find_descriptor function also accepts the find_all parameter to get
     an iterator instead of just one descriptor.
     """
-    def desc_iter(k, v):
+    def desc_iter(**kwargs):
         for d in desc:
-            if (custom_match is None or custom_match(d)) and \
-                _interop._reduce(
-                        lambda a, b: a and b,
-                        map(
-                            operator.eq,
-                            v,
-                            map(lambda i: getattr(d, i), k)
-                        ),
-                        True
-                    ):
+            tests = (val == getattr(d, key) for key, val in kwargs.items())
+            if _interop._all(tests) and (custom_match is None or custom_match(d)):
                 yield d
 
-    k, v = args.keys(), args.values()
-
     if find_all:
-        return desc_iter(k, v)
+        return desc_iter(**args)
     else:
         try:
-            return _interop._next(desc_iter(k, v))
+            return _interop._next(desc_iter(**args))
         except StopIteration:
             return None
 

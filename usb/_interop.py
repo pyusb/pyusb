@@ -46,6 +46,12 @@ try:
 except (ImportError, AttributeError):
     _reduce = reduce
 
+# all, introduced in Python 2.5
+try:
+    _all = all
+except NameError:
+    _all = lambda iter_ : _reduce( lambda x, y: x and y, iter_, True )
+
 # we only have the builtin set type since 2.5 version
 try:
     _set = set
@@ -90,4 +96,3 @@ def as_array(data=None):
         a = array.array('B')
         a.fromstring(data) # deprecated since 3.2
         return a
-

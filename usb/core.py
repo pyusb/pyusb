@@ -1242,19 +1242,11 @@ def find(find_all=False, backend = None, custom_match = None, **args):
 
     Backends are explained in the usb.backend module.
     """
-
-    def device_iter(k, v):
+    def device_iter(**kwargs):
         for dev in backend.enumerate_devices():
             d = Device(dev, backend)
-            if  _interop._reduce(
-                        lambda a, b: a and b,
-                        map(
-                            operator.eq,
-                            v,
-                            map(lambda i: getattr(d, i), k)
-                        ),
-                        True
-                    ) and (custom_match is None or custom_match(d)):
+            tests = (val == getattr(d, key) for key, val in kwargs.items())
+            if _interop._all(tests) and (custom_match is None or custom_match(d)):
                 yield d
 
     if backend is None:
@@ -1270,13 +1262,11 @@ def find(find_all=False, backend = None, custom_match = None, **args):
         else:
             raise NoBackendError('No backend available')
 
-    k, v = args.keys(), args.values()
-
     if find_all:
-        return device_iter(k, v)
+        return device_iter(**args)
     else:
         try:
-            return _interop._next(device_iter(k, v))
+            return _interop._next(device_iter(**args))
         except StopIteration:
             return None
 
