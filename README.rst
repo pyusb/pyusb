@@ -78,7 +78,7 @@ give the complete path to the Python interpreter.
 
 Remember that you need libusb (1.0 or 0.1) or OpenUSB running on your
 system. For Windows users, libusb 0.1 is provided through
-`libusb-win32 <http://libubs-win32.sourceforge.net>`_
+`libusb-win32 <http://libusb-win32.sourceforge.net>`_
 package. Check the libusb website for updates
 (http://www.libusb.org).
 
