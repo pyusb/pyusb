@@ -154,11 +154,11 @@ _usb_device._fields_ = [('next', POINTER(_usb_device)),
                         ('children', POINTER(POINTER(_usb_device)))]
 
 _usb_bus._fields_ = [('next', POINTER(_usb_bus)),
-                    ('prev', POINTER(_usb_bus)),
-                    ('dirname', c_char * (_PATH_MAX + 1)),
-                    ('devices', POINTER(_usb_device)),
-                    ('location', c_uint32),
-                    ('root_dev', POINTER(_usb_device))]
+                     ('prev', POINTER(_usb_bus)),
+                     ('dirname', c_char * (_PATH_MAX + 1)),
+                     ('devices', POINTER(_usb_device)),
+                     ('location', c_uint32),
+                     ('root_dev', POINTER(_usb_device))]
 
 _usb_dev_handle = c_void_p
 
