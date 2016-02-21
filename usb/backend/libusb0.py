@@ -361,6 +361,12 @@ def _setup_prototypes(lib):
     # struct usb_bus *usb_get_busses(void);
     lib.usb_get_busses.restype = POINTER(_usb_bus)
 
+    # linux only
+
+    # int usb_detach_kernel_driver_np(usb_dev_handle *dev, int interface);
+    if hasattr(lib, 'usb_detach_kernel_driver_np'):
+        lib.usb_detach_kernel_driver_np.argtypes = [_usb_dev_handle, c_int]
+
     # libusb-win32 only
 
     # int usb_isochronous_setup_async(usb_dev_handle *dev,
@@ -487,10 +493,6 @@ class _LibUSB(usb.backend.IBackend):
         _check(_lib.usb_set_configuration(dev_handle, config_value))
 
     @methodtrace(_logger)
-    def set_interface_altsetting(self, dev_handle, intf, altsetting):
-        _check(_lib.usb_set_altinterface(dev_handle, altsetting))
-
-    @methodtrace(_logger)
     def get_configuration(self, dev_handle):
         bmRequestType = usb.util.build_request_type(
                                 usb.util.CTRL_IN,
@@ -510,6 +512,9 @@ class _LibUSB(usb.backend.IBackend):
         assert ret == 1
         return buff[0]
 
+    @methodtrace(_logger)
+    def set_interface_altsetting(self, dev_handle, intf, altsetting):
+        _check(_lib.usb_set_altinterface(dev_handle, altsetting))
 
     @methodtrace(_logger)
     def claim_interface(self, dev_handle, intf):
