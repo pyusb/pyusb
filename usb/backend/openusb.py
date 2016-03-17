@@ -740,7 +740,7 @@ def get_backend(find_library=None):
             _setup_prototypes(_lib)
             _ctx = _Context()
         return _OpenUSB()
-    except usb.libloader.LibaryException:
+    except usb.libloader.LibraryException:
         # exception already logged (if any)
         _logger.error('Error loading OpenUSB backend', exc_info=False)
         return None

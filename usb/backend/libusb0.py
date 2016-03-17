@@ -669,7 +669,7 @@ def get_backend(find_library=None):
             _setup_prototypes(_lib)
             _lib.usb_init()
         return _LibUSB()
-    except usb.libloader.LibaryException:
+    except usb.libloader.LibraryException:
         # exception already logged (if any)
         _logger.error('Error loading libusb 0.1 backend', exc_info=False)
         return None
