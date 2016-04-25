@@ -39,7 +39,7 @@ PyUSB already provides backends for libusb versions 0.1 and 1.0,
 and OpenUSB library. Backends modules included with PyUSB are required to
 export the get_backend() function, which returns an instance of a backend
 object. You can provide your own customized backend if you
-want to. Bellow you find a skeleton of a backend implementation module:
+want to. Below you find a skeleton of a backend implementation module:
 
 import usb.backend
 
