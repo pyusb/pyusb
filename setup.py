@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Copyright (C) 2009-2014 Wander Lairson Costa
+# Copyright (C) 2009-2016 Wander Lairson Costa
 #
 # The following terms apply to all files associated
 # with the software unless explicitly disclaimed in individual files.
@@ -40,7 +40,7 @@ setup(
     author='Wander Lairson Costa',
     author_email='wander.lairson@gmail.com',
     license = 'BSD',
-    url='http://pyusb.sourceforge.net',
+    url='http://walac.github.io/pyusb',
     packages=['usb', 'usb.backend'],
     long_description =
 """
@@ -50,7 +50,7 @@ Python >= 2.4, ctypes and an pre-built usb backend library
 (currently, libusb 0.1.x, libusb 1.x, and OpenUSB).
 """,
     classifiers=[
-        'Development Status :: 4 - Beta',
+        'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Developers',
         'Intended Audience :: Information Technology',
         'Intended Audience :: Manufacturing', # USB automation, or mfg USB devs
