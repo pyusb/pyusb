@@ -34,7 +34,7 @@ import logging
 import sys
 
 __all__ = [
-            'LibaryException',
+            'LibraryException',
             'LibraryNotFoundException',
             'NoLibraryCandidatesException',
             'LibraryNotLoadedException',
@@ -48,19 +48,19 @@ __all__ = [
 _LOGGER = logging.getLogger('usb.libloader')
 
 
-class LibaryException(OSError):
+class LibraryException(OSError):
     pass
 
-class LibraryNotFoundException(LibaryException):
+class LibraryNotFoundException(LibraryException):
     pass
 
 class NoLibraryCandidatesException(LibraryNotFoundException):
     pass
 
-class LibraryNotLoadedException(LibaryException):
+class LibraryNotLoadedException(LibraryException):
     pass
 
-class LibraryMissingSymbolsException(LibaryException):
+class LibraryMissingSymbolsException(LibraryException):
     pass
 
 
