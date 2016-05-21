@@ -1,0 +1,11 @@
+#!/usr/bin/make -f
+
+PKG = pyusb
+
+%:
+	dh $@
+
+override_dh_auto_install:
+	python3.2 setup.py install --prefix=/usr --root=debian/pyusb
+	python2.7 setup.py install --prefix=/usr --root=debian/pyusb
+

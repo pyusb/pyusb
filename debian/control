@@ -1,0 +1,32 @@
+Source: pyusb
+Section: python
+Priority: extra
+Maintainer: Wander Lairson Costa <wander.lairson@gmail.com>
+Build-Depends: debhelper (>= 7.0.50~), python2.7, python3.2
+Standards-Version: 3.8.4
+Homepage: http://walac.github.io/pyusb
+
+Package: pyusb
+Architecture: all
+Depends: ${misc:Depends}, ${python:Depends}, python2.7 | python3.2, libusb-0.1-4 | libusb-1.0-0 | libopenusb0
+Description: PyUSB 1.0 - Easy USB access from Python
+ Introduction
+ .
+ The PyUSB module provides for Python easy access to the host machine's
+ Universal Serial Bus (USB) system.
+ .
+ Until 0.4 version, PyUSB used to be a thin wrapper over libusb. With 1.0
+ version, things changed considerably. Now PyUSB is an API rich, backend
+ neutral Python USB module easy to use.
+ .
+ As with most Python modules, PyUSB's documentation is based on Python doc
+ strings and can therefore be manipulated by tools such as pydoc.
+ .
+ You can also find a tutorial at: https://github.com/walac/pyusb/blob/master/docs/tutorial.rst.
+ .
+ PyUSB supports libusb 0.1, libusb 1.0 and OpenUSB, but the user does not need
+ to worry about that, unless in some corner cases.
+ .
+ If you have any question about PyUSB, you can use the PyUSB mailing list
+ hosted in the SourceForge. In the PyUSB website (http://walac.github.io/pyusb)
+ you can find instructions on how to subscribe to the mailing list.
