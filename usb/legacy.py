@@ -317,7 +317,7 @@ class Device(object):
                             '.' + \
                             str((dev.bcdDevice >> 4) & 0xf) + \
                             str(dev.bcdDevice & 0xf)
-        self.devnum = None
+        self.devnum = dev.address
         self.filename = ''
         self.iManufacturer = dev.iManufacturer
         self.iProduct = dev.iProduct
@@ -344,8 +344,8 @@ class Bus(object):
     r"""Bus object."""
     def __init__(self, devices):
         self.dirname = ''
-        self.location = 0
         self.devices = [Device(d) for d in devices]
+        self.location = self.devices[0].dev.bus
 
 def busses():
     r"""Return a tuple with the usb busses."""
