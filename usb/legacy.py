@@ -148,8 +148,8 @@ class DeviceHandle(_objfinalizer.AutoFinalizedObject):
                 endpoint: endpoint number.
                 buffer: sequence data buffer to write.
                         This parameter can be any sequence type.
-                timeout: operation timeout in miliseconds. (default: 100)
-                         Returns the number of bytes written.
+                timeout: operation timeout in milliseconds. (default: 100)
+            Returns the number of bytes written.
         """
         return self.dev.write(endpoint, buffer, timeout)
 
@@ -159,8 +159,8 @@ class DeviceHandle(_objfinalizer.AutoFinalizedObject):
             Arguments:
                 endpoint: endpoint number.
                 size: number of bytes to read.
-                timeout: operation timeout in miliseconds. (default: 100)
-            Return a tuple with the data read.
+                timeout: operation timeout in milliseconds. (default: 100)
+            Returns a tuple with the data read.
         """
         return self.dev.read(endpoint, size, timeout)
 
@@ -171,8 +171,8 @@ class DeviceHandle(_objfinalizer.AutoFinalizedObject):
                 endpoint: endpoint number.
                 buffer: sequence data buffer to write.
                         This parameter can be any sequence type.
-                timeout: operation timeout in miliseconds. (default: 100)
-                         Returns the number of bytes written.
+                timeout: operation timeout in milliseconds. (default: 100)
+            Returns the number of bytes written.
         """
         return self.dev.write(endpoint, buffer, timeout)
 
@@ -182,8 +182,8 @@ class DeviceHandle(_objfinalizer.AutoFinalizedObject):
             Arguments:
                 endpoint: endpoint number.
                 size: number of bytes to read.
-                timeout: operation timeout in miliseconds. (default: 100)
-            Return a tuple with the data read.
+                timeout: operation timeout in milliseconds. (default: 100)
+            Returns a tuple with the data read.
         """
         return self.dev.read(endpoint, size, timeout)
 
@@ -199,8 +199,8 @@ class DeviceHandle(_objfinalizer.AutoFinalizedObject):
                     bytes to read.
             value: specific information to pass to the device. (default: 0)
                    index: specific information to pass to the device. (default: 0)
-            timeout: operation timeout in miliseconds. (default: 100)
-        Return the number of bytes written.
+            timeout: operation timeout in milliseconds. (default: 100)
+        Returns the number of bytes written.
         """
         return self.dev.ctrl_transfer(
                     requestType,
@@ -277,8 +277,8 @@ class DeviceHandle(_objfinalizer.AutoFinalizedObject):
         Arguments:
             index: index of descriptor in the device.
             length: number of bytes of the string (ignored)
-            langid: Language ID. If it is omittedi, will be
-                    used the first language.
+            langid: Language ID. If it is omitted, the first
+                    language will be used.
         """
         return util.get_string(self.dev, index, langid).encode('ascii')
 
@@ -336,7 +336,7 @@ class Device(object):
     def open(self):
         r"""Open the device for use.
 
-        Return a DeviceHandle object
+        Returns a DeviceHandle object
         """
         return DeviceHandle(self.dev)
 
@@ -348,7 +348,7 @@ class Bus(object):
         self.location = self.devices[0].dev.bus
 
 def busses():
-    r"""Return a tuple with the usb busses."""
+    r"""Returns a tuple with the usb busses."""
     return (Bus(g) for k, g in groupby(
             sorted(core.find(find_all=True), key=lambda d: d.bus),
             lambda d: d.bus))
