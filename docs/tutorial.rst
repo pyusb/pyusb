@@ -60,7 +60,9 @@ Let's get it started
 --------------------
 
 Following is a simplistic program that sends the 'test' string to the first OUT
-endpoint found::
+endpoint found:
+
+.. code-block:: python
 
     import usb.core
     import usb.util
@@ -105,7 +107,9 @@ Then, we look for the endpoint we are interested. We search for it inside the
 first interface we have. After finding the endpoint, we send the data to it.
 
 If we know the endpoint address in advance, we could just call the ``write``
-function from the device object::
+function from the device object:
+
+.. code-block:: python
 
     dev.write(1, 'test')
 
@@ -137,7 +141,9 @@ Where are you?
 The ``find()`` function in the ``core`` module is used to find and enumerate
 devices connected to the system. For example, let's say that our device has a
 vendor ID equal to `0xfffe` and product ID equals to `0x0001`. If we would like
-to find it, we proceed in this way::
+to find it, we proceed in this way:
+
+.. code-block:: python
 
     import usb.core
 
@@ -149,14 +155,18 @@ That's it, the function will return an ``usb.core.Device`` object representing
 our device. If the device is not found, it returns ``None``. Actually, you can
 use any field of the Device Descriptor_ you desire. For example, what if we
 would like to discover if there is a USB printer connected to the system?  This
-is very easy::
+is very easy:
+
+.. code-block:: python
 
     # actually this is not the whole history, keep reading
     if usb.core.find(bDeviceClass=7) is None:
         raise ValueError('No printer found')
 
 The 7 is the code for the printer class according to the USB spec.
-Hey, wait, what if I want to enumerate all printers present? No problem::
+Hey, wait, what if I want to enumerate all printers present? No problem:
+
+.. code-block:: python
 
     # this is not the whole history yet...
     printers = usb.core.find(find_all=True, bDeviceClass=7)
@@ -179,7 +189,9 @@ need to transverse all configurations, and then all interfaces and check if one
 of the interfaces has its `bInterfaceClass` field equal to 7. If you are a
 `programmer <http://en.wikipedia.org/wiki/Laziness>`__ like me, you might be
 wondering if there is an easier way to do that. The answer is yes, there is.
-First, let's give a look on the final code to find all printers connected::
+First, let's give a look on the final code to find all printers connected:
+
+.. code-block:: python
 
     import usb.core
     import usb.util
@@ -210,7 +222,9 @@ First, let's give a look on the final code to find all printers connected::
 The ``custom_match`` parameter accepts any callable object that receives the
 device object. It must return true for a matching device, and false for a
 non-matching device. You can also combine ``custom_match`` with device fields
-if you want::
+if you want:
+
+.. code-block:: python
 
     # find all printers that belongs to our vendor:
     printers = usb.core.find(find_all=1, custom_match=find_class(7), idVendor=0xfffe)
@@ -225,7 +239,9 @@ more about it, you know, configurations, interfaces, endpoints, transfer
 types...
 
 If you have a device, you can access any device descriptor fields as object
-properties::
+properties:
+
+.. code-block:: python
 
     >>> dev.bLength
     >>> dev.bNumConfigurations
@@ -233,7 +249,9 @@ properties::
     >>> # ...
 
 To access the configurations available in the device, you can iterate over the
-device::
+device:
+
+.. code-block:: python
 
     for cfg in dev:
         sys.stdout.write(str(cfg.bConfigurationValue) + '\n')
@@ -241,7 +259,9 @@ device::
 In the same way, you can iterate over a configuration to access the interfaces,
 and iterate over the interfaces to access their endpoints. Each kind of object
 has as attributes the fields of the respective descriptor. Let's see an
-example::
+example:
+
+.. code-block:: python
 
     for cfg in dev:
         sys.stdout.write(str(cfg.bConfigurationValue) + '\n')
@@ -257,7 +277,9 @@ example::
                                  '\n')
 
 You can also use the subscript operator to access the descriptors randomly,
-like this::
+like this:
+
+.. code-block:: python
 
     >>> # access the second configuration
     >>> cfg = dev[1]
@@ -282,7 +304,9 @@ with two exceptions:
 * There is no ``backend`` [#]_ parameter.
 
 For example, if we have a configuration descriptor ``cfg`` and want to find all
-alternate settings of the interface 1, we do so::
+alternate settings of the interface 1, we do so:
+
+.. code-block:: python
 
     import usb.util
     alt = usb.util.find_descriptor(cfg, find_all=True, bInterfaceNumber=1)
@@ -322,7 +346,9 @@ arguments. In this case, it will set the first configuration found (if your
 device has just one, you don't need to worry about the configuration value at
 all). For example, let's imagine you have a device with one configuration
 descriptor with its `bConfigurationValue` field equals to 5 [#]_, the following
-calls below will work equally::
+calls below will work equally:
+
+.. code-block:: python
 
     >>> dev.set_configuration(5)
     # or
@@ -361,7 +387,9 @@ streaming device must have at least two alternate settings, with the second one
 having the isochronous endpoint(s). But as opposed to configurations,
 interfaces with just one alternate setting don't need to be set [#]_. You
 select an interface alternate setting through the ``set_interface_altsetting``
-function::
+function:
+
+.. code-block:: python
 
     >>> dev.set_interface_altsetting(interface = 0, alternate_setting = 0)
 
@@ -371,7 +399,9 @@ function::
     alternate settings. So, if you are not sure if either the interface has more
     than one alternate setting or it accepts a SET_INTERFACE request,
     the safest way is to call ``set_interface_altsetting`` inside an
-    try-except block, like this::
+    try-except block, like this:
+
+    .. code-block:: python
 
         try:
             dev.set_interface_altsetting(...)
@@ -380,7 +410,9 @@ function::
 
 You can also use an ``Interface`` object as parameter to the function, the
 ``interface`` and ``alternate_setting`` parameters are automatically inferred
-from ``bInterfaceNumber`` and ``bAlternateSetting`` fields. Example::
+from ``bInterfaceNumber`` and ``bAlternateSetting`` fields. Example:
+
+.. code-block:: python
 
     >>> intf = find_descriptor(...)
     >>> dev.set_interface_altsetting(intf)
@@ -407,7 +439,9 @@ both for OUT and IN transfers. The transfer direction is determined from the
 ``bmRequestType`` parameter.
 
 The ``ctrl_transfer`` parameters are almost equal to the control request
-structure. Following is a example of how to do a control transfer [#]_::
+structure. Following is a example of how to do a control transfer [#]_:
+
+.. code-block:: python
 
     >>> msg = 'test'
     >>> assert dev.ctrl_transfer(0x40, CTRL_LOOPBACK_WRITE, 0, 0, msg) == len(msg)
@@ -436,7 +470,9 @@ For the other transfers, you use the methods ``write`` and ``read``,
 respectively, to write and read data. You don't need to worry about the
 transfer type, it is automatically determined from the endpoint address. Here
 is our loopback example assuming the we have a loopback pipe in the endpoint
-1::
+1:
+
+.. code-block:: python
 
     >>> msg = 'test'
     >>> assert len(dev.write(1, msg, 100)) == len(msg)
@@ -534,7 +570,9 @@ On systems where these programs are missing and/or the library cache is
 disabled, this function cannot be used. To overcome this limitation, PyUSB
 allows you to supply a custom `find_library()` function to the backend.
 
-An example for such scenario would be::
+An example for such scenario would be:
+
+.. code-block:: python
 
     >>> import usb.core
     >>> import usb.backend.libusb1
