@@ -23,6 +23,7 @@ import usb._objfinalizer as _objfinalizer
 import errno
 import math
 from usb.core import USBError
+from usb.core import Device
 import usb.libloader
 
 __author__ = 'Wander Lairson Costa'
@@ -50,6 +51,7 @@ __all__ = [
             'LIBUSB_TRANSFER_STALL',
             'LIBUSB_TRANSFER_NO_DEVICE',
             'LIBUSB_TRANSFER_OVERFLOW',
+            'LIBUSB_HOTPLUG_MATCH_ANY',
         ]
 
 _logger = logging.getLogger('usb.backend.libusb1')
@@ -229,6 +231,11 @@ class _libusb_iso_packet_descriptor(Structure):
                 ('status', c_int)] # enum libusb_transfer_status
 
 _libusb_device_handle = c_void_p
+
+# typedefs for hotplug
+_libusb_hotplug_callback_handle = c_int
+# return value c_int (1st argument)
+_libusb_hotplug_callback_fn = CFUNCTYPE(c_int, c_void_p, _libusb_device_handle, c_uint, c_void_p)
 
 class _libusb_transfer(Structure):
     pass
@@ -575,6 +582,16 @@ def _setup_prototypes(lib):
     #int libusb_handle_events(libusb_context *ctx);
     lib.libusb_handle_events.argtypes = [c_void_p]
 
+    try:
+        lib.libusb_hotplug_register_callback.argtypes = [c_void_p, c_int, c_int, c_int, c_int, c_int, _libusb_hotplug_callback_fn, c_void_p, POINTER(_libusb_hotplug_callback_handle)]
+    except AttributeError:
+        pass
+
+    try:
+        lib.libusb_hotplug_deregister_callback.argtypes = [c_void_p, _libusb_hotplug_callback_handle]
+    except AttributeError:
+        pass
+
 # check a libusb function call
 def _check(ret):
     if hasattr(ret, 'value'):
@@ -633,6 +650,19 @@ class _DeviceHandle(object):
         self.handle = _libusb_device_handle()
         self.devid = dev.devid
         _check(_lib.libusb_open(self.devid, byref(self.handle)))
+
+class _HotplugHandle(_objfinalizer.AutoFinalizedObject):
+    def __init__(self, backend, events, flags, vendor_id, product_id, dev_class, user_callback, user_data):
+        self.user_callback = user_callback
+        self.__callback = _libusb_hotplug_callback_fn(self.callback)
+        self.__backend = backend
+        # initialize pointer
+        handle = _libusb_hotplug_callback_handle()
+        _lib.libusb_hotplug_register_callback(backend.ctx, events, flags, vendor_id, product_id, dev_class, self.__callback, user_data, byref(handle))
+
+    def callback(self, ctx, dev, event, user_data):
+        dev = Device(_Device(dev), self.__backend)
+        return self.user_callback(dev, event, user_data)
 
 class _IsoTransferHandler(_objfinalizer.AutoFinalizedObject):
     def __init__(self, dev_handle, ep, buff, timeout):
@@ -905,6 +935,20 @@ class _LibUSB(usb.backend.IBackend):
     @methodtrace(_logger)
     def attach_kernel_driver(self, dev_handle, intf):
         _check(self.lib.libusb_attach_kernel_driver(dev_handle.handle, intf))
+
+    @methodtrace(_logger)
+    def hotplug_register_callback(self, events, flags, vendor_id, product_id, dev_class, cb_fn, user_data):
+        handle = _HotplugHandle(self, events, flags, vendor_id, product_id, dev_class, cb_fn, user_data);
+        return handle
+
+    @methodtrace(_logger)
+    def hotplug_deregister_callback(self, handle):
+        r"""Takes an instance of _HotplugHandle that should be unregistered"""
+        self.lib.libusb_hotplug_deregister_callback(self.ctx, handle.handle)
+
+    def loop(self):
+        while True:
+            yield self.lib.libusb_handle_events(self.ctx)
 
     def __write(self, fn, dev_handle, ep, intf, data, timeout):
         address, length = data.buffer_info()
