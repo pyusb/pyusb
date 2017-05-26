@@ -4,3 +4,4 @@ ChangeLog
 MANIFEST
 dist
 .tox
+*.egg-info
