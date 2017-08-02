@@ -22,6 +22,15 @@ This will print debug messages to the console. If you still have problems
 to figure out what's going on, please ask for help in the mailing list,
 providing the debug output.
 
+How do I install libusb on Windows?
+-----------------------------------
+
+To install either libusb_ or libusb-win32_ on Windows, please use zadig_.
+
+.. _zadig: http://zadig.akeo.ie/
+.. _libusb: https://libusb.info
+.. _libusb-win32: http://www.libusb.org/wiki/libusb-win32
+
 How do I enforce a backend?
 ---------------------------
 
