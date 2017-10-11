@@ -41,7 +41,7 @@ setup(
     author_email='wander.lairson@gmail.com',
     license = 'BSD',
     url='http://walac.github.io/pyusb',
-    packages=['usb', 'usb.backend'],
+    packages=['usb', 'usb.backend', 'pyusb'],
     long_description =
 """
 PyUSB offers easy USB devices communication in Python.
