@@ -18,5 +18,5 @@ python setup.py sdist
 gpg --detach-sign -a dist/pyusb-$version.tar.gz
 git push origin master
 git push --tags origin
-twine -s upload dist/pyusb-$version.tar.gz pyusb-$version.tar.gz.asc
+twine upload -s dist/pyusb-$version.tar.gz dist/pyusb-$version.tar.gz.asc
 rm -rf build/ dist/
