@@ -2,11 +2,6 @@
 PyUSB 1.0 - Easy USB access from Python
 =======================================
 
-PYUSB IS FOR LOOKING FOR A NEW MAINTAINER
-
-Due for personal reasons, I can no longer maintain PyUSB. If you are
-willing to take PyUSB maintainance role, please contact me.
-
 Introduction
 ============
 
