@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Copyright (C) 2009-2016 Wander Lairson Costa
+# Copyright (C) 2009-2017 Wander Lairson Costa
 #
 # The following terms apply to all files associated
 # with the software unless explicitly disclaimed in individual files.
@@ -37,10 +37,10 @@ setup(
     name='pyusb',
     version=usb.__version__,
     description='Python USB access module',
-    author='Wander Lairson Costa',
-    author_email='wander.lairson@gmail.com',
+    author='Robert Wlodarczyk',
+    author_email='robert@simplicityguy.com',
     license = 'BSD',
-    url='http://walac.github.io/pyusb',
+    url='http://pyusb.github.io',
     packages=['usb', 'usb.backend'],
     long_description =
 """
