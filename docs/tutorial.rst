@@ -625,7 +625,7 @@ Subscribe instructions can be found at the PyUSB_ website.
 
 .. [#] In PyUSB, control transfers are only issued in the endpoint 0. It's very
        very very rare a device having an alternate control endpoint (I've never
-       seem such device).
+       seen such a device).
 
 .. [#] It's just a joke, don't take it seriously. Many choices is better than
        no choice.

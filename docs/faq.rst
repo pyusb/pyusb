@@ -46,7 +46,7 @@ How can I pass the libusb library path to the backend?
 
 Check the *Specify libraries by hand* section in the tutorial_.
 
-.. _tutorial: https://github.com/walac/pyusb/blob/master/docs/tutorial.rst
+.. _tutorial: https://github.com/pyusb/pyusb/blob/master/docs/tutorial.rst
 
 How (not) to call set_configuration() on a device already configured with the selected configuration?
 -----------------------------------------------------------------------------------------------------
@@ -66,4 +66,3 @@ One solution to this behaviour is to consider the currently active configuration
         dev.set_configuration(cfg_desired)
 
 .. _configuration selection and handling: http://libusb.org/static/api-1.0/caveats.html
-
