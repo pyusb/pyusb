@@ -1,32 +1,19 @@
 #!/usr/bin/env python
-#
 # Copyright (C) 2009-2017 Wander Lairson Costa
+# Copyright (C) 2017-2018 Robert Wlodarczyk
 #
-# The following terms apply to all files associated
-# with the software unless explicitly disclaimed in individual files.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-# The authors hereby grant permission to use, copy, modify, distribute,
-# and license this software and its documentation for any purpose, provided
-# that existing copyright notices are retained in all copies and that this
-# notice is included verbatim in any distributions. No written agreement,
-# license, or royalty fee is required for any of the authorized uses.
-# Modifications to this software may be copyrighted by their authors
-# and need not follow the licensing terms described here, provided that
-# the new terms are clearly indicated on the first page of each file where
-# they apply.
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
-# IN NO EVENT SHALL THE AUTHORS OR DISTRIBUTORS BE LIABLE TO ANY PARTY
-# FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES
-# ARISING OUT OF THE USE OF THIS SOFTWARE, ITS DOCUMENTATION, OR ANY
-# DERIVATIVES THEREOF, EVEN IF THE AUTHORS HAVE BEEN ADVISED OF THE
-# POSSIBILITY OF SUCH DAMAGE.
-#
-# THE AUTHORS AND DISTRIBUTORS SPECIFICALLY DISCLAIM ANY WARRANTIES,
-# INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT.  THIS SOFTWARE
-# IS PROVIDED ON AN "AS IS" BASIS, AND THE AUTHORS AND DISTRIBUTORS HAVE
-# NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR
-# MODIFICATIONS.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 
 from setuptools import setup
 
@@ -39,10 +26,10 @@ setup(
     description='Python USB access module',
     author='Robert Wlodarczyk',
     author_email='robert@simplicityguy.com',
-    license = 'BSD',
+    license='Apache',
     url='http://pyusb.github.io',
     packages=['usb', 'usb.backend'],
-    long_description =
+    long_description=
 """
 PyUSB offers easy USB devices communication in Python.
 It should work without additional code in any environment with
@@ -57,7 +44,7 @@ Python >= 2.4, ctypes and an pre-built usb backend library
         'Intended Audience :: Science/Research', # interface with instruments
         'Intended Audience :: System Administrators', # integrate strange devs
         'Intended Audience :: Telecommunications Industry', # telecomm devs
-        'License :: OSI Approved :: BSD License',
+        'License :: OSI Approved :: Apache Software License',
         'Natural Language :: English',
         # try to union the OSes that can build any of the backend libraries...
         'Operating System :: MacOS :: MacOS X',
