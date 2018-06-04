@@ -291,6 +291,10 @@ def _setup_prototypes(lib):
             POINTER(POINTER(c_void_p))
         ]
 
+    # libusb_device *libusb_get_parent (libusb_device *dev)
+    lib.libusb_get_parent.argtypes = [c_void_p]
+    lib.libusb_get_parent.restype = c_void_p
+
     # void libusb_free_device_list (libusb_device **list,
     #                               int unref_devices)
     lib.libusb_free_device_list.argtypes = [
@@ -702,6 +706,14 @@ class _LibUSB(usb.backend.IBackend):
     @methodtrace(_logger)
     def enumerate_devices(self):
         return _DevIterator(self.ctx)
+
+    @methodtrace(_logger)
+    def get_parent(self, dev):
+        _parent = self.lib.libusb_get_parent(dev.devid)
+        if _parent is None:
+            return None
+        else:
+            return _Device(_parent)
 
     @methodtrace(_logger)
     def get_device_descriptor(self, dev):
