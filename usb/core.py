@@ -787,6 +787,9 @@ class Device(_objfinalizer.AutoFinalizedObject):
         else:
             self.speed = None
 
+        self._has_parent = None
+        self._parent = None
+
     @property
     def langids(self):
         """ Return the USB device's supported language ID codes.
@@ -827,6 +830,18 @@ class Device(_objfinalizer.AutoFinalizedObject):
         if self._product is None:
             self._product = util.get_string(self, self.iProduct)
         return self._product
+
+    @property
+    def parent(self):
+        """ Return the parent device. """
+        if self._has_parent is None:
+            _parent = self._ctx.backend.get_parent(self._ctx.dev)
+            self._has_parent = _parent is not None
+            if self._has_parent:
+                self._parent = Device(_parent, self._ctx.backend)
+            else:
+                self._parent = None
+        return self._parent
 
     @property
     def manufacturer(self):

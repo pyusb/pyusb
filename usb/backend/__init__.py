@@ -91,6 +91,10 @@ class IBackend(_objfinalizer.AutoFinalizedObject):
         """
         _not_implemented(self.enumerate_devices)
 
+    def get_parent(self, dev):
+        """Return the parent device of the given device."""
+        _not_implemented(self.get_parent)
+
     def get_device_descriptor(self, dev):
         r"""Return the device descriptor of the given device.
 
