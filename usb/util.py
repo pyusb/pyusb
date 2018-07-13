@@ -311,7 +311,10 @@ def get_string(dev, index, langid = None):
                 index,
                 langid
             )
+    part = buf[2:buf[0]]
+        if part[-1] != 0:
+            part.append(0)
     if hexversion >= 0x03020000:
-        return buf[2:buf[0]].tobytes().decode('utf-16-le')
+        return part.tobytes().decode('utf-16-le')
     else:
-        return buf[2:buf[0]].tostring().decode('utf-16-le')
+        return part.tostring().decode('utf-16-le')
