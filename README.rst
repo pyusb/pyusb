@@ -48,6 +48,6 @@ Reporting bugs/Submitting patches
 Some people have been sending patches and reporting bugs directly
 at my email. Please, do it through
 `github <https://github.com/pyusb/pyusb>`_, I had a hard time tracking
-their names to put them in the acknowledgments file. ;-)
+their names to put them in the acknowledgments file.
 
-PS: this README file was based on the great Josh Lifton's one... ^_^
+PS: this README file was based on the great Josh Lifton's one.
