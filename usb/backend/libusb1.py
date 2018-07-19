@@ -656,9 +656,11 @@ class _HotplugHandle(_objfinalizer.AutoFinalizedObject):
         self.user_callback = user_callback
         self.__callback = _libusb_hotplug_callback_fn(self.callback)
         self.__backend = backend
-        __user_data = py_object(user_data)
+        # If an object is passed directly and never stored anywhere, the pointer will remain and user data might be wrong!
+        # therefore we have to keep a refernce here
+        self.__user_data = py_object(user_data)
         handle = _libusb_hotplug_callback_handle()
-        _lib.libusb_hotplug_register_callback(backend.ctx, events, flags, vendor_id, product_id, dev_class, self.__callback, __user_data, byref(handle))
+        _lib.libusb_hotplug_register_callback(backend.ctx, events, flags, vendor_id, product_id, dev_class, self.__callback, self.__user_data, byref(handle))
 
     def callback(self, ctx, dev, event, user_data):
         dev = Device(_Device(dev), self.__backend)
