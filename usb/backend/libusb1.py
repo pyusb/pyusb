@@ -256,6 +256,7 @@ def _get_iso_packet_list(transfer):
     return list_type.from_address(addressof(transfer.iso_packet_desc))
 
 _lib = None
+_lib_object = None
 
 def _load_library(find_library=None):
     # Windows backend uses stdcall calling convention
@@ -936,12 +937,14 @@ class _LibUSB(usb.backend.IBackend):
         return transferred.value
 
 def get_backend(find_library=None):
-    global _lib
+    global _lib, _lib_object
     try:
         if _lib is None:
             _lib = _load_library(find_library=find_library)
             _setup_prototypes(_lib)
-        return _LibUSB(_lib)
+        if _lib_object is None:
+            _lib_object = _LibUSB(_lib)
+        return _lib_object
     except usb.libloader.LibraryException:
         # exception already logged (if any)
         _logger.error('Error loading libusb 1.0 backend', exc_info=False)
