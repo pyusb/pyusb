@@ -1,2 +1,0 @@
-include LICENSE ACKNOWLEDGEMENTS ChangeLog README.rst ReleaseNotes.rst
-recursive-include docs *.rst
