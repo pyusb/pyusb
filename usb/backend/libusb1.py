@@ -29,7 +29,7 @@ __author__ = 'Wander Lairson Costa'
 
 __all__ = [
             'get_backend',
-            'LIBUSB_SUCESS',
+            'LIBUSB_SUCCESS',
             'LIBUSB_ERROR_IO',
             'LIBUSB_ERROR_INVALID_PARAM',
             'LIBUSB_ERROR_ACCESS',
