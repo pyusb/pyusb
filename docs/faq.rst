@@ -61,7 +61,10 @@ Calling ``write()`` subsequently will therefore result in a timeout error.
 
 One solution to this behaviour is to consider the currently active configuration, as described in the `configuration selection and handling`_. "If the configuration we want is already active, then we don't have to select any configuration"::
 
-    cfg = dev.get_active_configuration()
+    try:
+        cfg = dev.get_active_configuration()
+    except usb.core.USBError:
+        cfg = None
     if cfg is None or cfg.bConfigurationValue != cfg_desired:
         dev.set_configuration(cfg_desired)
 
