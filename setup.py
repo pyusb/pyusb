@@ -27,7 +27,7 @@ setup(
     author='Robert Wlodarczyk',
     author_email='robert@simplicityguy.com',
     license='Apache',
-    url='http://pyusb.github.io',
+    url='https://pyusb.github.io/pyusb',
     packages=['usb', 'usb.backend'],
     long_description=
 """
