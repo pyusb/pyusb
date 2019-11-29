@@ -701,7 +701,8 @@ class _LibUSB(usb.backend.IBackend):
 
     @methodtrace(_logger)
     def _finalize_object(self):
-        self.lib.libusb_exit(self.ctx)
+        if self.ctx:
+            self.lib.libusb_exit(self.ctx)
 
 
     @methodtrace(_logger)
