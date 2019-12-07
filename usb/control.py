@@ -132,7 +132,7 @@ def set_feature(dev, feature, recipient = None):
                       wIndex = wIndex,
                       wValue = feature)
 
-def get_descriptor(dev, desc_size, desc_type, desc_index, wIndex = 0):
+def get_descriptor(dev, desc_size, desc_type, desc_index, request_type = util.CTRL_TYPE_STANDARD, wIndex = 0):
     r"""Return the specified descriptor.
 
     dev is the Device object to which the request will be
@@ -141,15 +141,16 @@ def get_descriptor(dev, desc_size, desc_type, desc_index, wIndex = 0):
     desc_size is the descriptor size.
 
     desc_type and desc_index are the descriptor type and index,
-    respectively. wIndex index is used for string descriptors
-    and represents the Language ID. For other types of descriptors,
-    it is zero.
+    respectively. request_type is one of CTRL_TYPE_STANDARD,
+    CTRL_TYPE_CLASS, CTRL_TYPE_VENDOR, or CTRL_TYPE_RESERVED. 
+    wIndex index is used for string descriptors and represents
+    the Language ID. For other types of descriptors, it is zero.
     """
     wValue = desc_index | (desc_type << 8)
 
     bmRequestType = util.build_request_type(
                         util.CTRL_IN,
-                        util.CTRL_TYPE_STANDARD,
+                        request_type,
                         util.CTRL_RECIPIENT_DEVICE)
 
     return dev.ctrl_transfer(
@@ -159,7 +160,7 @@ def get_descriptor(dev, desc_size, desc_type, desc_index, wIndex = 0):
             wIndex = wIndex,
             data_or_wLength = desc_size)
 
-def set_descriptor(dev, desc, desc_type, desc_index, wIndex = None):
+def set_descriptor(dev, desc, desc_type, desc_index, request_type = util.CTRL_TYPE_STANDARD, wIndex = None):
     r"""Update an existing descriptor or add a new one.
 
     dev is the Device object to which the request will be
@@ -167,15 +168,16 @@ def set_descriptor(dev, desc, desc_type, desc_index, wIndex = None):
 
     The desc parameter is the descriptor to be sent to the device.
     desc_type and desc_index are the descriptor type and index,
-    respectively. wIndex index is used for string descriptors
-    and represents the Language ID. For other types of descriptors,
-    it is zero.
+    respectively. request_type is one of CTRL_TYPE_STANDARD,
+    CTRL_TYPE_CLASS, CTRL_TYPE_VENDOR, or CTRL_TYPE_RESERVED.
+    wIndex index is used for string descriptors and represents 
+    the Language ID. For other types of descriptors, it is zero.
     """
     wValue = desc_index | (desc_type << 8)
 
     bmRequestType = util.build_request_type(
                         util.CTRL_OUT,
-                        util.CTRL_TYPE_STANDARD,
+                        request_type,
                         util.CTRL_RECIPIENT_DEVICE)
 
     dev.ctrl_transfer(
