@@ -23,12 +23,15 @@ from usb._debug import methodtrace
 import usb._interop as _interop
 import logging
 import usb.libloader
+from errno import ENODATA
 
 __author__ = 'Wander Lairson Costa'
 
 __all__ = ['get_backend']
 
 _logger = logging.getLogger('usb.backend.libusb0')
+
+_USBFS_MAXDRIVERNAME = 255
 
 # usb.h
 
@@ -350,6 +353,14 @@ def _setup_prototypes(lib):
 
     # linux only
 
+    # int usb_get_driver_np(usb_dev_handle *dev,
+    #                       int interface,
+    #                       char *name,
+    #                       unsigned int namelen);
+    if hasattr(lib, 'usb_get_driver_np'):
+        lib.usb_get_driver_np.argtypes = \
+            [_usb_dev_handle, c_int, c_char_p, c_uint]
+
     # int usb_detach_kernel_driver_np(usb_dev_handle *dev, int interface);
     if hasattr(lib, 'usb_detach_kernel_driver_np'):
         lib.usb_detach_kernel_driver_np.argtypes = [_usb_dev_handle, c_int]
@@ -587,6 +598,28 @@ class _LibUSB(usb.backend.IBackend):
     @methodtrace(_logger)
     def reset_device(self, dev_handle):
         _check(_lib.usb_reset(dev_handle))
+
+    @methodtrace(_logger)
+    def is_kernel_driver_active(self, dev_handle, intf):
+        buf = usb.util.create_buffer(_USBFS_MAXDRIVERNAME + 1)
+        name, length = buf.buffer_info()
+        length *= buf.itemsize
+        # based on the implementation of libusb_kernel_driver_active
+        # (see libusb/os/linux_usbfs.c @@ op_kernel_driver_active):
+        # usb_get_driver_np fails with ENODATA when no kernel driver is bound,
+        # and if 'usbfs' is bound that means that a userspace program is
+        # controlling the device (e.g. using this very library)
+        try:
+            _check(_lib.usb_get_driver_np(
+                        dev_handle,
+                        intf,
+                        cast(name, c_char_p),
+                        length))
+            return cast(name, c_char_p).value != b'usbfs'
+        except USBError as err:
+            if err.backend_error_code == -ENODATA:
+                return False
+            raise err
 
     @methodtrace(_logger)
     def detach_kernel_driver(self, dev_handle, intf):
