@@ -458,7 +458,7 @@ def _setup_prototypes(lib):
                 POINTER(_openusb_intr_request)
             ]
 
-    lib.openusb_bulk_xfer.restype = c_int32
+    lib.openusb_intr_xfer.restype = c_int32
 
     # int32_t openusb_bulk_xfer(openusb_dev_handle_t dev,
     #                           uint8_t ifc,
