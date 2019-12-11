@@ -62,7 +62,7 @@ import usb._objfinalizer as _objfinalizer
 
 __author__ = 'Wander Lairson Costa'
 
-__all__ = ['IBackend', 'libusb01', 'libusb10', 'openusb']
+__all__ = ['IBackend', 'libusb0', 'libusb1', 'openusb']
 
 def _not_implemented(func):
     raise NotImplementedError(func.__name__)
