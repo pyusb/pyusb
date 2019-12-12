@@ -29,7 +29,7 @@ To install either libusb_ or libusb-win32_ on Windows, please use zadig_.
 
 .. _zadig: http://zadig.akeo.ie/
 .. _libusb: https://libusb.info
-.. _libusb-win32: http://www.libusb.org/wiki/libusb-win32
+.. _libusb-win32: https://sourceforge.net/p/libusb-win32
 
 How do I enforce a backend?
 ---------------------------
@@ -53,7 +53,7 @@ How (not) to call set_configuration() on a device already configured with the se
 
 Typically ``set_configuration()`` is called during device initialization. The `libusb documentation`_ on ``libusb_set_configuration()`` states:
 
-.. _libusb documentation: http://libusb.org/static/api-1.0/group__dev.html#ga186593ecae576dad6cd9679f45a2aa43
+.. _libusb documentation: http://libusb.sourceforge.net/api-1.0/group__libusb__dev.html#ga785ddea63a2b9bcb879a614ca4867bed
 
     If you call this function on a device already configured with the selected configuration, then this function will act as a lightweight device reset: it will issue a SET_CONFIGURATION request using the current configuration, causing most USB-related device state to be reset (altsetting reset to zero, endpoint halts cleared, toggles reset).
 
@@ -68,4 +68,4 @@ One solution to this behaviour is to consider the currently active configuration
     if cfg is None or cfg.bConfigurationValue != cfg_desired:
         dev.set_configuration(cfg_desired)
 
-.. _configuration selection and handling: http://libusb.org/static/api-1.0/caveats.html
+.. _configuration selection and handling: http://libusb.sourceforge.net/api-1.0/libusb_caveats.html#configsel

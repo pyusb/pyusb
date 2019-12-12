@@ -630,7 +630,7 @@ Subscribe instructions can be found at the PyUSB_ website.
 .. [#] It's just a joke, don't take it seriously. Many choices is better than
        no choice.
 
-.. _libusb: http://www.libusb.org
+.. _libusb: https://www.libusb.info
 .. _OpenUSB: http://sourceforge.net/p/openusb/wiki/Home/
 .. _USB: http://www.usb.org
 .. _PyUSB: http://pyusb.wiki.sourceforge.net
