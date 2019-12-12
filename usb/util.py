@@ -286,23 +286,17 @@ def get_string(dev, index, langid = None):
 
     The return value is the unicode string present in the descriptor, or None
     if the requested index was zero.
-
-    It is a ValueError to request a real string (index not zero), if: the
-    device's langid tuple is empty, or with an explicit langid the device does
-    not support.
     """
     if 0 == index:
         return None
 
     from usb.control import get_descriptor
-    langids = dev.langids
 
-    if 0 == len(langids):
-        raise ValueError("The device has no langid")
     if langid is None:
+        langids = dev.langids
+        if 0 == len(langids):
+            raise ValueError("The device has no langid")
         langid = langids[0]
-    elif langid not in langids:
-        raise ValueError("The device does not support the specified langid")
 
     buf = get_descriptor(
                 dev,
