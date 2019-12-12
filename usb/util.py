@@ -301,12 +301,13 @@ def get_string(dev, index, langid = None):
 
     buf = get_descriptor(
                 dev,
-                255, # Maximum descriptor size
+                254, # maximum even length
                 DESC_TYPE_STRING,
                 index,
                 langid
             )
+    blen = buf[0] & 0xfe # should be even, ignore any trailing byte (see #154)
     if hexversion >= 0x03020000:
-        return buf[2:buf[0]].tobytes().decode('utf-16-le')
+        return buf[2:blen].tobytes().decode('utf-16-le')
     else:
-        return buf[2:buf[0]].tostring().decode('utf-16-le')
+        return buf[2:blen].tostring().decode('utf-16-le')
