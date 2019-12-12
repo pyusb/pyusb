@@ -295,7 +295,8 @@ def get_string(dev, index, langid = None):
     if langid is None:
         langids = dev.langids
         if 0 == len(langids):
-            raise ValueError("The device has no langid")
+            raise ValueError("The device has no langid"
+                             " (permission issue, no string descriptors supported or device error)")
         langid = langids[0]
 
     buf = get_descriptor(
