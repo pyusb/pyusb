@@ -310,11 +310,24 @@ def _setup_prototypes(lib):
     # void libusb_unref_device(libusb_device *dev)
     lib.libusb_unref_device.argtypes = [c_void_p]
 
+    # int libusb_wrap_sys_device(libusb_context *ctx,
+    #                            intptr_t sys_dev,
+    #                            libusb_device_handle **dev_handle)
+    lib.libusb_wrap_sys_device.argtypes = [
+            c_void_p,
+            c_int,
+            POINTER(_libusb_device_handle)
+        ]
+
     # int libusb_open(libusb_device *dev, libusb_device_handle **handle)
     lib.libusb_open.argtypes = [c_void_p, POINTER(_libusb_device_handle)]
 
     # void libusb_close(libusb_device_handle *dev_handle)
     lib.libusb_close.argtypes = [_libusb_device_handle]
+
+    # libusb_device * libusb_get_device(libusb_device_handle *devh)
+    lib.libusb_get_device.argtypes = [c_void_p]
+    lib.libusb_get_device.restype = _libusb_device_handle
 
     # int libusb_set_configuration(libusb_device_handle *dev,
     #                              int configuration)
