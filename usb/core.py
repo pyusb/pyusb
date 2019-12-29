@@ -270,6 +270,15 @@ class USBError(IOError):
         IOError.__init__(self, errno, strerror)
         self.backend_error_code = error_code
 
+class USBTimeoutError(USBError):
+    pass
+
+class USBPermissionError(USBError):
+    pass
+
+class USBHardwareError(USBError):
+    pass
+
 class NoBackendError(ValueError):
     r"Exception class when a valid backend is not found."
     pass

@@ -22,7 +22,12 @@ import usb._interop as _interop
 import usb._objfinalizer as _objfinalizer
 import errno
 import math
-from usb.core import USBError
+from usb.core import (
+        USBError,
+        USBTimeoutError,
+        USBPermissionError,
+        USBHardwareError
+    )
 import usb.libloader
 
 __author__ = 'Wander Lairson Costa'
@@ -583,6 +588,10 @@ def _check(ret):
     if ret < 0:
         if ret == LIBUSB_ERROR_NOT_SUPPORTED:
             raise NotImplementedError(_strerror(ret))
+        elif ret == LIBUSB_ERROR_TIMEOUT:
+            raise USBTimeoutError(_strerror(ret), ret, _libusb_errno[ret])
+        elif ret == LIBUSB_ERROR_ACCESS:
+            raise USBPermissionError(_strerror(ret), ret, _libusb_errno[ret])
         else:
             raise USBError(_strerror(ret), ret, _libusb_errno[ret])
 
