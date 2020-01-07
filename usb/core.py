@@ -273,12 +273,6 @@ class USBError(IOError):
 class USBTimeoutError(USBError):
     pass
 
-class USBPermissionError(USBError):
-    pass
-
-class USBHardwareError(USBError):
-    pass
-
 class NoBackendError(ValueError):
     r"Exception class when a valid backend is not found."
     pass
