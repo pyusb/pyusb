@@ -54,7 +54,7 @@ def _set_attr(input, output, fields):
 def _try_getattr(object, name):
     try:
         attr = getattr(object, name)
-    except NotImplementedError as err:
+    except :
         attr = _sentinel
     return attr
 
