@@ -45,9 +45,18 @@ _logger = logging.getLogger('usb.core')
 
 _DEFAULT_TIMEOUT = 1000
 
+_sentinel = object()
+
 def _set_attr(input, output, fields):
     for f in fields:
        setattr(output, f, getattr(input, f))
+
+def _try_getattr(object, name):
+    try:
+        attr = getattr(object, name)
+    except NotImplementedError as err:
+        attr = _sentinel
+    return attr
 
 def _try_get_string(dev, index, langid = None, default_str_i0 = "",
         default_access_error = "Error Accessing String"):
@@ -1247,7 +1256,7 @@ def find(find_all=False, backend = None, custom_match = None, **args):
     def device_iter(**kwargs):
         for dev in backend.enumerate_devices():
             d = Device(dev, backend)
-            tests = (val == getattr(d, key) for key, val in kwargs.items())
+            tests = (val == _try_getattr(d, key) for key, val in kwargs.items())
             if _interop._all(tests) and (custom_match is None or custom_match(d)):
                 yield d
 
