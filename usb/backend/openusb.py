@@ -491,12 +491,11 @@ def _check(ret):
         ret = ret.value
 
     if ret != 0:
-        if ret == OPENUSB_NOT_SUPPORTED:
-            raise NotImplementedError(_lib.openusb_strerror(ret))
-        elif ret == OPENUSB_IO_TIMEOUT:
+        if ret == OPENUSB_IO_TIMEOUT:
             raise USBTimeoutError(_lib.openusb_strerror(ret), ret, _openusb_errno[ret])
         else:
             raise USBError(_lib.openusb_strerror(ret), ret, _openusb_errno[ret])
+
     return ret
 
 class _Context(_objfinalizer.AutoFinalizedObject):
