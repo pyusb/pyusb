@@ -152,12 +152,17 @@ def get_descriptor(dev, desc_size, desc_type, desc_index, wIndex = 0):
                         util.CTRL_TYPE_STANDARD,
                         util.CTRL_RECIPIENT_DEVICE)
 
-    return dev.ctrl_transfer(
+    desc = dev.ctrl_transfer(
             bmRequestType = bmRequestType,
             bRequest = 0x06,
             wValue = wValue,
             wIndex = wIndex,
             data_or_wLength = desc_size)
+
+    if len(desc) < 2:
+        raise USBError('Invalid descriptor')
+
+    return desc
 
 def set_descriptor(dev, desc, desc_type, desc_index, wIndex = None):
     r"""Update an existing descriptor or add a new one.
