@@ -24,7 +24,7 @@ import usb._interop as _interop
 import usb._objfinalizer as _objfinalizer
 import usb.util as util
 import usb.libloader
-from usb.core import USBError
+from usb.core import USBError, USBTimeoutError
 
 __author__ = 'Wander Lairson Costa'
 
@@ -491,7 +491,11 @@ def _check(ret):
         ret = ret.value
 
     if ret != 0:
-        raise USBError(_lib.openusb_strerror(ret), ret, _openusb_errno[ret])
+        if ret == OPENUSB_IO_TIMEOUT:
+            raise USBTimeoutError(_lib.openusb_strerror(ret), ret, _openusb_errno[ret])
+        else:
+            raise USBError(_lib.openusb_strerror(ret), ret, _openusb_errno[ret])
+
     return ret
 
 class _Context(_objfinalizer.AutoFinalizedObject):

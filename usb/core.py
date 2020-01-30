@@ -279,6 +279,14 @@ class USBError(IOError):
         IOError.__init__(self, errno, strerror)
         self.backend_error_code = error_code
 
+class USBTimeoutError(USBError):
+    r"""Exception class for connection timeout errors.
+
+    Backends must raise this exception when a call on a USB connection returns
+    a timeout error code.
+    """
+    pass
+
 class NoBackendError(ValueError):
     r"Exception class when a valid backend is not found."
     pass

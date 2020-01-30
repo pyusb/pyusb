@@ -14,11 +14,12 @@
 # limitations under the License.
 
 from ctypes import *
+import errno
 import os
 import usb.backend
 import usb.util
 import sys
-from usb.core import USBError
+from usb.core import USBError, USBTimeoutError
 from usb._debug import methodtrace
 import usb._interop as _interop
 import logging
@@ -426,6 +427,9 @@ def _check(ret):
                 errmsg = os.strerror(-ret)
         else:
             return ret
+
+    if ret is not None and -ret == errno.ETIMEDOUT:
+        raise USBTimeoutError(errmsg, ret, -ret)
     raise USBError(errmsg, ret)
 
 def _has_iso_transfer():
