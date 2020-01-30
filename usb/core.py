@@ -27,8 +27,8 @@ show_devices() - a function to show the devices present.
 
 __author__ = 'Wander Lairson Costa'
 
-__all__ = [ 'Device', 'Configuration', 'Interface', 'Endpoint', 'USBError', 'find',
-            'show_devices' ]
+__all__ = [ 'Device', 'Configuration', 'Interface', 'Endpoint', 'USBError',
+            'USBTimeoutError', 'NoBackendError', 'find', 'show_devices' ]
 
 import usb.util as util
 import copy
