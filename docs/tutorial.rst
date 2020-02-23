@@ -16,7 +16,7 @@ Platform neutrality:
     1.0 version implements a frontend-backend scheme. This isolates the API
     from system specific implementation details. The glue between the two
     layers is the ``IBackend`` interface. PyUSB comes with builtin backends for
-    libusb 0.1, libusb 1.0 and OpenUSB.  You can write your own backend if you
+    libusb 1.0, libusb 0.1 and OpenUSB.  You can write your own backend if you
     desire to.
 Portability:
     PyUSB should run on any platform with Python >= 2.4, ctypes_ and at least
@@ -514,14 +514,15 @@ libusb 0.1 and 1.0.  After, they created OpenUSB_, and now we live at the
 `Tower of Babel <http://en.wikipedia.org/wiki/Tower_of_Babel>`__ of the USB
 libraries [#]_.  How does PyUSB deal with it? Well, PyUSB is a democratic
 library, you may choose whichever library you want. Actually, you can write
-your own USB library from scratch and tell PyUSB to use it.
+your own USB library from scratch and tell PyUSB to use it. But you are
+probably better sticking with libusb 1.0.
 
 The ``find`` function has one more parameter that I haven't told you. It is the
 ``backend`` parameter. If you don't supply it, it will be used one of the
 builtin backends. A backend is an object inherited from
 ``usb.backend.IBackend``, responsible to implement the operating system
-specific USB stuff. As you might guess, the builtins are libusb 0.1, libusb 1.0
-and OpenUSB backends.
+specific USB stuff. As you might guess, the builtins are libusb 1.0 (default),
+libusb 0.1 and OpenUSB (deprecated) backends.
 
 You can create your own backend and use it. Just inherit from ``IBackend`` and
 implement the methods necessary. You might want to take a look at the

@@ -22,7 +22,7 @@ PyUSB is being developed and tested on Linux and Windows, but it should work
 fine on any platform running Python >= 2.4, ctypes and at least one of the
 builtin backends.
 
-PyUSB supports libusb 0.1, libusb 1.0 and OpenUSB, but the user does not need
+PyUSB supports libusb 1.0, libusb 0.1 and OpenUSB, but the user does not need
 to worry about that, unless in some corner cases.
 
 If you have any question about PyUSB, you can use the PyUSB mailing list
@@ -36,11 +36,10 @@ PyUSB is installed through `pip <https://pypi.python.org/pypi/pyusb>`:
 
     pip install pyusb
 
-Remember that you need libusb (1.0 or 0.1) or OpenUSB running on your
-system. For Windows users, libusb 0.1 is provided through
-`libusb-win32 <http://libusb-win32.sourceforge.net>`_
-package. Check the libusb website for updates
-(http://www.libusb.info).
+Remember that you need libusb (1.0 or 0.1) or OpenUSB running on your system.
+For Windows users, libusb 1.0 DLLs are provided in the `releases
+<https://github.com/libusb/libusb/releases>`_ (see 7z archives).  Check
+the libusb website for updates (http://www.libusb.info).
 
 Reporting bugs/Submitting patches
 =================================

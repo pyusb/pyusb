@@ -730,6 +730,7 @@ def get_backend(find_library=None):
             _lib = _load_library(find_library)
             _setup_prototypes(_lib)
             _ctx = _Context()
+        _logger.warning('OpenUSB backend deprecated (https://github.com/pyusb/pyusb/issues/284)')
         return _OpenUSB()
     except usb.libloader.LibraryException:
         # exception already logged (if any)
