@@ -620,6 +620,8 @@ class _LibUSB(usb.backend.IBackend):
 
     @methodtrace(_logger)
     def is_kernel_driver_active(self, dev_handle, intf):
+        if not hasattr(_lib, 'usb_get_driver_np'):
+            raise NotImplementedError(self.is_kernel_driver_active.__name__)
         buf = usb.util.create_buffer(_USBFS_MAXDRIVERNAME + 1)
         name, length = buf.buffer_info()
         length *= buf.itemsize
@@ -642,6 +644,8 @@ class _LibUSB(usb.backend.IBackend):
 
     @methodtrace(_logger)
     def detach_kernel_driver(self, dev_handle, intf):
+        if not hasattr(_lib, 'usb_detach_kernel_driver_np'):
+            raise NotImplementedError(self.detach_kernel_driver.__name__)
         _check(_lib.usb_detach_kernel_driver_np(dev_handle, intf))
 
     def __write(self, fn, dev_handle, ep, intf, data, timeout):
