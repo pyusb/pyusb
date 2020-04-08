@@ -512,6 +512,30 @@ def _setup_prototypes(lib):
     lib.libusb_get_max_iso_packet_size.argtypes = [c_void_p,
                                                    c_ubyte]
 
+    # void libusb_fill_bulk_transfer(
+    #               libusb_transfer* transfer
+    #               libusb_device_handle* dev_handle
+    #               char endpoint
+    #               char* buffer
+    #               int length
+    #               libusb_transfer_cb_fn callback
+    #               void* user_data
+    #               uint timeout
+    #           );
+    def libusb_fill_bulk_transfer(_libusb_transfer_p, dev_handle, endpoint,
+                                  buffer, length, callback, user_data, timeout):
+        r"""This function is extremely dangerous, so we must deal with it."""
+        transfer = _libusb_transfer_p.contents
+        transfer.dev_handle = dev_handle
+        transfer.endpoint = endpoint
+        transfer.type = _LIBUSB_TRANSFER_TYPE_BULK
+        transfer.timeout = timeout
+        transfer.buffer = cast(buffer, c_void_p)
+        transfer.length = length
+        transfer.user_data = user_data
+        transfer.callback = callback
+    lib.libusb_fill_bulk_transfer = libusb_fill_bulk_transfer
+
     # void libusb_fill_iso_transfer(
     #               struct libusb_transfer* transfer,
     #               libusb_device_handle*  dev_handle,
