@@ -28,6 +28,7 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+import asyncio
 from ctypes import *
 import usb.util
 import sys
@@ -699,6 +700,107 @@ class _DeviceHandle(object):
         self.devid = dev.devid
         _check(_lib.libusb_open(self.devid, byref(self.handle)))
 
+
+class _AsyncTransfer():
+    """ Generic API for asynchronous USB transfers"""
+    def __init__(self, dev_handle, ep, buf, iso_packet_count, timeout):
+        self._transfer = _lib.libusb_alloc_transfer(iso_packet_count)
+        self._ctx = None
+        self._buf = buf
+
+    def __del__(self):
+        if not self._fut.done():
+            _lib.libusb_cancel_transfer(self._transfer)
+
+        _lib.libusb_free_transfer(self._transfer)
+
+    def submit(self, ctx = None):
+        """ Submit the USB transfer, but don't wait for completion
+
+        TODO: Is it better to create the Future in __init__ and reuse it?
+        TODO 2: Exception when libusb_submit_transfer() fails()
+        """
+        self._fut = asyncio.Future()
+        self._ctx = ctx
+        _check(_lib.libusb_submit_transfer(self._transfer))
+
+        return self
+
+    def wait_sync(self):
+        """ Wait synchronously on transfer shich has already been submitted.
+
+        TODO: Is this function needed? If the purpose is to make an async API,
+        then what is the purpose of providing a synchronous function?
+        """
+        asyncio.run(self._usb_event_loop())
+        return self.fut.result()
+
+    async def _usb_event_loop(self):
+        """ Helper function to process USB events and complete futures
+
+        TODO: This processes all events in the current libusb context, self._ctx
+        It seems benign, since transfers that complete earlier will have been
+        marked as donem and not run libusb_handle_events(). However, is this a
+        correct way to handle events?
+        TODO 2: Is libusb_handle_events() really non-blocking?
+        """
+        while not self._fut.done():
+            _check(_lib.libusb_handle_events(self._ctx))
+            await asyncio.sleep(0.0001)
+
+    async def result(self):
+        """ Asynchronous result of USB transfer. Should be 'await'ed
+
+        TODO: Creating a separate task seems shady. This may not be correct
+        usage of asyncio, although it seems to run.
+        TODO 2: Should we 'await' here, or just return an awaitable object>?
+        """
+        asyncio.create_task(self._usb_event_loop())
+        return await self._fut
+
+    def _callback(self, transfer):
+        status = int(transfer.contents.status)
+        if status != LIBUSB_TRANSFER_COMPLETED:
+            result =  usb.USBError(_str_transfer_error[status],
+                                  status, _transfer_errno[status])
+        else:
+            result = self._buf[:transfer.contents.actual_length]
+
+        self._fut.set_result(result)
+
+
+class _AsyncBulkTransfer(_AsyncTransfer):
+    def __init__(self, dev_handle, ep, buf, timeout):
+        super().__init__(dev_handle, ep, buf, 0, timeout)
+
+        address, length = buf.buffer_info()
+        _lib.libusb_fill_bulk_transfer(
+            self._transfer,
+            dev_handle=dev_handle.handle,
+            endpoint=ep,
+            buffer=cast(address, POINTER(c_ubyte)),
+            length=length,
+            callback=_libusb_transfer_cb_fn_p(self._callback),
+            user_data=None,
+            timeout=timeout)
+
+
+class _AsyncInterruptTransfer(_AsyncTransfer):
+    def __init__(self, dev_handle, ep, buf, timeout):
+        super().__init__(dev_handle, ep, buf, 0, timeout)
+
+        address, length = buf.buffer_info()
+        _lib.libusb_fill_interrupt_transfer(
+            self._transfer,
+            dev_handle=dev_handle.handle,
+            endpoint=ep,
+            buffer=cast(address, POINTER(c_ubyte)),
+            length=length,
+            callback=_libusb_transfer_cb_fn_p(self._callback),
+            user_data=None,
+            timeout=timeout)
+
+
 class _IsoTransferHandler(_objfinalizer.AutoFinalizedObject):
     def __init__(self, dev_handle, ep, buff, timeout):
         address, length = buff.buffer_info()
@@ -897,6 +999,26 @@ class _LibUSB(usb.backend.IBackend):
                            intf,
                            buff,
                            timeout)
+
+    @methodtrace(_logger)
+    def submit_bulk_read(self, dev_handle, ep, intf, buf, timeout):
+        handler = _AsyncBulkTransfer(dev_handle, ep, buf, timeout)
+        return handler.submit(self.ctx)
+
+    @methodtrace(_logger)
+    def submit_bulk_write(self, dev_handle, ep, intf, data, timeout):
+        handler = _AsyncBulkTransfer(dev_handle, ep, data, timeout)
+        return handler.submit(self.ctx)
+
+    @methodtrace(_logger)
+    def submit_intr_read(self, dev_handle, ep, intf, buf, timeout):
+        handler = _AsyncInterruptTransfer(dev_handle, ep, buf, timeout)
+        return handler.submit(self.ctx)
+
+    @methodtrace(_logger)
+    def submit_intr_write(self, dev_handle, ep, intf, data, timeout):
+        handler = _AsyncInterruptTransfer(dev_handle, ep, data, timeout)
+        return handler.submit(self.ctx)
 
     @methodtrace(_logger)
     def intr_write(self, dev_handle, ep, intf, data, timeout):
