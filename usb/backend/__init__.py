@@ -283,7 +283,7 @@ class IBackend(_objfinalizer.AutoFinalizedObject):
         _not_implemented(self.intr_write)
 
     def intr_read(self, dev_handle, ep, intf, size, timeout):
-        r"""Perform an interrut read.
+        r"""Perform an interrupt read.
 
         dev_handle is the value returned by the open_device() method.
         The ep parameter is the bEndpointAddress field whose endpoint
