@@ -32,12 +32,13 @@
 
 from setuptools import setup
 
-import usb
-
 
 setup(
     name='pyusb',
-    version=usb.__version__,
+    use_scm_version={
+        "version_scheme": "post-release",
+        "write_to": "usb/_version.py",
+    },
     description='Python USB access module',
     author='Robert Wlodarczyk',
     author_email='robert@simplicityguy.com',

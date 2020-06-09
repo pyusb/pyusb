@@ -48,8 +48,19 @@ import os
 __author__ = 'Wander Lairson Costa'
 
 # Use Semantic Versioning, http://semver.org/
-version_info = (1, 0, 2)
-__version__ = '%d.%d.%d' % version_info
+try:
+    from usb._version import version as __version__
+except ImportError:
+    __version__ = '0.0.0'
+
+def _get_version_info(version):
+    import re
+    m = re.match(r'(\d+)\.(\d+)\.(\d+)[.-]?(\D.*)?', version)
+    return tuple(
+        int(v) if v.isdigit() else v for v in m.groups() if v
+    )
+
+version_info = _get_version_info(__version__)
 
 __all__ = ['legacy', 'control', 'core', 'backend', 'util', 'libloader']
 
