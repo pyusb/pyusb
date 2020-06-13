@@ -39,7 +39,6 @@ from usb._debug import methodtrace
 import usb._interop as _interop
 import logging
 import usb.libloader
-from errno import ENODATA
 
 __author__ = 'Wander Lairson Costa'
 
@@ -622,6 +621,7 @@ class _LibUSB(usb.backend.IBackend):
     def is_kernel_driver_active(self, dev_handle, intf):
         if not hasattr(_lib, 'usb_get_driver_np'):
             raise NotImplementedError(self.is_kernel_driver_active.__name__)
+        from errno import ENODATA
         buf = usb.util.create_buffer(_USBFS_MAXDRIVERNAME + 1)
         name, length = buf.buffer_info()
         length *= buf.itemsize
