@@ -97,7 +97,7 @@ def find_my_device(backend = None):
 
 def run_tests(suite):
     runner = unittest.TextTestRunner()
-    runner.run(suite)
+    return runner.run(suite)
 
 def data_len(data):
     a = _interop.as_array(data)

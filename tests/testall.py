@@ -32,6 +32,7 @@ import utils
 import unittest
 import glob
 import os.path
+import sys
 
 if __name__ == '__main__':
     suite = unittest.TestSuite()
@@ -41,4 +42,6 @@ if __name__ == '__main__':
         if hasattr(m, 'get_suite'):
             suite.addTest(m.get_suite())
 
-    utils.run_tests(suite)
+    ret = utils.run_tests(suite)
+    if not ret.wasSuccessful():
+        sys.exit(1)
