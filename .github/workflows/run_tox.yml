@@ -15,12 +15,15 @@ jobs:
     steps:
     - uses: actions/checkout@v1
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v1
+      uses: actions/setup-python@v2
       with:
         python-version: ${{ matrix.python-version }}
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install tox tox-gh-actions
+        pip install setuptools>=30.3.0 tox
+    - id: pyver2toxenv
+      run: |
+        python -c "import sys; print('::set-output name=toxenv::py' + sys.argv[1].replace('.', ''))" ${{ matrix.python-version }}
     - name: Test with tox
-      run: tox
+      run: tox -e ${{ steps.pyver2toxenv.outputs.toxenv }}
