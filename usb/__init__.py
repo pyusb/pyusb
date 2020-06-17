@@ -55,7 +55,7 @@ except ImportError:
 
 def _get_extended_version_info(version):
     import re
-    m = re.match(r'(\d+)\.(\d+)\.(\d+)[.-]?(.*|\b)', version)
+    m = re.match(r'(\d+)\.(\d+)\.(\d+)[.-]?(.*)', version)
     major, minor, patch, suffix = m.groups()
     return int(major), int(minor), int(patch), suffix
 
