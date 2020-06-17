@@ -53,14 +53,14 @@ try:
 except ImportError:
     __version__ = '0.0.0'
 
-def _get_version_info(version):
+def _get_extended_version_info(version):
     import re
-    m = re.match(r'(\d+)\.(\d+)\.(\d+)[.-]?(\D.*)?', version)
-    return tuple(
-        int(v) if v.isdigit() else v for v in m.groups() if v
-    )
+    m = re.match(r'(\d+)\.(\d+)\.(\d+)[.-]?(.*|\b)', version)
+    major, minor, patch, suffix = m.groups()
+    return int(major), int(minor), int(patch), suffix
 
-version_info = _get_version_info(__version__)
+extended_version_info = _get_extended_version_info(__version__)
+version_info = extended_version_info[:3]
 
 __all__ = ['legacy', 'control', 'core', 'backend', 'util', 'libloader']
 
