@@ -31,7 +31,12 @@
 
 
 from setuptools import setup
+from distutils.version import LooseVersion
+from setuptools import __version__ as setuptools_version
 
+setuptools_scm = 'setuptools_scm'
+if LooseVersion(setuptools_version).version[0] < 12:
+    setuptools_scm += '<2.0'
 
 setup(
     name='pyusb',
@@ -39,6 +44,7 @@ setup(
         "version_scheme": "post-release",
         "write_to": "usb/_version.py",
     },
+    setup_requires=setuptools_scm,
     description='Python USB access module',
     author='Robert Wlodarczyk',
     author_email='robert@simplicityguy.com',
