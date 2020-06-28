@@ -5,3 +5,4 @@ MANIFEST
 dist
 .tox
 *.egg-info
+usb/_version.py
