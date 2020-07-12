@@ -29,7 +29,7 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-
+import sys
 from setuptools import setup
 from distutils.version import LooseVersion
 from setuptools import __version__ as setuptools_version
@@ -38,12 +38,37 @@ setuptools_scm = 'setuptools_scm'
 if LooseVersion(setuptools_version).version[0] < 12:
     setuptools_scm += '<2.0'
 
+
+def pyusb_scm_version():
+    """append '-editable' to version for editable installs"""
+    from setuptools_scm.version import get_local_node_and_date
+
+    def editable_local_scheme(version):
+        local_scheme = get_local_node_and_date(version)
+        # distutils scans sys.argv for matching command classes
+        # (see `distutils.dist.Distribution._parse_command_opts`)
+        if "develop" in sys.argv[1:]:
+            return local_scheme + "-editable"
+        return local_scheme
+
+    return {
+        "version_scheme": "post-release",
+        "local_scheme": editable_local_scheme,
+        "write_to": "usb/_version.py",
+    }
+
+
+# workaround:
+#  sdist installs with callables were broken between
+#  "setuptools_scm >=1.8, <=1.10.1" and of course ubuntu 16.04 ships
+#  with setuptools_scm==1.10.1 ...
+#  since we're not using "root" we can just noop
+pyusb_scm_version.pop = lambda *_: None
+
+
 setup(
     name='pyusb',
-    use_scm_version={
-        "version_scheme": "post-release",
-        "write_to": "usb/_version.py",
-    },
+    use_scm_version=pyusb_scm_version,
     setup_requires=setuptools_scm,
     description='Python USB access module',
     author='Robert Wlodarczyk',
