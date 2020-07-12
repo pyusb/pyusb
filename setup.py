@@ -58,11 +58,9 @@ def pyusb_scm_version():
     }
 
 
-# workaround:
-#  sdist installs with callables were broken between
-#  "setuptools_scm >=1.8, <=1.10.1" and of course ubuntu 16.04 ships
-#  with setuptools_scm==1.10.1 ...
-#  since we're not using "root" we can just noop
+# workaround: sdist installs with callables were broken between "setuptools_scm
+# >=1.8, <=1.10.1" and Ubuntu 16.04 ships with 1.10.1; since we're not using
+# "root" we can just noop (see pypa/setuptools_scm@ff948dcd99)
 pyusb_scm_version.pop = lambda *_: None
 
 
