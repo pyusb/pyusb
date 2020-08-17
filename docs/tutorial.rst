@@ -548,8 +548,8 @@ device already claimed the interface, it does nothing.  In a similar way,
 ``release_interface`` will release the specified interface if it is claimed.
 If the interface is not claimed, it does nothing. You can use manual interface
 claim to solve the `configuration selection problem
-<http://libusb.sourceforge.net/api-1.0/caveats.html>`__ described in the
-libusb_ documentation.
+<http://libusb.sourceforge.net/api-1.0/libusb_caveats.html#configsel>`__
+described in the libusb_ documentation.
 
 If you want to free all resources allocated by the device object (including
 interfaces claimed), you can use the ``dispose_resources`` function. It
