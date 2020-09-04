@@ -179,8 +179,8 @@ What happened? Well, it is time for a little explanation... ``find`` has a
 parameter called ``find_all`` that defaults to False. When it is false [#]_,
 ``find`` will return the first device found that matches the specified criteria
 (more on that soon). If you give it a *true* value, ``find`` will instead
-return a list with all devices matching the criteria.  That's it! Simple, isn't
-it?
+return an iterator of all devices that match the criteria.  That's it! Simple,
+isn't it?
 
 Finished? No! I have not told you the whole history: many devices actually put
 their class information in the Interface Descriptor_ instead of the Device
