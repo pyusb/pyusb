@@ -35,9 +35,9 @@ then
 	exit 1
 fi
 
-git push origin master
-git push --tags origin
+git push
+git push --tags
 
 twine upload -s dist/pyusb-$version.tar.gz dist/pyusb-$version.tar.gz.asc
 
-rm -rf build/ dist/
+rm -rf build/
