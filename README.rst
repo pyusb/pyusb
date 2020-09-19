@@ -25,7 +25,8 @@ builtin backends.
 PyUSB supports libusb 1.0, libusb 0.1 and OpenUSB, but the user does not need
 to worry about that, unless in some corner cases.
 
-If you have any question about PyUSB, you can use the PyUSB mailing list
+If you have any question about PyUSB, consult the FAQ at `docs/faq.rst
+<https://github.com/pyusb/pyusb/blob/master/docs/faq.rst>`_ or  the PyUSB mailing list
 hosted in the SourceForge. In the `PyUSB website <https://pyusb.github.io/pyusb/>`_
 you can find instructions on how to subscribe to the mailing list.
 
