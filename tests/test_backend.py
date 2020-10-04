@@ -40,6 +40,7 @@ import time
 import sys
 
 class BackendTest(unittest.TestCase):
+    __test__ = False
     @methodtrace(utils.logger)
     def __init__(self, backend):
         unittest.TestCase.__init__(self)
