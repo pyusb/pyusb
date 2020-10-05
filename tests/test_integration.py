@@ -52,6 +52,7 @@ def make_data_list(length = 8):
             utils.get_str_data1(length))
 
 class DeviceTest(unittest.TestCase):
+    __test__ = False
     @methodtrace(utils.logger)
     def __init__(self, dev):
         unittest.TestCase.__init__(self)
@@ -268,6 +269,7 @@ class DeviceTest(unittest.TestCase):
         self.dev.clear_halt(0x81)
 
 class ConfigurationTest(unittest.TestCase):
+    __test__ = False
     @methodtrace(utils.logger)
     def __init__(self, dev):
         unittest.TestCase.__init__(self)
@@ -297,6 +299,7 @@ class ConfigurationTest(unittest.TestCase):
         self.cfg.set()
 
 class InterfaceTest(unittest.TestCase):
+    __test__ = False
     @methodtrace(utils.logger)
     def __init__(self, dev):
         unittest.TestCase.__init__(self)
@@ -329,6 +332,7 @@ class InterfaceTest(unittest.TestCase):
         self.intf.set_altsetting()
 
 class EndpointTest(unittest.TestCase):
+    __test__ = False
     @methodtrace(utils.logger)
     def __init__(self, dev):
         unittest.TestCase.__init__(self)

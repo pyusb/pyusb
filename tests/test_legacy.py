@@ -37,6 +37,7 @@ import usb.core
 from usb._debug import methodtrace
 
 class LegacyTest(unittest.TestCase):
+    __test__ = False
     @methodtrace(utils.logger)
     def __init__(self):
         unittest.TestCase.__init__(self)

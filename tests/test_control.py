@@ -41,6 +41,7 @@ from usb._debug import methodtrace
 import sys
 
 class ControlTest(unittest.TestCase):
+    __test__ = False
     @methodtrace(utils.logger)
     def __init__(self, dev):
         unittest.TestCase.__init__(self)
