@@ -957,10 +957,9 @@ class _LibUSB(usb.backend.IBackend):
 def get_backend(find_library=None):
     global _lib, _lib_object
     try:
-        if _lib is None:
+        if _lib_object is None:
             _lib = _load_library(find_library=find_library)
             _setup_prototypes(_lib)
-        if _lib_object is None:
             _lib_object = _LibUSB(_lib)
         return _lib_object
     except usb.libloader.LibraryException:
