@@ -26,10 +26,11 @@ fi
 
 git tag -s -m "Version $version" v$version
 
-python setup.py sdist
+python setup.py sdist bdist_wheel
 gpg --detach-sign -a dist/pyusb-$version.tar.gz
+gpg --detach-sign -a dist/pyusb-$version-py3-none-any.whl
 
-read -p "Sdist ready; do you want to push the tag and upload the sdist (yN)?  " -n 1 -r
+read -p "Sdist and wheel ready; do you want to push the tag and upload the sdist and wheel (yN)?  " -n 1 -r
 if [[ ! $REPLY =~ ^[Yy]$ ]]
 then
 	exit 1
@@ -38,6 +39,6 @@ fi
 git push
 git push --tags
 
-twine upload -s dist/pyusb-$version.tar.gz dist/pyusb-$version.tar.gz.asc
+twine upload -s dist/pyusb-$version.tar.gz{,.asc} dist/pyusb-$version-py3-none-any.whl{,.asc}
 
 rm -rf build/
