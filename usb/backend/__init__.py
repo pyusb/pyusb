@@ -211,7 +211,7 @@ class IBackend(_objfinalizer.AutoFinalizedObject):
 
         This method should only be called when the interface has more than
         one alternate setting. The dev_handle is the value returned by the
-        open_device() method. intf and altsetting are respectivelly the
+        open_device() method. intf and altsetting are respectively the
         bInterfaceNumber and bAlternateSetting fields of the related interface.
         """
         _not_implemented(self.set_interface_altsetting)
