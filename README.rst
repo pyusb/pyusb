@@ -40,4 +40,5 @@ PyUSB is installed through `pip <https://pypi.python.org/pypi/pyusb>`_:
 Remember that you need libusb (1.0 or 0.1) or OpenUSB running on your system.
 For Windows users, libusb 1.0 DLLs are provided in the `releases
 <https://github.com/libusb/libusb/releases>`_ (see 7z archives).  Check
-the libusb website for updates (http://www.libusb.info).
+the libusb website for updates (http://www.libusb.info). For MacOS users, 
+``brew install libusb`` satisfies the requirement for running correctly.
