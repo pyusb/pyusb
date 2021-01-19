@@ -739,6 +739,10 @@ class Device(_objfinalizer.AutoFinalizedObject):
     will be used instead. This property can be set by the user at anytime.
     """
 
+    def __eq__(self, other):
+        return (self.backend, self.bus, self.address) == \
+               (other.backend, other.bus, other.address)
+
     def __repr__(self):
         return "<" + self._str() + ">"
 
