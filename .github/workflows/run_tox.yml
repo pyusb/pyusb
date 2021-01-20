@@ -27,7 +27,7 @@ jobs:
       shell: pwsh
       run: |
         Invoke-WebRequest -Uri https://github.com/libusb/libusb/releases/download/v1.0.24/libusb-1.0.24.7z -OutFile libusb-1.0.24.7z
-        7z e libusb-1.0.24.7z -oC:\Windows\System32 MS64/dll/libusb-1.0.dll
+        7z e libusb-1.0.24.7z -oC:\Windows\System32 VS2019/MS64/dll/libusb-1.0.dll
     - id: pyver2toxenv
       run: |
         python -c "import sys; print('::set-output name=toxenv::py' + sys.argv[1].replace('.', ''))" ${{ matrix.python-version }}
