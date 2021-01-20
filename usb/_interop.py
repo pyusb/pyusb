@@ -96,5 +96,5 @@ def as_array(data=None):
         # When you pass a unicode string or a character sequence,
         # you get a TypeError if the first parameter does not match
         a = array.array('B')
-        a.frombytes(data)
+        a.frombytes(data.encode('utf-8'))
         return a
