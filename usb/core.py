@@ -206,6 +206,8 @@ class _ResourceManager(object):
                 i = util.find_descriptor(cfg, bInterfaceNumber=intf, bAlternateSetting=alt)
             else:
                 i = util.find_descriptor(cfg, bInterfaceNumber=intf)
+            if i is None:
+                raise ValueError('No matching interface (' + str(intf) + ',' + str(alt) + ')')
 
         self.managed_claim_interface(device, i)
 
