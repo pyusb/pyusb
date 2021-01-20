@@ -69,8 +69,8 @@ setup(
     use_scm_version=pyusb_scm_version,
     setup_requires=setuptools_scm,
     description='Python USB access module',
-    author='Robert Wlodarczyk',
-    author_email='robert@simplicityguy.com',
+    author='Jonas Malaco',
+    author_email='me@jonasmalaco.com',
     url='https://pyusb.github.io/pyusb',
     packages=['usb', 'usb.backend'],
     long_description=
