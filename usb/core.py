@@ -740,8 +740,11 @@ class Device(_objfinalizer.AutoFinalizedObject):
     """
 
     def __eq__(self, other):
-        return (self.backend, self.bus, self.address) == \
-               (other.backend, other.bus, other.address)
+        if isinstance(other, self.__class__):
+            return (self.backend, self.bus, self.address) == \
+                   (other.backend, other.bus, other.address)
+        else:
+            return NotImplemented
 
     def __repr__(self):
         return "<" + self._str() + ">"
