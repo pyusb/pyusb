@@ -115,6 +115,7 @@ Python >= 3.6, ctypes and a pre-built USB backend library
         'Topic :: Software Development :: Libraries',
         'Topic :: Software Development :: Libraries :: Python Modules',
         'Topic :: System :: Hardware :: Hardware Drivers'
-    ]
+    ],
+    python_requires='>=3.6.0'
 )
 
