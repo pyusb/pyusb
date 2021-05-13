@@ -619,27 +619,47 @@ class _LibUSB(usb.backend.IBackend):
 
     @methodtrace(_logger)
     def is_kernel_driver_active(self, dev_handle, intf):
+        # libusb0's usb_get_driver_np() is platform specific / not portable.
+        # This function checks what kernel module handles dev_handle/intf.
+        # Various implementations may return system specific values.
+
         if not hasattr(_lib, 'usb_get_driver_np'):
             raise NotImplementedError(self.is_kernel_driver_active.__name__)
-        from errno import ENODATA
         buf = usb.util.create_buffer(_USBFS_MAXDRIVERNAME + 1)
         name, length = buf.buffer_info()
         length *= buf.itemsize
-        # based on the implementation of libusb_kernel_driver_active
+
+        # Linux: based on the implementation of libusb_kernel_driver_active
         # (see libusb/os/linux_usbfs.c @@ op_kernel_driver_active):
         # usb_get_driver_np fails with ENODATA when no kernel driver is bound,
         # and if 'usbfs' is bound that means that a userspace program is
         # controlling the device (e.g. using this very library)
+        # FreeBSD: ENODATA is undefied, returns 0 on success, -1 on error.
+
+        if "linux" in sys.platform:
+            try:
+                from errno import ENODATA
+            except:
+                raise NotImplementedError(self.is_kernel_driver_active.__name__)
+
         try:
             _check(_lib.usb_get_driver_np(
                         dev_handle,
                         intf,
                         cast(name, c_char_p),
                         length))
-            return cast(name, c_char_p).value != b'usbfs'
+            if "linux" in sys.platform:
+                # On Linux 'usbfs' indicates userland application.
+                return cast(name, c_char_p).value != b'usbfs'
+            else:
+                # On other platforms just check any module attached.
+                return buf.index(0) != 0
         except USBError as err:
-            if err.backend_error_code == -ENODATA:
-                return False
+            # On Linux system specific ENODATA means no module attached.
+            # On other systems 0 or error does not imply (in)active module.
+            if "linux" in sys.platform:
+                if err.backend_error_code == -errno.ENODATA:
+                    return False
             raise err
 
     @methodtrace(_logger)
