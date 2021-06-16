@@ -634,7 +634,7 @@ class _LibUSB(usb.backend.IBackend):
                 if err.backend_error_code == -errno.ENODATA:
                     return False
                 raise
-        elif sys.platform.startswith('freebsd'):
+        elif sys.platform.startswith('freebsd') or sys.platform.startswith('dragonfly'):
             # this is similar to the Linux implementation, but the generic
             # driver is called 'ugen' and usb_get_driver_np() simply returns an
             # empty string is no driver is attached (see comments on PR #366)
