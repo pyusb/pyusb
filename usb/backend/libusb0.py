@@ -619,34 +619,42 @@ class _LibUSB(usb.backend.IBackend):
 
     @methodtrace(_logger)
     def is_kernel_driver_active(self, dev_handle, intf):
-        if not hasattr(_lib, 'usb_get_driver_np'):
+        if sys.platform == 'linux':
+            # based on the implementation of libusb_kernel_driver_active()
+            # (see op_kernel_driver_active() in libusb/os/linux_usbfs.c)
+            # and the fact that usb_get_driver_np() is a wrapper for
+            # IOCTL_USBFS_GETDRIVER
+            try:
+                driver_name = self.__get_driver_name(dev_handle, intf)
+                # 'usbfs' is not considered a [foreign] kernel driver because
+                # it is what we use to access the device from userspace
+                return driver_name != b'usbfs'
+            except USBError as err:
+                # ENODATA means that no kernel driver is attached
+                if err.backend_error_code == -errno.ENODATA:
+                    return False
+                raise
+        else:
             raise NotImplementedError(self.is_kernel_driver_active.__name__)
-        from errno import ENODATA
-        buf = usb.util.create_buffer(_USBFS_MAXDRIVERNAME + 1)
-        name, length = buf.buffer_info()
-        length *= buf.itemsize
-        # based on the implementation of libusb_kernel_driver_active
-        # (see libusb/os/linux_usbfs.c @@ op_kernel_driver_active):
-        # usb_get_driver_np fails with ENODATA when no kernel driver is bound,
-        # and if 'usbfs' is bound that means that a userspace program is
-        # controlling the device (e.g. using this very library)
-        try:
-            _check(_lib.usb_get_driver_np(
-                        dev_handle,
-                        intf,
-                        cast(name, c_char_p),
-                        length))
-            return cast(name, c_char_p).value != b'usbfs'
-        except USBError as err:
-            if err.backend_error_code == -ENODATA:
-                return False
-            raise err
 
     @methodtrace(_logger)
     def detach_kernel_driver(self, dev_handle, intf):
         if not hasattr(_lib, 'usb_detach_kernel_driver_np'):
             raise NotImplementedError(self.detach_kernel_driver.__name__)
         _check(_lib.usb_detach_kernel_driver_np(dev_handle, intf))
+
+    def __get_driver_name(self, dev_handle, intf):
+        if not hasattr(_lib, 'usb_get_driver_np'):
+            raise NotImplementedError(self.is_kernel_driver_active.__name__)
+        buf = usb.util.create_buffer(_USBFS_MAXDRIVERNAME + 1)
+        name, length = buf.buffer_info()
+        length *= buf.itemsize
+        _check(_lib.usb_get_driver_np(
+                    dev_handle,
+                    intf,
+                    cast(name, c_char_p),
+                    length))
+        return cast(name, c_char_p).value
 
     def __write(self, fn, dev_handle, ep, intf, data, timeout):
         address, length = data.buffer_info()
