@@ -64,6 +64,8 @@ __all__ = ['get_status',
 import usb.util as util
 import usb.core as core
 
+USBError = core.USBError
+
 def _parse_recipient(recipient, direction):
     if recipient is None:
         r = util.CTRL_RECIPIENT_DEVICE
