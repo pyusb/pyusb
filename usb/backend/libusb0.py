@@ -634,6 +634,14 @@ class _LibUSB(usb.backend.IBackend):
                 if err.backend_error_code == -errno.ENODATA:
                     return False
                 raise
+        elif sys.platform.startswith('freebsd'):
+            # this is similar to the Linux implementation, but the generic
+            # driver is called 'ugen' and usb_get_driver_np() simply returns an
+            # empty string is no driver is attached (see comments on PR #366)
+            driver_name = self.__get_driver_name(dev_handle, intf)
+            # 'ugen' is not considered a [foreign] kernel driver because
+            # it is what we use to access the device from userspace
+            return driver_name != b'ugen'
         else:
             raise NotImplementedError(self.is_kernel_driver_active.__name__)
 
