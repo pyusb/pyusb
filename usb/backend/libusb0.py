@@ -653,7 +653,7 @@ class _LibUSB(usb.backend.IBackend):
 
     def __get_driver_name(self, dev_handle, intf):
         if not hasattr(_lib, 'usb_get_driver_np'):
-            raise NotImplementedError(self.is_kernel_driver_active.__name__)
+            raise NotImplementedError('usb_get_driver_np')
         buf = usb.util.create_buffer(_USBFS_MAXDRIVERNAME + 1)
         name, length = buf.buffer_info()
         length *= buf.itemsize
