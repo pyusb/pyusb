@@ -238,7 +238,7 @@ class LegacyTest(unittest.TestCase):
                     0,
                     struct.calcsize(dev_fmt))
 
-        self.assertEqual(struct.unpack(dev_fmt, ret.tostring()), dev_descr)
+        self.assertEqual(struct.unpack(dev_fmt, ret.tobytes()), dev_descr)
 
     def __write_read(self, write_fn, read_fn, ep):
         for data in (utils.get_array_data1(), utils.get_array_data2()):

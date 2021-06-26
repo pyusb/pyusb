@@ -104,7 +104,7 @@ class ControlTest(unittest.TestCase):
                     self.dev.bDescriptorType,
                     0
                 )
-        self.assertEqual(struct.unpack(dev_fmt, ret.tostring()), dev_descr)
+        self.assertEqual(struct.unpack(dev_fmt, ret.tobytes()), dev_descr)
 
     @methodtrace(utils.logger)
     def test_getset_configuration(self):
