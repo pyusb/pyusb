@@ -634,6 +634,17 @@ class _LibUSB(usb.backend.IBackend):
                 if err.backend_error_code == -errno.ENODATA:
                     return False
                 raise
+        elif sys.platform == 'darwin':
+            # on mac os/darwin we assume all users are running libusb-compat,
+            # which, in turn, uses libusb_kernel_driver_active()
+            try:
+                driver_name = self.__get_driver_name(dev_handle, intf)
+                return True
+            except USBError as err:
+                # ENODATA means that no kernel driver is attached
+                if err.backend_error_code == -errno.ENODATA:
+                    return False
+                raise
         elif sys.platform.startswith('freebsd') or sys.platform.startswith('dragonfly'):
             # this is similar to the Linux implementation, but the generic
             # driver is called 'ugen' and usb_get_driver_np() simply returns an
