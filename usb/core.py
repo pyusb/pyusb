@@ -746,6 +746,9 @@ class Device(_objfinalizer.AutoFinalizedObject):
         else:
             return NotImplemented
 
+    def __hash__(self):
+        return hash((self.backend, self.bus, self.address))
+
     def __repr__(self):
         return "<" + self._str() + ">"
 
