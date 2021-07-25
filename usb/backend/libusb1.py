@@ -65,6 +65,10 @@ __all__ = [
             'LIBUSB_TRANSFER_STALL',
             'LIBUSB_TRANSFER_NO_DEVICE',
             'LIBUSB_TRANSFER_OVERFLOW',
+            'LIBUSB_OPTION_LOG_LEVEL',
+            'LIBUSB_OPTION_USE_USBDK',
+            'LIBUSB_OPTION_NO_DEVICE_DISCOVERY',
+            'LIBUSB_OPTION_WEAK_AUTHORITY',
         ]
 
 _logger = logging.getLogger('usb.backend.libusb1')
@@ -169,6 +173,12 @@ _transfer_errno = {
     LIBUSB_TRANSFER_OVERFLOW:errno.__dict__.get('EOVERFLOW', None)
 }
 
+# libusb_set_options options
+LIBUSB_OPTION_LOG_LEVEL = 0
+LIBUSB_OPTION_USE_USBDK = 1
+LIBUSB_OPTION_NO_DEVICE_DISCOVERY = 2
+LIBUSB_OPTION_WEAK_AUTHORITY = 3
+
 def _strerror(errcode):
     try:
         return _lib.libusb_strerror(errcode).decode('utf8')
@@ -272,6 +282,7 @@ def _get_iso_packet_list(transfer):
 
 _lib = None
 _lib_object = None
+_lib_usbdk_object = None
 
 def _load_library(find_library=None):
     # Windows backend uses stdcall calling convention
@@ -297,8 +308,11 @@ def _setup_prototypes(lib):
     # int libusb_init (libusb_context **context)
     lib.libusb_init.argtypes = [POINTER(c_void_p)]
 
-    # void libusb_exit (struct libusb_context *ctx)
+    # void libusb_exit (libusb_context *ctx)
     lib.libusb_exit.argtypes = [c_void_p]
+
+    # int libusb_set_option (libusb_context *ctx, enum libusb_option option, ...);
+    lib.libusb_set_option.argtypes = [c_void_p, c_int] # FIXME handle va list
 
     # ssize_t libusb_get_device_list (libusb_context *ctx,
     #                                 libusb_device ***list)
@@ -721,7 +735,6 @@ class _LibUSB(usb.backend.IBackend):
         if self.ctx:
             self.lib.libusb_exit(self.ctx)
 
-
     @methodtrace(_logger)
     def enumerate_devices(self):
         return _DevIterator(self.ctx)
@@ -968,4 +981,21 @@ def get_backend(find_library=None):
         return None
     except Exception:
         _logger.error('Error loading libusb 1.0 backend', exc_info=True)
+        return None
+
+def get_usbdk_backend(find_library=None):
+    global _lib, _lib_usbdk_object
+    try:
+        if _lib_usbdk_object is None:
+            _lib = _load_library(find_library=find_library)
+            _setup_prototypes(_lib)
+            _lib_usbdk_object = _LibUSB(_lib)
+            _check(_lib.libusb_set_option(_lib_usbdk_object.ctx, LIBUSB_OPTION_USE_USBDK))
+        return _lib_usbdk_object
+    except usb.libloader.LibraryException:
+        # exception already logged (if any)
+        _logger.error('Error loading libusb 1.0 USBDK backend', exc_info=False)
+        return None
+    except Exception:
+        _logger.error('Error loading libusb 1.0 USBDK backend', exc_info=True)
         return None
