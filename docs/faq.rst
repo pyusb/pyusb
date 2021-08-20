@@ -31,6 +31,10 @@ To install either libusb_ or libusb-win32_ on Windows, please use zadig_.
 .. _libusb: https://libusb.info
 .. _libusb-win32: https://sourceforge.net/p/libusb-win32
 
+Take note Zadig does not install libusb-1.0.dll so you need to put 
+libusb-1.0.dll in the right place of your python installation so as
+to use libusb 1.0 backend.
+
 How do I enforce a backend?
 ---------------------------
 
