@@ -19,9 +19,9 @@ rewritten at any time.
 Besides unscheduled patch releases, a new minor release is expected once every
 6 months.
 
-In the four weeks before a scheduled release, non-trivial changes, like complex
-new features or large refactorings, stop being merged into the main branch.
-This period is referred to as the _pre-release freeze._
+In the four weeks before a scheduled release, non-trivial changes, like new
+features and APIs or large refactorings, stop being merged into the main
+branch. This period is referred to as the _pre-release freeze._
 
 Occasionally, scheduled releases may be anticipated (if the activity is low and
 the freeze periods can be retroactively respected), downgraded (if it only
