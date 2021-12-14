@@ -1292,7 +1292,7 @@ def find(find_all=False, backend = None, custom_match = None, **args):
         for dev in backend.enumerate_devices():
             d = Device(dev, backend)
             tests = (val == _try_getattr(d, key) for key, val in kwargs.items())
-            if _interop._all(tests) and (custom_match is None or custom_match(d)):
+            if all(tests) and (custom_match is None or custom_match(d)):
                 yield d
 
     if backend is None:

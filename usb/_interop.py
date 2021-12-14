@@ -41,12 +41,6 @@ __all__ = ['_set', '_next', '_update_wrapper']
 # we support Python >= 3.7
 assert sys.hexversion >= 0x030700f0
 
-# all, introduced in Python 2.5
-try:
-    _all = all
-except NameError:
-    _all = lambda iter_ : _reduce( lambda x, y: x and y, iter_, True )
-
 # we only have the builtin set type since 2.5 version
 try:
     _set = set
