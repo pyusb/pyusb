@@ -49,7 +49,6 @@ __author__ = 'Wander Lairson Costa'
 
 import operator
 import array
-from sys import hexversion
 import usb._interop as _interop
 
 # descriptor type
@@ -322,7 +321,4 @@ def get_string(dev, index, langid = None):
                 langid
             )
     blen = buf[0] & 0xfe # should be even, ignore any trailing byte (see #154)
-    if hexversion >= 0x03020000:
-        return buf[2:blen].tobytes().decode('utf-16-le')
-    else:
-        return buf[2:blen].tostring().decode('utf-16-le')
+    return buf[2:blen].tobytes().decode('utf-16-le')
