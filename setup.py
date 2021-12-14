@@ -31,12 +31,6 @@
 
 import sys
 from setuptools import setup
-from distutils.version import LooseVersion
-from setuptools import __version__ as setuptools_version
-
-setuptools_scm = 'setuptools_scm'
-if LooseVersion(setuptools_version).version[0] < 12:
-    setuptools_scm += '<2.0'
 
 
 def pyusb_scm_version():
@@ -45,8 +39,8 @@ def pyusb_scm_version():
 
     def editable_local_scheme(version):
         local_scheme = get_local_node_and_date(version)
-        # distutils scans sys.argv for matching command classes
-        # (see `distutils.dist.Distribution._parse_command_opts`)
+        # setuptools scans sys.argv for matching command classes
+        # (see `setuptools._distutils.dist.Distribution._parse_command_opts`)
         if "develop" in sys.argv[1:]:
             return local_scheme + "-editable"
         return local_scheme
@@ -67,7 +61,7 @@ pyusb_scm_version.pop = lambda *_: None
 setup(
     name='pyusb',
     use_scm_version=pyusb_scm_version,
-    setup_requires=setuptools_scm,
+    setup_requires='setuptools_scm',
     description='Python USB access module',
     author='Jonas Malaco',
     author_email='me@jonasmalaco.com',
