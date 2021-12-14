@@ -1312,7 +1312,7 @@ def find(find_all=False, backend = None, custom_match = None, **args):
         return device_iter(**args)
     else:
         try:
-            return _interop._next(device_iter(**args))
+            return next(device_iter(**args))
         except StopIteration:
             return None
 

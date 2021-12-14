@@ -49,7 +49,6 @@ __author__ = 'Wander Lairson Costa'
 
 import operator
 import array
-import usb._interop as _interop
 
 # descriptor type
 DESC_TYPE_DEVICE = 0x01
@@ -188,7 +187,7 @@ def find_descriptor(desc, find_all=False, custom_match=None, **args):
         return desc_iter(**args)
     else:
         try:
-            return _interop._next(desc_iter(**args))
+            return next(desc_iter(**args))
         except StopIteration:
             return None
 
