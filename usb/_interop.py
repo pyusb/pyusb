@@ -36,17 +36,10 @@
 import sys
 import array
 
-__all__ = ['_set', '_next', '_update_wrapper']
+__all__ = ['_next', '_update_wrapper']
 
 # we support Python >= 3.7
 assert sys.hexversion >= 0x030700f0
-
-# we only have the builtin set type since 2.5 version
-try:
-    _set = set
-except NameError:
-    import sets
-    _set = sets.Set
 
 # On Python >= 2.6, we have the builtin next() function
 # On Python 2.5 and before, we have to call the iterator method next()

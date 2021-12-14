@@ -121,7 +121,7 @@ class _ResourceManager(object):
         self._active_cfg_index = None
         self.dev = dev
         self.handle = None
-        self._claimed_intf = _interop._set()
+        self._claimed_intf = set()
         self._ep_info = {}
         self.lock = threading.RLock()
 
