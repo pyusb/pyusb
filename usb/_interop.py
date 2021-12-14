@@ -41,21 +41,24 @@ __all__ = []
 # we support Python >= 3.7
 assert sys.hexversion >= 0x030700f0
 
-# this is used (as of May 2015) twice in core, once in backend/openusb, and in
-# some unit test code. It would probably be clearer if written in terms of some
-# definite 3.2+ API (bytearrays?) with a fallback provided for 2.4+.
 def as_array(data=None):
+    """Convert loosely specified `data` to a byte array.
+
+    The following types of `data` are supported:
+
+    - the `None` value (returns an new empty array);
+    - an `array('B')` value (no-op, returns it back);
+    - lists or iterables of small enough integers;
+    - strings.
+    """
+
     if data is None:
         return array.array('B')
 
-    if isinstance(data, array.array):
+    if isinstance(data, array.array) and data.typecode == 'B':
         return data
 
-    try:
-        return array.array('B', data)
-    except TypeError:
-        # When you pass a unicode string or a character sequence,
-        # you get a TypeError if the first parameter does not match
-        a = array.array('B')
-        a.frombytes(data.encode('utf-8'))
-        return a
+    if isinstance(data, str):
+        return array.array('B', data.encode('utf-8'))
+
+    return array.array('B', data)

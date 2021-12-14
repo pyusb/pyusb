@@ -51,7 +51,7 @@ class InteropTest(unittest.TestCase):
         self.assertEqual(as_array([10, 20, 30]), array('B', [10, 20, 30]))
 
     @methodtrace(utils.logger)
-    def test_byte_typle_as_array(self):
+    def test_byte_tuple_as_array(self):
         self.assertEqual(as_array((10, 20, 30)), array('B', [10, 20, 30]))
 
     @methodtrace(utils.logger)
