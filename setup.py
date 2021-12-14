@@ -77,7 +77,7 @@ setup(
 """
 PyUSB offers easy USB devices communication in Python.
 It should work without additional code in any environment with
-Python >= 3.6, ctypes and a pre-built USB backend library
+Python >= 3.7, ctypes and a pre-built USB backend library
 (currently: libusb 1.x, libusb 0.1.x or OpenUSB).
 """,
     classifiers=[
@@ -100,10 +100,10 @@ Python >= 3.6, ctypes and a pre-built USB backend library
         'Operating System :: POSIX :: BSD :: OpenBSD',
         'Operating System :: POSIX :: Linux',
         'Operating System :: POSIX :: SunOS/Solaris',
-        'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.10',
         # source(CPython,Jython,IronPython,PyPy): "The Long Term" section of
         # http://ojs.pythonpapers.org/index.php/tpp/article/viewFile/23/23
         'Programming Language :: Python :: Implementation :: CPython',
@@ -116,6 +116,6 @@ Python >= 3.6, ctypes and a pre-built USB backend library
         'Topic :: Software Development :: Libraries :: Python Modules',
         'Topic :: System :: Hardware :: Hardware Drivers'
     ],
-    python_requires='>=3.6.0'
+    python_requires='>=3.7.0'
 )
 

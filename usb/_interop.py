@@ -38,8 +38,8 @@ import array
 
 __all__ = ['_reduce', '_set', '_next', '_update_wrapper']
 
-# we support Python >= 2.4
-assert sys.hexversion >= 0x020400f0
+# we support Python >= 3.7
+assert sys.hexversion >= 0x030700f0
 
 # On Python 3, reduce became a functools module function
 try:

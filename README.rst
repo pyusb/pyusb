@@ -19,7 +19,7 @@ You can also find a tutorial at `docs/tutorial.rst
 <https://github.com/pyusb/pyusb/blob/master/docs/tutorial.rst>`_.
 
 PyUSB is being developed and tested on Linux and Windows, but it should work
-fine on any platform running Python >= 3.6, ctypes and at least one of the
+fine on any platform running Python >= 3.7, ctypes and at least one of the
 builtin backends.
 
 PyUSB supports libusb 1.0, libusb 0.1 and OpenUSB, but the user does not need
