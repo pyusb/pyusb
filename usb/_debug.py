@@ -32,8 +32,8 @@ __author__ = 'Wander Lairson Costa'
 
 __all__ = ['methodtrace', 'functiontrace']
 
+import functools
 import logging
-import usb._interop as _interop
 
 _enable_tracing = False
 
@@ -60,7 +60,7 @@ def methodtrace(logger):
                 fn = type(args[0]).__name__ + '.' + f.__name__
                 _trace_function_call(logger, fn, *args[1:], **named_args)
             return f(*args, **named_args)
-        _interop._update_wrapper(do_trace, f)
+        functools.update_wrapper(do_trace, f)
         return do_trace
     return decorator_logging
 
@@ -74,6 +74,6 @@ def functiontrace(logger):
             if logging.DEBUG >= logger.getEffectiveLevel():
                 _trace_function_call(logger, f.__name__, *args, **named_args)
             return f(*args, **named_args)
-        _interop._update_wrapper(do_trace, f)
+        functools.update_wrapper(do_trace, f)
         return do_trace
     return decorator_logging

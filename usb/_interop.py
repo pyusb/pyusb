@@ -36,21 +36,10 @@
 import sys
 import array
 
-__all__ = ['_update_wrapper']
+__all__ = []
 
 # we support Python >= 3.7
 assert sys.hexversion >= 0x030700f0
-
-# functools appeared in 2.5
-try:
-    import functools
-    _update_wrapper = functools.update_wrapper
-except (ImportError, AttributeError):
-    def _update_wrapper(wrapper, wrapped):
-        wrapper.__name__ = wrapped.__name__
-        wrapper.__module__ = wrapped.__module__
-        wrapper.__doc__ = wrapped.__doc__
-        wrapper.__dict__ = wrapped.__dict__
 
 # this is used (as of May 2015) twice in core, once in backend/openusb, and in
 # some unit test code. It would probably be clearer if written in terms of some
