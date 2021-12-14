@@ -36,17 +36,10 @@
 import sys
 import array
 
-__all__ = ['_reduce', '_set', '_next', '_update_wrapper']
+__all__ = ['_set', '_next', '_update_wrapper']
 
 # we support Python >= 3.7
 assert sys.hexversion >= 0x030700f0
-
-# On Python 3, reduce became a functools module function
-try:
-    import functools
-    _reduce = functools.reduce
-except (ImportError, AttributeError):
-    _reduce = reduce
 
 # all, introduced in Python 2.5
 try:
