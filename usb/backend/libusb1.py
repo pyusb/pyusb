@@ -609,6 +609,8 @@ def _check(ret):
 class _Device(_objfinalizer.AutoFinalizedObject):
     def __init__(self, devid):
         self.devid = _lib.libusb_ref_device(devid)
+
+    @methodtrace(_logger)
     def _finalize_object(self):
         _lib.libusb_unref_device(self.devid)
 
@@ -629,7 +631,6 @@ class _ConfigDescriptor(_objfinalizer.AutoFinalizedObject):
         _lib.libusb_free_config_descriptor(self.desc)
     def __getattr__(self, name):
         return getattr(self.desc.contents, name)
-
 
 # iterator for libusb devices
 class _DevIterator(_objfinalizer.AutoFinalizedObject):
@@ -720,7 +721,6 @@ class _LibUSB(usb.backend.IBackend):
     def _finalize_object(self):
         if self.ctx:
             self.lib.libusb_exit(self.ctx)
-
 
     @methodtrace(_logger)
     def enumerate_devices(self):
