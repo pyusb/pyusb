@@ -67,6 +67,8 @@ setup(
     author_email='me@jonasmalaco.com',
     url='https://pyusb.github.io/pyusb',
     project_urls={
+        'docs/Tutorial': 'https://github.com/pyusb/pyusb/blob/master/docs/tutorial.rst',
+        'docs/FAQ': 'https://github.com/pyusb/pyusb/blob/master/docs/faq.rst',
         'Source': 'https://github.com/pyusb/pyusb',
     },
     packages=['usb', 'usb.backend'],
