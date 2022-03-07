@@ -33,6 +33,7 @@
 import ctypes
 import ctypes.util
 import logging
+import os
 import sys
 
 __all__ = [
@@ -66,7 +67,7 @@ class LibraryMissingSymbolsException(LibraryException):
     pass
 
 
-def locate_library (candidates, find_library=ctypes.util.find_library):
+def locate_library (candidates, find_library=None):
     """Tries to locate a library listed in candidates using the given
     find_library() function (or ctypes.util.find_library).
     Returns the first library found, which can be the library's name
@@ -93,10 +94,13 @@ def locate_library (candidates, find_library=ctypes.util.find_library):
         # Workaround for CPython 3.3 issue#16283 / pyusb #14
         if use_dll_workaround:
             candidate += '.dll'
+            libpath = lambda p: os.path.abspath(p)
+        else:
+            libpath = lambda p: p
 
         libname = find_library(candidate)
         if libname:
-            return libname
+            return libpath(libname)
     # -- end for
     return None
 
