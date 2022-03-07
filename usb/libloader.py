@@ -94,13 +94,18 @@ def locate_library (candidates, find_library=ctypes.util.find_library):
         # Workaround for CPython 3.3 issue#16283 / pyusb #14
         if use_dll_workaround:
             candidate += '.dll'
-            libpath = lambda p: os.path.abspath(p)
-        else:
-            libpath = lambda p: p
 
         libname = find_library(candidate)
         if libname:
-            return libpath(libname)
+            return libname
+
+        # If the library isn't found in the system path
+        # looks for it in the working directory
+        if use_dll_workaround:
+            candidate = os.path.abspath(candidate)
+            libname = find_library(candidate)
+            if libname:
+                return libname
     # -- end for
     return None
 
