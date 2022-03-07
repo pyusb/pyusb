@@ -67,7 +67,7 @@ class LibraryMissingSymbolsException(LibraryException):
     pass
 
 
-def locate_library (candidates, find_library=None):
+def locate_library (candidates, find_library=ctypes.util.find_library):
     """Tries to locate a library listed in candidates using the given
     find_library() function (or ctypes.util.find_library).
     Returns the first library found, which can be the library's name
