@@ -122,6 +122,7 @@ class _ResourceManager(object):
         self.dev = dev
         self.handle = None
         self._claimed_intf = set()
+        self._intf_setting = {}
         self._ep_info = {}
         self.lock = threading.RLock()
 
@@ -163,6 +164,7 @@ class _ResourceManager(object):
         # which tracks the Configuration, which tracks the Device)
         self._active_cfg_index = cfg.index
 
+        self._intf_setting.clear()
         self._ep_info.clear()
 
     @synchronized
@@ -216,6 +218,7 @@ class _ResourceManager(object):
 
         self.backend.set_interface_altsetting(self.handle, i.bInterfaceNumber, alt)
 
+        self._intf_setting[i.bInterfaceNumber] = alt
         self._ep_info.clear()
 
     @synchronized
@@ -275,6 +278,7 @@ class _ResourceManager(object):
         self.release_all_interfaces(device)
         if close_handle:
             self.managed_close()
+        self._intf_setting.clear()
         self._ep_info.clear()
         self._active_cfg_index = None
 
