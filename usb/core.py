@@ -241,6 +241,8 @@ class _ResourceManager(object):
             return self._ep_info[endpoint_address]
         except KeyError:
             for intf in self.get_active_configuration(device):
+                if intf.bAlternateSetting != self._intf_setting.get(intf.bInterfaceNumber, 0):
+                    continue
                 ep = util.find_descriptor(intf, bEndpointAddress=endpoint_address)
                 if ep is not None:
                     self._ep_info[endpoint_address] = (intf, ep)
