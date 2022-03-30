@@ -216,6 +216,8 @@ class _ResourceManager(object):
 
         self.backend.set_interface_altsetting(self.handle, i.bInterfaceNumber, alt)
 
+        self._ep_info.clear()
+
     @synchronized
     def setup_request(self, device, endpoint):
         # we need the endpoint address, but the "endpoint" parameter
