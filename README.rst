@@ -5,40 +5,106 @@ PyUSB 1.0 - Easy USB access from Python
 Introduction
 ============
 
-The PyUSB module provides for Python easy access to the host
-machine's Universal Serial Bus (USB) system.
+PyUSB provides for easy access to the host machine's Universal Serial Bus (USB)
+system from Python.
 
-Until 0.4 version, PyUSB used to be a thin wrapper over libusb.
-With the 1.0 version, things changed considerably: now PyUSB is an
-API rich, backend neutral Python USB module easy to use.
+Until 0.4 version, PyUSB used to be a thin wrapper over libusb. With the 1.0
+version, things changed considerably: now PyUSB is an API rich, backend neutral
+Python USB module easy to use.
 
-As with most Python modules, PyUSB's documentation is based on Python
-doc strings and can therefore be manipulated by tools such as pydoc.
+Documentation
+=============
 
-You can also find a tutorial at `docs/tutorial.rst
-<https://github.com/pyusb/pyusb/blob/master/docs/tutorial.rst>`_.
+The best way to get started with PyUSB is to read the following documents:
 
-PyUSB is being developed and tested on Linux and Windows, but it should work
-fine on any platform running Python >= 3.7, ctypes and at least one of the
-builtin backends.
+* `Tutorial`_
+* `FAQ`_
 
-PyUSB supports libusb 1.0, libusb 0.1 and OpenUSB, but the user does not need
-to worry about that, unless in some corner cases.
 
-If you have any question about PyUSB, consult the FAQ at `docs/faq.rst
-<https://github.com/pyusb/pyusb/blob/master/docs/faq.rst>`_ or  the PyUSB mailing list
-hosted in the SourceForge. In the `PyUSB website <https://pyusb.github.io/pyusb/>`_
-you can find instructions on how to subscribe to the mailing list.
+For more detailed information, PyUSB's API documentation, as with most Python
+modules, is based on Python doc strings and can be manipulated by tools such as
+pydoc::
+
+    $ pydoc usb
+
+The `libusb 1.0 documentation`_ is also a recommended read, especially when
+using that backend (more on this bellow).
+
+Requirements and platform support
+=================================
+
+PyUSB is primarily developed and tested on Linux and Windows, but it should
+also work fine on any platform running Python >= 3.7, ctypes and at least one
+of the built-in backends.
+
+PyUSB supports `libusb 1.0`_, libusb 0.1 and OpenUSB.  Of those, libusb 1.0 is
+currently recommended for most use cases.
+
+*On Linux and BSD,* these will generally be available on the distribution's
+official repositories.
+
+*On macOS,* libusb 1.0 can easily be installed through Homebrew::
+
+    $ brew install libusb
+
+*On Windows,* `pyocd/libusb-package`_ is a convenient [1]_ [2]_ way to provide the
+necessary libusb 1.0 DLL, as well as a suitable PyUSB backend and a easy to use
+wrapper over PyUSB's ``find()`` API::
+
+    # with pure PyUSB
+    for dev in usb.core.find(find_all=True):
+        print(dev)
+
+    # with pyocd/libusb-package
+    for dev in libusb_package.find(find_all=True):
+        print(dev)
+
+
+Alternatively, the libusb 1.0 DLL can be manually copied from an official
+release archive into the ``C:\Windows\System32`` system folder, or packaged
+together with the complete application.
 
 Installing
 ==========
 
-PyUSB is installed through `pip <https://pypi.python.org/pypi/pyusb>`_:
+PyUSB is generally installed through pip::
 
+    # the latest official release
     pip install pyusb
 
-Remember that you need libusb (1.0 or 0.1) or OpenUSB running on your system.
-For Windows users, libusb 1.0 DLLs are provided in the `releases
-<https://github.com/libusb/libusb/releases>`_ (see 7z archives).  Check
-the libusb website for updates (http://www.libusb.info). For MacOS users, 
-``brew install libusb`` satisfies the requirement for running correctly.
+    # install a specific version (e.g. 1.2.1)
+    pip install pyusb==1.2.1
+
+    # the latest snapshop from the official git repository
+    pip install pyusb git+https://github.com/pyusb/pyusb#egg=pyusb
+
+Most Linux distributions also package PyUSB in their official repositories.
+
+Getting help
+============
+
+If you have a question about PyUSB:
+
+* consult the `FAQ`_;
+* post a question in the `Q&A section`_;
+* write to the `PyUSB mailing list`_.
+
+To report a bug or propose a new feature, use our `issue tracker`_.  But please
+search the database before opening a new issue.
+
+.. [1] Unline PyUSB, pyocd/libusb-package uses the more restrictive Apache 2.0
+   license.
+
+.. [2] While pyocd/libusb-package supports platforms other than Windows,
+   there are advantages to sticking to a system-provided libusb, if it is
+   available and the platform has a robust package manager (e.g. Linux, BSD,
+   macOS with Homebrew).
+
+.. _FAQ: https://github.com/pyusb/pyusb/blob/master/docs/faq.rst
+.. _PyUSB mailing list: https://sourceforge.net/projects/pyusb/lists/pyusb-users
+.. _Q&A section: https://github.com/pyusb/pyusb/discussions/categories/q-a
+.. _Tutorial: https://github.com/pyusb/pyusb/blob/master/docs/tutorial.rst
+.. _issue tracker: https://github.com/pyusb/pyusb/issues
+.. _libusb 1.0 documentation: https://libusb.info/
+.. _libusb 1.0: https://github.com/libusb/libusb
+.. _pyocd/libusb-package: https://github.com/pyocd/libusb-package/
