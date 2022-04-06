@@ -1,6 +1,6 @@
-=======================================
-PyUSB 1.0 - Easy USB access from Python
-=======================================
+===================================
+PyUSB – Easy USB access from Python
+===================================
 
 Introduction
 ============
@@ -8,9 +8,9 @@ Introduction
 PyUSB provides for easy access to the host machine's Universal Serial Bus (USB)
 system from Python.
 
-Until 0.4 version, PyUSB used to be a thin wrapper over libusb. With the 1.0
-version, things changed considerably: now PyUSB is an API rich, backend neutral
-Python USB module easy to use.
+Until 0.4 version, PyUSB used to be a thin wrapper over libusb. Starting with
+the 1.0 version, things changed considerably: now PyUSB is an API rich, backend
+neutral Python USB module easy to use.
 
 Documentation
 =============
