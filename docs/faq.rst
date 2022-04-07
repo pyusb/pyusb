@@ -63,8 +63,6 @@ How can I pass the libusb library path to the backend?
 
 Check the *Specify libraries by hand* section in the tutorial_.
 
-.. _tutorial: https://github.com/pyusb/pyusb/blob/master/docs/tutorial.rst
-
 How to practically deal with permission issues on Linux?
 ----------------------------------------------------------------
 
@@ -93,15 +91,21 @@ specific USB devices by certain users::
 How (not) to call set_configuration() on a device already configured with the selected configuration?
 -----------------------------------------------------------------------------------------------------
 
-Typically ``set_configuration()`` is called during device initialization. The `libusb documentation`_ on ``libusb_set_configuration()`` states:
+Typically ``set_configuration()`` is called during device initialization. The
+`libusb documentation`_ on ``libusb_set_configuration()`` states:
 
-.. _libusb documentation: http://libusb.sourceforge.net/api-1.0/group__libusb__dev.html#ga785ddea63a2b9bcb879a614ca4867bed
-
-    If you call this function on a device already configured with the selected configuration, then this function will act as a lightweight device reset: it will issue a SET_CONFIGURATION request using the current configuration, causing most USB-related device state to be reset (altsetting reset to zero, endpoint halts cleared, toggles reset).
+    If you call this function on a device already configured with the selected
+    configuration, then this function will act as a lightweight device reset:
+    it will issue a SET_CONFIGURATION request using the current configuration,
+    causing most USB-related device state to be reset (altsetting reset to
+    zero, endpoint halts cleared, toggles reset).
 
 Calling ``write()`` subsequently will therefore result in a timeout error.
 
-One solution to this behaviour is to consider the currently active configuration, as described in the `configuration selection and handling`_. "If the configuration we want is already active, then we don't have to select any configuration"::
+One solution to this behaviour is to consider the currently active
+configuration, as described in the `configuration selection and handling`_. "If
+the configuration we want is already active, then we don't have to select any
+configuration"::
 
     try:
         cfg = dev.get_active_configuration()
@@ -113,9 +117,6 @@ One solution to this behaviour is to consider the currently active configuration
 Footnotes
 ---------
 
-.. _udev: https://www.man7.org/linux/man-pages/man7/udev.7.html
-.. _configuration selection and handling: http://libusb.sourceforge.net/api-1.0/libusb_caveats.html#configsel
-
 .. [1] Unline PyUSB, pyocd/libusb-package uses the more restrictive Apache 2.0
    license.
 
@@ -123,3 +124,8 @@ Footnotes
    there are advantages to sticking to a system-provided libusb, if it is
    available and the platform has a robust package manager (e.g. Linux, BSD,
    macOS with Homebrew).
+
+.. _configuration selection and handling: http://libusb.sourceforge.net/api-1.0/libusb_caveats.html#configsel
+.. _libusb documentation: http://libusb.sourceforge.net/api-1.0/group__libusb__dev.html#ga785ddea63a2b9bcb879a614ca4867bed
+.. _tutorial: https://github.com/pyusb/pyusb/blob/master/docs/tutorial.rst
+.. _udev: https://www.man7.org/linux/man-pages/man7/udev.7.html
