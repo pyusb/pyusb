@@ -65,6 +65,31 @@ Check the *Specify libraries by hand* section in the tutorial_.
 
 .. _tutorial: https://github.com/pyusb/pyusb/blob/master/docs/tutorial.rst
 
+How to practically deal with permission issues on Linux?
+----------------------------------------------------------------
+
+Linux and BSD are typically set up in a way in which root permissions are
+needed for low level/generic access to USB devices.
+
+Using sudo or similar tools is one way to temporarily give a program access to
+USB devices, but there are several reasons why that may not be ideal in all
+situations.
+
+A better way on Linux is to use udev_ rules to allow unprivileged access to
+specific USB devices by certain users::
+
+    # these examples assume a hypothetical device with 1111:aaaa vendor:product IDs
+
+    # allow r/w access by all local/physical sessions (seats)
+    # https://github.com/systemd/systemd/issues/4288
+    SUBSYSTEMS=="usb", ATTRS{idVendor}=="1111", ATTRS{idProduct}=="aaaa", TAG+="uaccess"
+
+    # allow r/w access by users of the plugdev group
+    SUBSYSTEMS=="usb", ATTRS{idVendor}=="1111", ATTRS{idProduct}=="aaaa", GROUP="plugdev", MODE="0660"
+
+    # allow r/w access by all users
+    SUBSYSTEMS=="usb", ATTRS{idVendor}=="1111", ATTRS{idProduct}=="aaaa", MODE="0660"
+
 How (not) to call set_configuration() on a device already configured with the selected configuration?
 -----------------------------------------------------------------------------------------------------
 
@@ -88,6 +113,7 @@ One solution to this behaviour is to consider the currently active configuration
 Footnotes
 ---------
 
+.. _udev: https://www.man7.org/linux/man-pages/man7/udev.7.html
 .. _configuration selection and handling: http://libusb.sourceforge.net/api-1.0/libusb_caveats.html#configsel
 
 .. [1] Unline PyUSB, pyocd/libusb-package uses the more restrictive Apache 2.0
