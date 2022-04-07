@@ -3,7 +3,7 @@ PyUSB – Easy USB access for Python
 ==================================
 
 Introduction
-============
+------------
 
 PyUSB provides for easy access to the host machine's Universal Serial Bus (USB)
 system for Python.
@@ -13,7 +13,7 @@ the 1.0 version, things changed considerably: now PyUSB is an API rich, backend
 neutral Python USB module easy to use.
 
 Documentation
-=============
+-------------
 
 The best way to get started with PyUSB is to read the following documents:
 
@@ -31,7 +31,7 @@ The `libusb 1.0 documentation`_ is also a recommended read, especially when
 using that backend (more on this bellow).
 
 Requirements and platform support
-=================================
+---------------------------------
 
 PyUSB is primarily developed and tested on Linux and Windows, but it should
 also work fine on any platform running Python >= 3.7, ctypes and at least one
@@ -65,7 +65,7 @@ release archive into the ``C:\Windows\System32`` system folder, or packaged
 together with the complete application.
 
 Installing
-==========
+----------
 
 PyUSB is generally installed through pip::
 
@@ -81,7 +81,7 @@ PyUSB is generally installed through pip::
 Most Linux distributions also package PyUSB in their official repositories.
 
 Getting help
-============
+------------
 
 If you have a question about PyUSB:
 
