@@ -85,6 +85,9 @@ One solution to this behaviour is to consider the currently active configuration
     if cfg is None or cfg.bConfigurationValue != cfg_desired:
         dev.set_configuration(cfg_desired)
 
+Footnotes
+---------
+
 .. _configuration selection and handling: http://libusb.sourceforge.net/api-1.0/libusb_caveats.html#configsel
 
 .. [1] Unline PyUSB, pyocd/libusb-package uses the more restrictive Apache 2.0

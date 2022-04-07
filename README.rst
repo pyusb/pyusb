@@ -92,6 +92,9 @@ If you have a question about PyUSB:
 To report a bug or propose a new feature, use our `issue tracker`_.  But please
 search the database before opening a new issue.
 
+Footnotes
+---------
+
 .. [1] Unline PyUSB, pyocd/libusb-package uses the more restrictive Apache 2.0
    license.
 
