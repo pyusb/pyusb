@@ -25,15 +25,28 @@ providing the debug output.
 How do I install libusb on Windows?
 -----------------------------------
 
-To install either libusb_ or libusb-win32_ on Windows, please use zadig_.
+On Windows, `pyocd/libusb-package`_ is a convenient [1]_ [2]_ way to provide the
+necessary libusb 1.0 DLL, as well as a suitable PyUSB backend and a easy to use
+wrapper over PyUSB's ``find()`` API::
 
-.. _zadig: http://zadig.akeo.ie/
-.. _libusb: https://libusb.info
-.. _libusb-win32: https://sourceforge.net/p/libusb-win32
+    # with pure PyUSB
+    for dev in usb.core.find(find_all=True):
+        print(dev)
 
-Take note Zadig does not install libusb-1.0.dll so you need to put 
-libusb-1.0.dll in the right place of your python installation so as
-to use libusb 1.0 backend.
+    # with pyocd/libusb-package
+    for dev in libusb_package.find(find_all=True):
+        print(dev)
+
+
+Alternatively, the libusb 1.0 DLL can be manually copied from an official
+release archive into the ``C:\Windows\System32`` system folder, or packaged
+together with the complete application.
+
+Do I need special kernel drivers?
+---------------------------------
+
+Occasionally, on Windows: check out the documentation of the backend in use
+(either libusb 1.0 or libusb 0.1/libusb-win32).
 
 How do I enforce a backend?
 ---------------------------
@@ -73,3 +86,11 @@ One solution to this behaviour is to consider the currently active configuration
         dev.set_configuration(cfg_desired)
 
 .. _configuration selection and handling: http://libusb.sourceforge.net/api-1.0/libusb_caveats.html#configsel
+
+.. [1] Unline PyUSB, pyocd/libusb-package uses the more restrictive Apache 2.0
+   license.
+
+.. [2] While pyocd/libusb-package supports platforms other than Windows,
+   there are advantages to sticking to a system-provided libusb, if it is
+   available and the platform has a robust package manager (e.g. Linux, BSD,
+   macOS with Homebrew).
