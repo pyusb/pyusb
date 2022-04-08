@@ -518,7 +518,8 @@ class _Context(_objfinalizer.AutoFinalizedObject):
         self.handle = _openusb_handle()
         _check(_lib.openusb_init(0, byref(self.handle)))
     def _finalize_object(self):
-        _lib.openusb_fini(self.handle)
+        if hasattr(self, 'handle'):
+            _lib.openusb_fini(self.handle)
 
 class _BusIterator(_objfinalizer.AutoFinalizedObject):
     def __init__(self):
@@ -532,7 +533,8 @@ class _BusIterator(_objfinalizer.AutoFinalizedObject):
         for i in range(self.num_busids):
             yield self.buslist[i]
     def _finalize_object(self):
-        _lib.openusb_free_busid_list(self.buslist)
+        if hasattr(self, 'buslist'):
+            _lib.openusb_free_busid_list(self.buslist)
 
 class _DevIterator(_objfinalizer.AutoFinalizedObject):
     def __init__(self, busid):
@@ -547,7 +549,8 @@ class _DevIterator(_objfinalizer.AutoFinalizedObject):
         for i in range(self.num_devids):
             yield self.devlist[i]
     def _finalize_object(self):
-        _lib.openusb_free_devid_list(self.devlist)
+        if hasattr(self, 'devlist'):
+            _lib.openusb_free_devid_list(self.devlist)
 
 class _OpenUSB(usb.backend.IBackend):
     @methodtrace(_logger)

@@ -612,7 +612,8 @@ class _Device(_objfinalizer.AutoFinalizedObject):
 
     @methodtrace(_logger)
     def _finalize_object(self):
-        _lib.libusb_unref_device(self.devid)
+        if hasattr(self, 'devid'):
+            _lib.libusb_unref_device(self.devid)
 
 # wrap a descriptor and keep a reference to another object
 # Thanks to Thomas Reitmayr.
@@ -628,7 +629,8 @@ class _ConfigDescriptor(_objfinalizer.AutoFinalizedObject):
     def __init__(self, desc):
         self.desc = desc
     def _finalize_object(self):
-        _lib.libusb_free_config_descriptor(self.desc)
+        if hasattr(self, 'desc'):
+            _lib.libusb_free_config_descriptor(self.desc)
     def __getattr__(self, name):
         return getattr(self.desc.contents, name)
 
@@ -644,7 +646,8 @@ class _DevIterator(_objfinalizer.AutoFinalizedObject):
         for i in range(self.num_devs):
             yield _Device(self.dev_list[i])
     def _finalize_object(self):
-        _lib.libusb_free_device_list(self.dev_list, 1)
+        if hasattr(self, 'dev_list'):
+            _lib.libusb_free_device_list(self.dev_list, 1)
 
 class _DeviceHandle(object):
     def __init__(self, dev):
@@ -674,7 +677,8 @@ class _IsoTransferHandler(_objfinalizer.AutoFinalizedObject):
         self.__set_packets_length(length, packet_length)
 
     def _finalize_object(self):
-        _lib.libusb_free_transfer(self.transfer)
+        if hasattr(self, 'transfer'):
+            _lib.libusb_free_transfer(self.transfer)
 
     def submit(self, ctx = None):
         self.__callback_done = 0
@@ -719,7 +723,7 @@ class _LibUSB(usb.backend.IBackend):
 
     @methodtrace(_logger)
     def _finalize_object(self):
-        if self.ctx:
+        if hasattr(self, 'ctx') and self.ctx:
             self.lib.libusb_exit(self.ctx)
 
     @methodtrace(_logger)

@@ -1152,7 +1152,8 @@ class Device(_objfinalizer.AutoFinalizedObject):
         return Configuration(self, index)
 
     def _finalize_object(self):
-        self._ctx.dispose(self)
+        if hasattr(self, '_ctx'):
+            self._ctx.dispose(self)
 
     def __get_timeout(self, timeout):
         if timeout is not None:

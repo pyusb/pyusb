@@ -140,8 +140,9 @@ class DeviceHandle(_objfinalizer.AutoFinalizedObject):
         self.__claimed_interface = None
 
     def _finalize_object(self):
-        util.dispose_resources(self.dev)
-        self.dev = None
+        if hasattr(self, 'self.dev') and self.dev:
+            util.dispose_resources(self.dev)
+            self.dev = None
 
     def bulkWrite(self, endpoint, buffer, timeout = 100):
         r"""Perform a bulk write request to the endpoint specified.
