@@ -6,7 +6,7 @@ Introduction
 ------------
 
 PyUSB provides for easy access to the host machine's Universal Serial Bus (USB)
-system for Python.
+system for Python 3.
 
 Until 0.4 version, PyUSB used to be a thin wrapper over libusb. Starting with
 the 1.0 version, things changed considerably: now PyUSB is an API rich, backend
@@ -25,7 +25,7 @@ For more detailed information, PyUSB's API documentation, as with most Python
 modules, is based on Python doc strings and can be manipulated by tools such as
 pydoc::
 
-    $ pydoc usb
+    $ python3 -m pydoc usb
 
 The `libusb 1.0 documentation`_ is also a recommended read, especially when
 using that backend (more on this bellow).
@@ -70,13 +70,13 @@ Installing
 PyUSB is generally installed through pip::
 
     # the latest official release
-    pip install pyusb
+    python3 -m pip install pyusb
 
     # install a specific version (e.g. 1.2.1)
-    pip install pyusb==1.2.1
+    python3 -m pip install pyusb==1.2.1
 
     # the latest snapshop from the official git repository
-    pip install pyusb git+https://github.com/pyusb/pyusb#egg=pyusb
+    python3 -m pip install pyusb git+https://github.com/pyusb/pyusb#egg=pyusb
 
 Most Linux distributions also package PyUSB in their official repositories.
 
