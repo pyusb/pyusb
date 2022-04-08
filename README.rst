@@ -23,9 +23,9 @@ The best way to get started with PyUSB is to read the following documents:
 
 For more detailed information, PyUSB's API documentation, as with most Python
 modules, is based on Python doc strings and can be manipulated by tools such as
-pydoc::
+pydoc [1]_::
 
-    $ python3 -m pydoc usb
+    $ python -m pydoc usb
 
 The `libusb 1.0 documentation`_ is also a recommended read, especially when
 using that backend (more on this bellow).
@@ -47,7 +47,7 @@ official repositories.
 
     $ brew install libusb
 
-*On Windows,* `pyocd/libusb-package`_ is a convenient [1]_ [2]_ way to provide the
+*On Windows,* `pyocd/libusb-package`_ is a convenient [2]_ [3]_ way to provide the
 necessary libusb 1.0 DLL, as well as a suitable PyUSB backend and a easy to use
 wrapper over PyUSB's ``find()`` API::
 
@@ -67,16 +67,16 @@ together with the complete application.
 Installing
 ----------
 
-PyUSB is generally installed through pip::
+PyUSB is generally installed through pip [1]_::
 
     # the latest official release
-    python3 -m pip install pyusb
+    python -m pip install pyusb
 
     # install a specific version (e.g. 1.2.1)
-    python3 -m pip install pyusb==1.2.1
+    python -m pip install pyusb==1.2.1
 
     # the latest snapshop from the official git repository
-    python3 -m pip install pyusb git+https://github.com/pyusb/pyusb#egg=pyusb
+    python -m pip install pyusb git+https://github.com/pyusb/pyusb#egg=pyusb
 
 Most Linux distributions also package PyUSB in their official repositories.
 
@@ -95,10 +95,13 @@ search the database before opening a new issue.
 Footnotes
 ---------
 
-.. [1] Unline PyUSB, pyocd/libusb-package uses the more restrictive Apache 2.0
+.. [1] On systems that still default to Python 2, replace ``python`` with
+   ``python3``.
+
+.. [2] Unlike PyUSB, pyocd/libusb-package uses the more restrictive Apache 2.0
    license.
 
-.. [2] While pyocd/libusb-package supports platforms other than Windows,
+.. [3] While pyocd/libusb-package supports platforms other than Windows,
    there are advantages to sticking to a system-provided libusb, if it is
    available and the platform has a robust package manager (e.g. Linux, BSD,
    macOS with Homebrew).
