@@ -170,10 +170,7 @@ Hey, wait, what if I want to enumerate all printers present? No problem:
 
     # this is not the whole history yet...
     printers = usb.core.find(find_all=True, bDeviceClass=7)
-
-    # Python 2, Python 3, to be or not to be
-    import sys
-    sys.stdout.write('There are ' + len(printers) + ' in the system\n.')
+    print(f'There are {len(printers)} in the system')
 
 What happened? Well, it is time for a little explanation... ``find`` has a
 parameter called ``find_all`` that defaults to False. When it is false [#]_,
