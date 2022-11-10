@@ -127,5 +127,6 @@ Footnotes
 
 .. _configuration selection and handling: http://libusb.sourceforge.net/api-1.0/libusb_caveats.html#configsel
 .. _libusb documentation: http://libusb.sourceforge.net/api-1.0/group__libusb__dev.html#ga785ddea63a2b9bcb879a614ca4867bed
+.. _pyocd/libusb-package: https://github.com/pyocd/libusb-package
 .. _tutorial: https://github.com/pyusb/pyusb/blob/master/docs/tutorial.rst
 .. _udev: https://www.man7.org/linux/man-pages/man7/udev.7.html
