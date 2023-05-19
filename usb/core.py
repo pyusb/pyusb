@@ -669,13 +669,18 @@ class Configuration(object):
         """
         return Interface(self.device, index[0], index[1], self.index)
 
+    def _get_power_multiplier(self):
+        if self.device.speed is not None:
+            power_multiplier = _lu.MAX_POWER_UNITS_USB_SUPERSPEED if self.device.speed == 3 else _lu.MAX_POWER_UNITS_USB2p0
+        else:
+            power_multiplier = _lu.MAX_POWER_UNITS_USB_SUPERSPEED if self.device.bcdUSB >= 0x0300 else _lu.MAX_POWER_UNITS_USB2p0
+
+        return power_multiplier
 
     def _str(self):
-        power_multiplier = _lu.MAX_POWER_UNITS_USB_SUPERSPEED if ((self.device.bcdUSB & 0xff00)>>8) == 3 else _lu.MAX_POWER_UNITS_USB2p0
-
         return "CONFIGURATION %d: %d mA" % (
             self.bConfigurationValue,
-            power_multiplier * self.bMaxPower)
+            self._get_power_multiplier() * self.bMaxPower)
 
     def _get_full_descriptor_str(self):
         headstr = "  " + self._str() + " "
@@ -688,8 +693,6 @@ class Configuration(object):
             remote_wakeup = ", Remote Wakeup"
         else:
             remote_wakeup = ""
-
-        power_multiplier = _lu.MAX_POWER_UNITS_USB_SUPERSPEED if ((self.device.bcdUSB & 0xff00)>>8) == 3 else _lu.MAX_POWER_UNITS_USB2p0
 
         return "%s%s\n" % (headstr, "=" * (60 - len(headstr))) + \
         "   %-21s:%#7x (9 bytes)\n" % (
@@ -712,7 +715,7 @@ class Configuration(object):
             ) + \
         "   %-21s:%#7x (%d mA)" % (
             "bMaxPower", self.bMaxPower,
-            power_multiplier * self.bMaxPower)
+            self._get_power_multiplier() * self.bMaxPower)
 
 class Device(_objfinalizer.AutoFinalizedObject):
     r"""Device object.
