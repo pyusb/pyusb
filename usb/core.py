@@ -671,7 +671,7 @@ class Configuration(object):
 
     def _get_power_multiplier(self):
         if self.device.speed is not None:
-            power_multiplier = _lu.MAX_POWER_UNITS_USB_SUPERSPEED if self.device.speed == 3 else _lu.MAX_POWER_UNITS_USB2p0
+            power_multiplier = _lu.MAX_POWER_UNITS_USB_SUPERSPEED if self.device.speed >= 4 else _lu.MAX_POWER_UNITS_USB2p0
         else:
             power_multiplier = _lu.MAX_POWER_UNITS_USB_SUPERSPEED if self.device.bcdUSB >= 0x0300 else _lu.MAX_POWER_UNITS_USB2p0
 
