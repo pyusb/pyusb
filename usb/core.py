@@ -669,11 +669,18 @@ class Configuration(object):
         """
         return Interface(self.device, index[0], index[1], self.index)
 
+    def _get_power_multiplier(self):
+        if self.device.speed is not None:
+            power_multiplier = _lu.MAX_POWER_UNITS_USB_SUPERSPEED if self.device.speed >= 4 else _lu.MAX_POWER_UNITS_USB2p0
+        else:
+            power_multiplier = _lu.MAX_POWER_UNITS_USB_SUPERSPEED if self.device.bcdUSB >= 0x0300 else _lu.MAX_POWER_UNITS_USB2p0
+
+        return power_multiplier
 
     def _str(self):
         return "CONFIGURATION %d: %d mA" % (
             self.bConfigurationValue,
-            _lu.MAX_POWER_UNITS_USB2p0 * self.bMaxPower)
+            self._get_power_multiplier() * self.bMaxPower)
 
     def _get_full_descriptor_str(self):
         headstr = "  " + self._str() + " "
@@ -708,8 +715,7 @@ class Configuration(object):
             ) + \
         "   %-21s:%#7x (%d mA)" % (
             "bMaxPower", self.bMaxPower,
-            _lu.MAX_POWER_UNITS_USB2p0 * self.bMaxPower)
-            # FIXME : add a check for superspeed vs usb 2.0
+            self._get_power_multiplier() * self.bMaxPower)
 
 class Device(_objfinalizer.AutoFinalizedObject):
     r"""Device object.
