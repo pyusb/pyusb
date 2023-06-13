@@ -28,7 +28,7 @@ pydoc [1]_::
     $ python -m pydoc usb
 
 The `libusb 1.0 documentation`_ is also a recommended read, especially when
-using that backend (more on this bellow).
+using that backend (more on this below).
 
 Requirements and platform support
 ---------------------------------
@@ -37,7 +37,7 @@ PyUSB is primarily developed and tested on Linux and Windows, but it should
 also work fine on any platform running Python >= 3.7, ctypes and at least one
 of the built-in backends.
 
-PyUSB supports `libusb 1.0`_, libusb 0.1 and OpenUSB.  Of those, libusb 1.0 is
+PyUSB supports `libusb 1.0`_, libusb 0.1 and OpenUSB. Of those, libusb 1.0 is
 currently recommended for most use cases.
 
 *On Linux and BSD,* these will generally be available on the distribution's
@@ -47,9 +47,9 @@ official repositories.
 
     $ brew install libusb
 
-*On Windows,* `pyocd/libusb-package`_ is a convenient [2]_ [3]_ way to provide the
-necessary libusb 1.0 DLL, as well as a suitable PyUSB backend and a easy to use
-wrapper over PyUSB's ``find()`` API::
+*On Windows,* `pyocd/libusb-package`_ is a convenient [2]_ [3]_ way to
+provide the necessary libusb 1.0 DLL, as well as a suitable PyUSB backend and
+a easy to use wrapper over PyUSB's ``find()`` API::
 
     # with pure PyUSB
     for dev in usb.core.find(find_all=True):
