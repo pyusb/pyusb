@@ -246,7 +246,7 @@ class IBackend(_objfinalizer.AutoFinalizedObject):
         of the interface containing the endpoint. The data parameter
         is the data to be sent. It must be an instance of the array.array
         class. The timeout parameter specifies a time limit to the operation
-        in miliseconds.
+        in milliseconds.
 
         The method returns the number of bytes written.
         """
@@ -261,7 +261,7 @@ class IBackend(_objfinalizer.AutoFinalizedObject):
         of the interface containing the endpoint. The buff parameter
         is the buffer to receive the data read, the length of the buffer
         tells how many bytes should be read. The timeout parameter
-        specifies a time limit to the operation in miliseconds.
+        specifies a time limit to the operation in milliseconds.
 
         The method returns the number of bytes actually read.
         """
@@ -276,7 +276,7 @@ class IBackend(_objfinalizer.AutoFinalizedObject):
         of the interface containing the endpoint. The data parameter
         is the data to be sent. It must be an instance of the array.array
         class. The timeout parameter specifies a time limit to the operation
-        in miliseconds.
+        in milliseconds.
 
         The method returns the number of bytes written.
         """
@@ -291,7 +291,7 @@ class IBackend(_objfinalizer.AutoFinalizedObject):
         of the interface containing the endpoint. The buff parameter
         is the buffer to receive the data read, the length of the buffer
         tells how many bytes should be read.  The timeout parameter
-        specifies a time limit to the operation in miliseconds.
+        specifies a time limit to the operation in milliseconds.
 
         The method returns the number of bytes actually read.
         """
@@ -306,7 +306,7 @@ class IBackend(_objfinalizer.AutoFinalizedObject):
         of the interface containing the endpoint. The data parameter
         is the data to be sent. It must be an instance of the array.array
         class. The timeout parameter specifies a time limit to the operation
-        in miliseconds.
+        in milliseconds.
 
         The method returns the number of bytes written.
         """
@@ -321,7 +321,7 @@ class IBackend(_objfinalizer.AutoFinalizedObject):
         of the interface containing the endpoint. The buff parameter
         is buffer to receive the data read, the length of the buffer tells
         how many bytes should be read. The timeout parameter specifies
-        a time limit to the operation in miliseconds.
+        a time limit to the operation in milliseconds.
 
         The method returns the number of bytes actually read.
         """
@@ -347,7 +347,7 @@ class IBackend(_objfinalizer.AutoFinalizedObject):
         IN requests it is the buffer to hold the data read. The number
         of bytes requested to transmit or receive is equal to the length
         of the array times the data.itemsize field. The timeout parameter
-        specifies a time limit to the operation in miliseconds.
+        specifies a time limit to the operation in milliseconds.
 
         Return the number of bytes written (for OUT transfers) or the data
         read (for IN transfers), as an array.array object.
