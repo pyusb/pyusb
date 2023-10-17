@@ -451,7 +451,7 @@ requests that act as a loopback pipe. What you write with the
 ``CTRL_LOOPBACK_WRITE`` message, you can read with the ``CTRL_LOOPBACK_READ``
 message.
 
-The first four parameters are the ``bmRequestType``, ``bmRequest``, ``wValue``
+The first four parameters are the ``bmRequestType``, ``bRequest``, ``wValue``
 and ``wIndex`` fields of the standard control transfer structure. The fifth
 parameter is either the data payload for an OUT transfer or the number of bytes
 to read in an IN transfer.  The data payload can be any sequence type that can
