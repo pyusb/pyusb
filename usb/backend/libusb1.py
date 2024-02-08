@@ -73,7 +73,7 @@ _logger = logging.getLogger('usb.backend.libusb1')
 
 # transfer_type codes
 # Control endpoint
-_LIBUSB_TRANSFER_TYPE_CONTROL = 0,
+_LIBUSB_TRANSFER_TYPE_CONTROL = 0
 # Isochronous endpoint
 _LIBUSB_TRANSFER_TYPE_ISOCHRONOUS = 1
 # Bulk endpoint
