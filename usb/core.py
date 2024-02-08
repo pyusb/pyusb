@@ -64,7 +64,7 @@ _sentinel = object()
 
 def _set_attr(input, output, fields):
     for f in fields:
-       setattr(output, f, getattr(input, f))
+        setattr(output, f, getattr(input, f))
 
 def _try_getattr(object, name):
     try:
@@ -115,7 +115,7 @@ def synchronized(f):
             self.lock.release()
     return wrapper
 
-class _ResourceManager(object):
+class _ResourceManager():
     def __init__(self, dev, backend):
         self.backend = backend
         self._active_cfg_index = None
@@ -145,7 +145,7 @@ class _ResourceManager(object):
         elif isinstance(config, Configuration):
             cfg = config
         elif config == 0: # unconfigured state
-            class MockConfiguration(object):
+            class MockConfiguration():
                 def __init__(self):
                     self.index = None
                     self.bConfigurationValue = 0
@@ -316,7 +316,7 @@ class NoBackendError(ValueError):
     r"Exception class when a valid backend is not found."
     pass
 
-class Endpoint(object):
+class Endpoint():
     r"""Represent an endpoint object.
 
     This class contains all fields of the Endpoint Descriptor according to the
@@ -445,7 +445,7 @@ class Endpoint(object):
             _lu.ep_attributes[(self.bmAttributes & 0x3)],
             direction))
 
-class Interface(object):
+class Interface():
     r"""Represent an interface object.
 
     This class contains all fields of the Interface Descriptor
@@ -582,7 +582,7 @@ class Interface(object):
             _try_get_string(self.device, self.iInterface))
 
 
-class Configuration(object):
+class Configuration():
     r"""Represent a configuration object.
 
     This class contains all fields of the Configuration Descriptor according to
