@@ -44,37 +44,37 @@ from usb.core import USBError, USBTimeoutError
 __author__ = 'Wander Lairson Costa'
 
 __all__ = [
-            'get_backend'
-            'OPENUSB_SUCCESS'
-            'OPENUSB_PLATFORM_FAILURE'
-            'OPENUSB_NO_RESOURCES'
-            'OPENUSB_NO_BANDWIDTH'
-            'OPENUSB_NOT_SUPPORTED'
-            'OPENUSB_HC_HARDWARE_ERROR'
-            'OPENUSB_INVALID_PERM'
-            'OPENUSB_BUSY'
-            'OPENUSB_BADARG'
-            'OPENUSB_NOACCESS'
-            'OPENUSB_PARSE_ERROR'
-            'OPENUSB_UNKNOWN_DEVICE'
-            'OPENUSB_INVALID_HANDLE'
-            'OPENUSB_SYS_FUNC_FAILURE'
-            'OPENUSB_NULL_LIST'
-            'OPENUSB_CB_CONTINUE'
-            'OPENUSB_CB_TERMINATE'
-            'OPENUSB_IO_STALL'
-            'OPENUSB_IO_CRC_ERROR'
-            'OPENUSB_IO_DEVICE_HUNG'
-            'OPENUSB_IO_REQ_TOO_BIG'
-            'OPENUSB_IO_BIT_STUFFING'
-            'OPENUSB_IO_UNEXPECTED_PID'
-            'OPENUSB_IO_DATA_OVERRUN'
-            'OPENUSB_IO_DATA_UNDERRUN'
-            'OPENUSB_IO_BUFFER_OVERRUN'
-            'OPENUSB_IO_BUFFER_UNDERRUN'
-            'OPENUSB_IO_PID_CHECK_FAILURE'
-            'OPENUSB_IO_DATA_TOGGLE_MISMATCH'
-            'OPENUSB_IO_TIMEOUT'
+            'get_backend',
+            'OPENUSB_SUCCESS',
+            'OPENUSB_PLATFORM_FAILURE',
+            'OPENUSB_NO_RESOURCES',
+            'OPENUSB_NO_BANDWIDTH',
+            'OPENUSB_NOT_SUPPORTED',
+            'OPENUSB_HC_HARDWARE_ERROR',
+            'OPENUSB_INVALID_PERM',
+            'OPENUSB_BUSY',
+            'OPENUSB_BADARG',
+            'OPENUSB_NOACCESS',
+            'OPENUSB_PARSE_ERROR',
+            'OPENUSB_UNKNOWN_DEVICE',
+            'OPENUSB_INVALID_HANDLE',
+            'OPENUSB_SYS_FUNC_FAILURE',
+            'OPENUSB_NULL_LIST',
+            'OPENUSB_CB_CONTINUE',
+            'OPENUSB_CB_TERMINATE',
+            'OPENUSB_IO_STALL',
+            'OPENUSB_IO_CRC_ERROR',
+            'OPENUSB_IO_DEVICE_HUNG',
+            'OPENUSB_IO_REQ_TOO_BIG',
+            'OPENUSB_IO_BIT_STUFFING',
+            'OPENUSB_IO_UNEXPECTED_PID',
+            'OPENUSB_IO_DATA_OVERRUN',
+            'OPENUSB_IO_DATA_UNDERRUN',
+            'OPENUSB_IO_BUFFER_OVERRUN',
+            'OPENUSB_IO_BUFFER_UNDERRUN',
+            'OPENUSB_IO_PID_CHECK_FAILURE',
+            'OPENUSB_IO_DATA_TOGGLE_MISMATCH',
+            'OPENUSB_IO_TIMEOUT',
             'OPENUSB_IO_CANCELED'
         ]
 
