@@ -38,8 +38,8 @@ import array
 
 __all__ = []
 
-# we support Python >= 3.7
-assert sys.hexversion >= 0x030700f0
+# we support Python >= 3.8
+assert sys.hexversion >= 0x030800f0
 
 def as_array(data=None):
     """Convert loosely specified `data` to a byte array.
