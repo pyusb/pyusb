@@ -34,7 +34,7 @@ Requirements and platform support
 ---------------------------------
 
 PyUSB is primarily developed and tested on Linux and Windows, but it should
-also work fine on any platform running Python >= 3.7, ctypes and at least one
+also work fine on any platform running Python >= 3.8, ctypes and at least one
 of the built-in backends.
 
 PyUSB supports `libusb 1.0`_, libusb 0.1 and OpenUSB. Of those, libusb 1.0 is
