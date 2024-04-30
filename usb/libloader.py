@@ -33,6 +33,8 @@
 import ctypes
 import ctypes.util
 import logging
+import os.path
+import platform
 import sys
 
 __all__ = [
@@ -66,7 +68,7 @@ class LibraryMissingSymbolsException(LibraryException):
     pass
 
 
-def locate_library (candidates, find_library=ctypes.util.find_library):
+def locate_library(candidates, find_library=ctypes.util.find_library):
     """Tries to locate a library listed in candidates using the given
     find_library() function (or ctypes.util.find_library).
     Returns the first library found, which can be the library's name
@@ -89,6 +91,11 @@ def locate_library (candidates, find_library=ctypes.util.find_library):
         sys.platform == 'win32' and find_library is ctypes.util.find_library
     )
 
+    use_apple_silicon_workaround = (
+        sys.platform == 'darwin' and platform.machine() == 'arm64'
+            and find_library is ctypes.util.find_library
+    )
+
     for candidate in candidates:
         # Workaround for CPython 3.3 issue#16283 / pyusb #14
         if use_dll_workaround:
@@ -97,7 +104,15 @@ def locate_library (candidates, find_library=ctypes.util.find_library):
         libname = find_library(candidate)
         if libname:
             return libname
-    # -- end for
+
+        # On Apple Silicon, also check in `/opt/homebrew/lib`: homebrew patches
+        # the Python interpreters it distributes to check that directory, but
+        # other/stock interpreters don't know about it
+        if use_apple_silicon_workaround:
+            libname = "/opt/homebrew/lib/" + candidate + ".dylib"
+            if os.path.isfile(libname):
+                return libname
+
     return None
 
 def load_library(lib, name=None, lib_cls=None):
