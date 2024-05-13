@@ -633,7 +633,7 @@ class Device(_objfinalizer.AutoFinalizedObject):
                       wValue: int = 0,
                       wIndex: int = 0,
                       data_or_wLength: Union[bytes, bytearray, int] = None,
-                      timeout: int = None) -> Tuple[int, bytes, bytearray, None]:
+                      timeout: int = None) -> Union[int, bytes, bytearray, None]:
         r"""Do a control transfer on the endpoint 0.
 
         This method is used to issue a control transfer over the endpoint 0
