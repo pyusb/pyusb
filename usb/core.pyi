@@ -165,7 +165,7 @@ class USBError(IOError):
     backend specific error code is available through the backend_error_code
     member variable.
     """
-
+    backend_error_code: [int, None]
     def __init__(self, strerror: str, error_code: Any = None, errno: Any = None) -> None:
         r"""Initialize the object.
 
