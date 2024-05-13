@@ -42,26 +42,32 @@ show_devices() - a function to show the devices present.
 
 __author__ = 'Wander Lairson Costa'
 
-__all__ = [Device, Configuration, Interface, Endpoint, USBError,
-           USBTimeoutError, NoBackendError, find, show_devices]
+__all__ = ['Device', 'Configuration', 'Interface', 'Endpoint', 'USBError',
+           'USBTimeoutError', 'NoBackendError', 'find', 'show_devices']
 
-from typing import Generator, Any
-
-import usb
 import usb.util as util
+import copy
+import operator
 import usb._interop as _interop
 import usb._objfinalizer as _objfinalizer
 import usb._lookup as _lu
+import logging
 import array
 import threading
+import functools
+from typing import Union, Any, Tuple, Generator, Callable
 
-_DEFAULT_TIMEOUT: int
+from usb.backend import IBackend
 
+_logger = logging.getLogger('usb.core')
+
+_DEFAULT_TIMEOUT: int = 1000
 _sentinel: object
 
 
-def _set_attr(input, output, fields) -> None:
+def _set_attr(input: Any, output: Any, fields: Tuple[str]) -> None:
     ...
+
 
 def _try_getattr(object: object, name: str) -> Any:
     ...
@@ -73,7 +79,7 @@ def _try_get_string(dev: Device, index: int, langid: int = None, default_str_i0:
     """
 
 
-def _try_lookup(table, value, default: str = "") -> str:
+def _try_lookup(table: dict, value: Any, default: str = "") -> str:
     """ try to get a string from the lookup table, return "" instead of key
     error
     """
@@ -87,7 +93,7 @@ class _DescriptorInfo(str):
         ...
 
 
-def synchronized(f: callable) -> callable:
+def synchronized(f: Callable) -> Callable:
     """decorator"""
 
 
@@ -117,19 +123,19 @@ class _ResourceManager:
         ...
 
     @synchronized
-    def managed_claim_interface(self, device, intf) -> None:
+    def managed_claim_interface(self, device: Device, intf: Union[Interface, int]) -> None:
         ...
 
     @synchronized
-    def managed_release_interface(self, device: Device, intf: Interface) -> None:
+    def managed_release_interface(self, device: Device, intf: Union[Interface, int]) -> None:
         ...
 
     @synchronized
-    def managed_set_interface(self, device: Device, intf: Interface, alt: Interface) -> None:
+    def managed_set_interface(self, device: Device, intf: Union[Interface, int], alt: int) -> None:
         ...
 
     @synchronized
-    def setup_request(self, device: Device, endpoint: [Endpoint, int]) -> None:
+    def setup_request(self, device: Device, endpoint: Union[Endpoint, int]) -> None:
         # we need the endpoint address, but the "endpoint" parameter
         # can be either the a Endpoint object or the endpoint address itself
         ...
@@ -140,7 +146,7 @@ class _ResourceManager:
         ...
 
     @synchronized
-    def get_active_configuration(self, device) -> Configuration:
+    def get_active_configuration(self, device: Device) -> Configuration:
         ...
 
     @synchronized
@@ -160,7 +166,7 @@ class USBError(IOError):
     member variable.
     """
 
-    def __init__(self, strerror, error_code=None, errno=None):
+    def __init__(self, strerror: str, error_code: Any = None, errno: Any = None) -> None:
         r"""Initialize the object.
 
         This initializes the USBError object. The strerror and errno are passed
@@ -231,7 +237,7 @@ class Endpoint:
     def __str__(self) -> str:
         ...
 
-    def write(self, data: [int, bytes, bytearray], timeout: int = None) -> int:
+    def write(self, data: Union[int, bytes, bytearray], timeout: int = None) -> int:
         r"""Write data to the endpoint.
 
         The parameter data contains the data to be sent to the endpoint and
@@ -244,7 +250,7 @@ class Endpoint:
         """
         return self.device.write(self, data, timeout)
 
-    def read(self, size_or_buffer: [int, bytearray], timeout=None) -> array.array:
+    def read(self, size_or_buffer: Union[int, bytearray], timeout=None) -> array.array:
         r"""Read data from the endpoint.
 
         The parameter size_or_buffer is either the number of bytes to
@@ -317,7 +323,7 @@ class Interface:
     def __str__(self) -> str:
         """Show all information for the interface."""
 
-    def endpoints(self) -> tuple[Endpoint]:
+    def endpoints(self) -> Tuple[Endpoint]:
         r"""Return a tuple of the interface endpoints."""
 
     def set_altsetting(self) -> None:
@@ -326,7 +332,7 @@ class Interface:
     def __iter__(self) -> Generator[Endpoint, Any, None]:
         r"""Iterate over all endpoints of the interface."""
 
-    def __getitem__(self, index) -> Endpoint:
+    def __getitem__(self, index: int) -> Endpoint:
         r"""Return the Endpoint object in the given position."""
 
     def _str(self) -> str:
@@ -378,7 +384,7 @@ class Configuration:
     def __str__(self) -> str:
         ...
 
-    def interfaces(self) -> tuple[Interface]:
+    def interfaces(self) -> Tuple[Interface]:
         r"""Return a tuple of the configuration interfaces."""
 
     def set(self) -> Any:
@@ -387,7 +393,7 @@ class Configuration:
     def __iter__(self) -> Generator[Interface, Any, None]:
         r"""Iterate over all interfaces of the configuration."""
 
-    def __getitem__(self, index: int) -> Interface:
+    def __getitem__(self, index: Tuple[int, int]) -> Interface:
         r"""Return the Interface object in the given position.
 
         index is a tuple of two values with interface index and
@@ -447,7 +453,7 @@ class Device(_objfinalizer.AutoFinalizedObject):
     _serial_number: int
     _product: int
     _manufacturer: int
-    _langids: tuple[int]
+    _langids: Tuple[int]
 
     bLength: int
     bDescriptorType: int
@@ -466,11 +472,11 @@ class Device(_objfinalizer.AutoFinalizedObject):
     address: int
     bus: int
     port_number: int
-    port_numbers: tuple[int]
+    port_numbers: Tuple[int]
     speed: int
 
     _has_parent: bool
-    _parent: [Device, None]
+    _parent: Union[Device, None]
 
     def __eq__(self, other) -> bool:
         ...
@@ -484,7 +490,7 @@ class Device(_objfinalizer.AutoFinalizedObject):
     def __str__(self) -> str:
         ...
 
-    def configurations(self) -> tuple[Configuration]:
+    def configurations(self) -> Tuple[Configuration]:
         r"""Return a tuple of the device configurations."""
 
     def __init__(self, dev, backend) -> None:
@@ -498,7 +504,7 @@ class Device(_objfinalizer.AutoFinalizedObject):
         """
 
     @property
-    def langids(self) -> tuple | tuple[int, ...]:
+    def langids(self) -> Tuple | Tuple[int, ...]:
         """ Return the USB devices supported language ID codes.
 
         These are 16-bit codes familiar to Windows developers, where for
@@ -527,7 +533,7 @@ class Device(_objfinalizer.AutoFinalizedObject):
         """
 
     @property
-    def parent(self) -> [Device, None]:
+    def parent(self) -> Union[Device, None]:
         """ Return the parent device. """
 
     @property
@@ -539,7 +545,7 @@ class Device(_objfinalizer.AutoFinalizedObject):
         """
 
     @property
-    def backend(self) -> usb.backend.IBackend:
+    def backend(self) -> IBackend:
         """Return the backend being used by the device."""
 
     def set_configuration(self, configuration: Configuration = None) -> Any:
@@ -621,10 +627,13 @@ class Device(_objfinalizer.AutoFinalizedObject):
         of bytes actually read.
         """
 
-    def ctrl_transfer(self, bmRequestType: int, bRequest: int, wValue: int = 0, wIndex: int = 0,
-                      data_or_wLength: [bytes, bytearray, int] = None,
-                      timeout: int = None) -> [int, bytes, bytearray, None]:
-
+    def ctrl_transfer(self,
+                      bmRequestType: int,
+                      bRequest: int,
+                      wValue: int = 0,
+                      wIndex: int = 0,
+                      data_or_wLength: Union[bytes, bytearray, int] = None,
+                      timeout: int = None) -> Tuple[int, bytes, bytearray, None]:
         r"""Do a control transfer on the endpoint 0.
 
         This method is used to issue a control transfer over the endpoint 0
@@ -698,7 +707,9 @@ class Device(_objfinalizer.AutoFinalizedObject):
         ...
 
 
-def find(find_all=False, backend=None, custom_match=None, **args) -> [Generator[Device, Any, None], Device, None]:
+def find(find_all: bool = False,
+         backend: IBackend = None,
+         custom_match: Callable[[Any], bool] = None, **args) -> [Generator[Device, Any, None], Device, None]:
     r"""Find an USB device and return it.
 
     find() is the function used to discover USB devices.  You can pass as
@@ -767,11 +778,11 @@ def find(find_all=False, backend=None, custom_match=None, **args) -> [Generator[
     Backends are explained in the usb.backend module.
     """
 
-    def device_iter(**kwargs) -> [Generator[Device, Any, None], Device, None]:
+    def device_iter(**kwargs) -> Union[Generator[Device, Any, None], Device, None]:
         ...
 
 
-def show_devices(verbose=False, **kwargs) -> _DescriptorInfo:
+def show_devices(verbose: bool = False, **kwargs) -> _DescriptorInfo:
     """Show information about connected devices.
 
     The verbose flag sets to verbose or not.
