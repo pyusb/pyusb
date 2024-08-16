@@ -1262,7 +1262,7 @@ def find(find_all=False, backend = None, custom_match = None, **args):
 
     You can also use a customized match criteria:
 
-    dev = find(custom_match = lambda d: d.idProduct=0x3f4 and d.idvendor=0x2009)
+    dev = find(custom_match = lambda d: d.idProduct==0x3f4 and d.idVendor==0x2009)
 
     A more accurate printer finder using a customized match would be like
     so:
