@@ -39,6 +39,6 @@ fi
 git push
 git push --tags
 
-twine upload -s dist/pyusb-$version.tar.gz{,.asc} dist/pyusb-$version-py3-none-any.whl{,.asc}
+twine upload -s dist/pyusb-$version{.tar.gz,-py3-none-any.whl}
 
 rm -rf build/
