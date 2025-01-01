@@ -72,8 +72,8 @@ PyUSB is generally installed through pip [1]_::
     # the latest official release
     python -m pip install pyusb
 
-    # install a specific version (e.g. 1.2.1)
-    python -m pip install pyusb==1.2.1
+    # install a specific version
+    python -m pip install pyusb==1.3.0
 
     # the latest snapshop from the official git repository
     python -m pip install pyusb git+https://github.com/pyusb/pyusb#egg=pyusb
