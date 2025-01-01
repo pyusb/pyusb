@@ -6,9 +6,8 @@ jobs:
   build:
     runs-on: ${{ matrix.platform }}
     strategy:
-      max-parallel: 10
       matrix:
-        platform: [ubuntu-latest, macos-14, macos-12, windows-latest]
+        platform: [ubuntu-latest, macos-latest, windows-latest]
         python-version: ['3.9', '3.10', '3.11', '3.12', '3.13']
 
     steps:
