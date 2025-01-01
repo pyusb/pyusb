@@ -42,3 +42,5 @@ git push --tags
 twine upload -s dist/pyusb-$version{.tar.gz,-py3-none-any.whl}
 
 rm -rf build/
+
+b3sum dist/pyusb-$version* >dist/pyusb-1.3.0.B3SUMS
