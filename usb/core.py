@@ -55,6 +55,7 @@ import logging
 import array
 import threading
 import functools
+import numbers
 
 _logger = logging.getLogger('usb.core')
 
@@ -1077,9 +1078,9 @@ class Device(_objfinalizer.AutoFinalizedObject):
         object which the data will be read to, and the return value is the
         number of bytes read.
         """
-        try:
+        if isinstance(data_or_wLength, numbers.Integral):
             buff = util.create_buffer(data_or_wLength)
-        except TypeError:
+        else:
             buff = _interop.as_array(data_or_wLength)
 
         self._ctx.managed_open()
