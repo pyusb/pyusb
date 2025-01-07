@@ -41,6 +41,10 @@ class InteropTest(unittest.TestCase):
         self.assertEqual(as_array(None), array('B'))
 
     @methodtrace(utils.logger)
+    def test_length_as_array(self):
+        self.assertEqual(as_array(3 ), array('B', [0, 0, 0]))
+
+    @methodtrace(utils.logger)
     def test_byte_array_as_array(self):
         data = array('B', [10, 20, 30])
         self.assertEqual(as_array(data), data)
