@@ -156,7 +156,8 @@ def create_buffer(length):
     call. This function creates a compatible sequence buffer
     of the given length.
     """
-    return array.array('B', bytes(length))
+    # Return an array with `length` zeros or raise a `TypeError`.
+    return array.array('B', length * b"\x00")
 
 def find_descriptor(desc, find_all=False, custom_match=None, **args):
     r"""Find an inner descriptor.

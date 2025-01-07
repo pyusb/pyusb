@@ -28,12 +28,15 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import utils
+import array
 import unittest
-from usb.util import *
-from devinfo import *
-from usb._debug import methodtrace
+import utils
+
 import usb.backend
+from usb._debug import methodtrace
+from usb.util import *
+
+from devinfo import *
 
 class _ConfigurationDescriptor(object):
     def __init__(self, bConfigurationValue):
@@ -145,6 +148,16 @@ class UtilTest(unittest.TestCase):
         self.assertEqual(build_request_type(CTRL_IN, CTRL_TYPE_RESERVED, CTRL_RECIPIENT_INTERFACE), 0xe1)
         self.assertEqual(build_request_type(CTRL_IN, CTRL_TYPE_RESERVED, CTRL_RECIPIENT_ENDPOINT), 0xe2)
         self.assertEqual(build_request_type(CTRL_IN, CTRL_TYPE_RESERVED, CTRL_RECIPIENT_OTHER), 0xe3)
+
+    @methodtrace(utils.logger)
+    def test_create_buffer_with_int(self):
+        self.assertEqual(create_buffer(3), array.array('B', [0, 0, 0]))
+
+    @methodtrace(utils.logger)
+    def test_create_buffer_with_other_types(self):
+        self.assertRaises(TypeError, lambda: create_buffer(None))
+        self.assertRaises(TypeError, lambda: create_buffer([10, 20, 30]))
+        self.assertRaises(TypeError, lambda: create_buffer(array.array('B', [10, 20, 30])))
 
 def get_suite():
     suite = unittest.TestSuite()
