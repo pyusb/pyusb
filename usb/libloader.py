@@ -84,6 +84,8 @@ def locate_library(candidates, find_library=ctypes.util.find_library):
                       Defaults to ctypes.util.find_library if not given or
                       None.
     """
+    liblist = []
+
     if find_library is None:
         find_library = ctypes.util.find_library
 
@@ -103,7 +105,7 @@ def locate_library(candidates, find_library=ctypes.util.find_library):
 
         libname = find_library(candidate)
         if libname:
-            return libname
+            liblist.append(libname)
 
         # On Apple Silicon, also check in `/opt/homebrew/lib`: homebrew patches
         # the Python interpreters it distributes to check that directory, but
@@ -111,9 +113,9 @@ def locate_library(candidates, find_library=ctypes.util.find_library):
         if use_apple_silicon_workaround:
             libname = "/opt/homebrew/lib/" + candidate + ".dylib"
             if os.path.isfile(libname):
-                return libname
-
-    return None
+                liblist.append(libname)
+        
+    return liblist
 
 def load_library(lib, name=None, lib_cls=None):
     """Loads a library. Catches and logs exceptions.
@@ -179,16 +181,20 @@ def load_locate_library(candidates, cygwin_lib, name,
         else:
             raise NoLibraryCandidatesException(name)
     elif candidates:
-        lib = locate_library(candidates, find_library)
-        if lib:
-            _LOGGER.debug("%r found as %s", (name or candidates), lib)
-            if sys.platform == 'win32':
-                loaded_lib = load_library(lib, name, win_cls)
-            else:
-                loaded_lib = load_library(lib, name, others_cls)
-        else:
-            _LOGGER.error('%r could not be found', (name or candidates))
-            raise LibraryNotFoundException(name)
+        liblist = locate_library(candidates, find_library)
+        for lib in liblist:
+            try:
+                if lib:
+                    _LOGGER.debug("%r found as %s", (name or candidates), lib)
+                    if sys.platform == 'win32':
+                        loaded_lib = load_library(lib, name, win_cls)
+                    else:
+                        loaded_lib = load_library(lib, name, others_cls)
+                else:
+                    _LOGGER.error('%r could not be found', (name or candidates))
+                    raise LibraryNotFoundException(name)
+            except OSError:
+                pass
     else:
         raise NoLibraryCandidatesException(name)
 
