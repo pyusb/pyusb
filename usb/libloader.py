@@ -123,11 +123,9 @@ def locate_library(candidates, find_library=ctypes.util.find_library):
                 "x86_64-linux-gnu",
             ]
 
-            snap_root = os.environ.get("SNAP")
-
             for snap_architecture in snap_architectures:
                 snap_candidate = os.path.join(
-                    snap_root, "usr", "lib", snap_architecture, candidate + ".so.0"
+                    snap_env, "usr", "lib", snap_architecture, candidate + ".so.0"
                 )
                 if os.path.isfile(snap_candidate):
                     return snap_candidate
