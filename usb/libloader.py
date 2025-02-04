@@ -96,6 +96,9 @@ def locate_library(candidates, find_library=ctypes.util.find_library):
             and find_library is ctypes.util.find_library
     )
 
+    snap_env = os.environ.get("SNAP")
+    use_snap_workaround = bool(snap_env) and os.path.isdir(snap_env)
+
     for candidate in candidates:
         # Workaround for CPython 3.3 issue#16283 / pyusb #14
         if use_dll_workaround:
@@ -112,6 +115,22 @@ def locate_library(candidates, find_library=ctypes.util.find_library):
             libname = "/opt/homebrew/lib/" + candidate + ".dylib"
             if os.path.isfile(libname):
                 return libname
+
+        # On Snap, also check in the snap's library directories
+        # This is required for Snaps when using stage-packages for libusb support
+        if use_snap_workaround:
+            snap_architectures = [
+                "x86_64-linux-gnu",
+            ]
+
+            snap_root = os.environ.get("SNAP")
+
+            for snap_architecture in snap_architectures:
+                snap_candidate = os.path.join(
+                    snap_root, "usr", "lib", snap_architecture, candidate + ".so.0"
+                )
+                if os.path.isfile(snap_candidate):
+                    return snap_candidate
 
     return None
 
