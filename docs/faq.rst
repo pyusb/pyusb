@@ -117,7 +117,7 @@ configuration"::
 Footnotes
 ---------
 
-.. [1] Unline PyUSB, pyocd/libusb-package uses the more restrictive Apache 2.0
+.. [1] Unlike PyUSB, pyocd/libusb-package uses the more restrictive Apache 2.0
    license.
 
 .. [2] While pyocd/libusb-package supports platforms other than Windows,
