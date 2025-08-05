@@ -1345,3 +1345,18 @@ def show_devices(verbose=False, **kwargs):
             strings += "%s\n\n" % str(device)
 
     return _DescriptorInfo(strings)
+
+def device_from_fd(fd):
+    import usb.backend.libusb1 as libusb1
+
+    backend = libusb1.get_backend()
+    if not backend:
+        raise NoBackendError('No backend available')
+
+    dev = backend.get_device_from_fd(fd)
+
+    # create device
+    device = Device(dev, backend)
+    device._ctx.handle = dev
+
+    return device
