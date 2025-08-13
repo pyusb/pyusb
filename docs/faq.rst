@@ -10,6 +10,7 @@ Generally, there are four possible causes for this problem:
 2. Your libusb library isn't in the standard shared library paths.
 3. Your libusb version is too old.
 4. Your PyUSB version is too old.
+5. You're using an Alpine-based container (see separate FAQ entry bellow).
 
 To debug what's wrong, run the following script in your environment::
 
@@ -21,6 +22,32 @@ To debug what's wrong, run the following script in your environment::
 This will print debug messages to the console. If you still have problems
 to figure out what's going on, please ask for help in the mailing list,
 providing the debug output.
+
+
+How do I run PyUSB in an Alpine-based container?
+------------------------------------------------
+
+In musl-based containers and as of Python 3.13, ``ctypes.find_library`` depends
+on the GCC linker being available, as well as the development files for the
+desired library.
+
+This means that, in practice and particularly in Alpine-based containers, the
+following is suggested as a basis for your ``Dockerfile`` (or equivalent)::
+
+    FROM python:alpine
+
+    ENV LD_LIBRARY_PATH=/lib:/usr/lib
+
+    WORKDIR /work
+    RUN apk update && \
+        apk add --no-cache gcc libusb-dev
+    RUN python -m pip install pyusb
+
+    CMD python -c "import usb; print(usb.core.find())"
+
+Note that in addition to GCC and ``libusb-dev``, ``LD_LIBRARY_PATH`` is also set
+with the location of the LibUSB files.
+
 
 How do I install libusb on Windows?
 -----------------------------------
@@ -64,7 +91,7 @@ How can I pass the libusb library path to the backend?
 Check the *Specify libraries by hand* section in the tutorial_.
 
 How to practically deal with permission issues on Linux?
-----------------------------------------------------------------
+--------------------------------------------------------
 
 Linux and BSD are typically set up in a way in which root permissions are
 needed for low level/generic access to USB devices.
