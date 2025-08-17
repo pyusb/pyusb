@@ -40,8 +40,7 @@ following is suggested as a basis for your ``Dockerfile`` (or equivalent)::
 
     WORKDIR /work
     RUN apk update && \
-        apk add --no-cache gcc libusb-dev
-    RUN python -m pip install pyusb
+        apk add --no-cache gcc libusb-dev py3-usb
 
     CMD python -c "import usb; print(usb.core.find())"
 
