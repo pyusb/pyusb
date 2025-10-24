@@ -920,11 +920,11 @@ class _LibUSB(usb.backend.IBackend):
                         intf)))
 
     @methodtrace(_logger)
-    def detach_kernel_driver(self, dev_handle, intf):
+    def detach_kernel_driver(self, dev_handle, intf: int):
         _check(self.lib.libusb_detach_kernel_driver(dev_handle.handle, intf))
 
     @methodtrace(_logger)
-    def attach_kernel_driver(self, dev_handle, intf):
+    def attach_kernel_driver(self, dev_handle, intf: int):
         _check(self.lib.libusb_attach_kernel_driver(dev_handle.handle, intf))
 
     def __write(self, fn, dev_handle, ep, intf, data, timeout):

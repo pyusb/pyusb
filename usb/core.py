@@ -1120,7 +1120,7 @@ class Device(_objfinalizer.AutoFinalizedObject):
                 self._ctx.handle,
                 interface)
 
-    def detach_kernel_driver(self, interface):
+    def detach_kernel_driver(self, interface: int):
         r"""Detach a kernel driver.
 
         If successful, you will then be able to perform I/O.
@@ -1133,7 +1133,7 @@ class Device(_objfinalizer.AutoFinalizedObject):
             self._ctx.handle,
             interface)
 
-    def attach_kernel_driver(self, interface):
+    def attach_kernel_driver(self, interface: int):
         r"""Re-attach an interface's kernel driver, which was previously
         detached using detach_kernel_driver().
 
