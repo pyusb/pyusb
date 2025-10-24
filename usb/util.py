@@ -189,7 +189,7 @@ def find_descriptor(desc, find_all=False, custom_match=None, **args):
         except StopIteration:
             return None
 
-def claim_interface(device, interface):
+def claim_interface(device, interface: int):
     r"""Explicitly claim an interface.
 
     PyUSB users normally do not have to worry about interface claiming,
@@ -202,7 +202,7 @@ def claim_interface(device, interface):
     """
     device._ctx.managed_claim_interface(device, interface)
 
-def release_interface(device, interface):
+def release_interface(device, interface: int):
     r"""Explicitly release an interface.
 
     This function is used to release an interface previously claimed,
