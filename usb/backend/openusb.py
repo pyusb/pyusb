@@ -640,11 +640,11 @@ class _OpenUSB(usb.backend.IBackend):
         _check(_lib.openusb_set_altsetting(dev_handle, intf, altsetting))
 
     @methodtrace(_logger)
-    def claim_interface(self, dev_handle, intf):
+    def claim_interface(self, dev_handle, intf: int):
         _check(_lib.openusb_claim_interface(dev_handle, intf, 0))
 
     @methodtrace(_logger)
-    def release_interface(self, dev_handle, intf):
+    def release_interface(self, dev_handle, intf: int):
         _lib.openusb_release_interface(dev_handle, intf)
 
     @methodtrace(_logger)

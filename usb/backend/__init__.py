@@ -216,7 +216,7 @@ class IBackend(_objfinalizer.AutoFinalizedObject):
         """
         _not_implemented(self.set_interface_altsetting)
 
-    def claim_interface(self, dev_handle, intf):
+    def claim_interface(self, dev_handle, intf: int):
         r"""Claim the given interface.
 
         Interface claiming is not related to USB spec itself, but it is
@@ -229,7 +229,7 @@ class IBackend(_objfinalizer.AutoFinalizedObject):
         """
         _not_implemented(self.claim_interface)
 
-    def release_interface(self, dev_handle, intf):
+    def release_interface(self, dev_handle, intf: int):
         r"""Release the claimed interface.
 
         dev_handle and intf are the same parameters of the claim_interface
