@@ -657,7 +657,7 @@ class _LibUSB(usb.backend.IBackend):
             raise NotImplementedError(self.is_kernel_driver_active.__name__)
 
     @methodtrace(_logger)
-    def detach_kernel_driver(self, dev_handle, intf):
+    def detach_kernel_driver(self, dev_handle, intf: int):
         if not hasattr(_lib, 'usb_detach_kernel_driver_np'):
             raise NotImplementedError(self.detach_kernel_driver.__name__)
         _check(_lib.usb_detach_kernel_driver_np(dev_handle, intf))
