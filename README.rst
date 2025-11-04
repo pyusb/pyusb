@@ -2,6 +2,10 @@
 PyUSB – Easy USB access for Python
 ==================================
 
+.. image:: https://img.shields.io/pypi/v/pyusb
+   :alt: PyPI - Version
+   :target: https://pypi.org/project/pyusb/
+
 Introduction
 ------------
 
