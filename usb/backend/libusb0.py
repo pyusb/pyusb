@@ -59,24 +59,25 @@ else:
     _PATH_MAX = os.pathconf('.', 'PC_PATH_MAX')
 
 # libusb-win32 makes all structures packed, while
-# default libusb only does for some structures
-# _PackPolicy defines the structure packing according
-# to the platform.
+# default libusb does not. _PackPolicy defines the
+# structure packing according to the platform.
 class _PackPolicy(object):
     pass
 
 if sys.platform == 'win32' or sys.platform == 'cygwin':
+    # Non-zero _pack_ is only supported for the "ms"
+    # layout; before Python 3.14, the former implied
+    # the latter, but now we must set it explicitly.
+    _PackPolicy._layout_ = "ms"
     _PackPolicy._pack_ = 1
 
 # Data structures
 
-class _usb_descriptor_header(Structure):
-    _pack_ = 1
+class _usb_descriptor_header(Structure, _PackPolicy):
     _fields_ = [('blength', c_uint8),
                 ('bDescriptorType', c_uint8)]
 
 class _usb_string_descriptor(Structure):
-    _pack_ = 1
     _fields_ = [('bLength', c_uint8),
                 ('bDescriptorType', c_uint8),
                 ('wData', c_uint16)]
@@ -125,7 +126,6 @@ class _usb_config_descriptor(Structure, _PackPolicy):
                 ('extralen', c_int)]
 
 class _usb_device_descriptor(Structure, _PackPolicy):
-    _pack_ = 1
     _fields_ = [('bLength', c_uint8),
                 ('bDescriptorType', c_uint8),
                 ('bcdUSB', c_uint16),
