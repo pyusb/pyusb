@@ -325,11 +325,24 @@ def _setup_prototypes(lib):
     # void libusb_unref_device(libusb_device *dev)
     lib.libusb_unref_device.argtypes = [c_void_p]
 
+    # int libusb_wrap_sys_device(libusb_context *ctx,
+    #                            intptr_t sys_dev,
+    #                            libusb_device_handle **dev_handle)
+    lib.libusb_wrap_sys_device.argtypes = [
+            c_void_p,
+            c_int,
+            POINTER(_libusb_device_handle)
+        ]
+
     # int libusb_open(libusb_device *dev, libusb_device_handle **handle)
     lib.libusb_open.argtypes = [c_void_p, POINTER(_libusb_device_handle)]
 
     # void libusb_close(libusb_device_handle *dev_handle)
     lib.libusb_close.argtypes = [_libusb_device_handle]
+
+    # libusb_device * libusb_get_device(libusb_device_handle *devh)
+    lib.libusb_get_device.argtypes = [c_void_p]
+    lib.libusb_get_device.restype = _libusb_device_handle
 
     # int libusb_set_configuration(libusb_device_handle *dev,
     #                              int configuration)
@@ -655,6 +668,16 @@ class _DeviceHandle(object):
         self.devid = dev.devid
         _check(_lib.libusb_open(self.devid, byref(self.handle)))
 
+class _FileDescriptorDeviceHandle(object):
+    def __init__(self, fd, ctx):
+        # get handle from file descriptor
+        self.handle = _libusb_device_handle()
+        _check(_lib.libusb_wrap_sys_device(ctx, fd, byref(self.handle)))
+
+        # get device (id?) from handle
+        self.devid = _lib.libusb_get_device(self.handle)
+
+
 class _IsoTransferHandler(_objfinalizer.AutoFinalizedObject):
     def __init__(self, dev_handle, ep, buff, timeout):
         address, length = buff.buffer_info()
@@ -810,6 +833,10 @@ class _LibUSB(usb.backend.IBackend):
     @methodtrace(_logger)
     def close_device(self, dev_handle):
         self.lib.libusb_close(dev_handle.handle)
+
+    @methodtrace(_logger)
+    def get_device_from_fd(self, fd):
+        return _FileDescriptorDeviceHandle(fd, self.ctx)
 
     @methodtrace(_logger)
     def set_configuration(self, dev_handle, config_value):
