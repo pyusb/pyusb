@@ -1054,6 +1054,50 @@ class Device(_objfinalizer.AutoFinalizedObject):
         else:
             return buff
 
+    def submit_read(self, endpoint, size_or_buffer, timeout = None):
+        backend = self._ctx.backend
+
+        fn_map = {
+                    util.ENDPOINT_TYPE_BULK:backend.submit_bulk_read,
+                    util.ENDPOINT_TYPE_INTR:backend.submit_intr_read,
+                    #util.ENDPOINT_TYPE_ISO:backend.submit_iso_read
+                }
+
+        intf, ep = self._ctx.setup_request(self, endpoint)
+        fn = fn_map[util.endpoint_type(ep.bmAttributes)]
+
+        if isinstance(size_or_buffer, array.array):
+            buff = size_or_buffer
+        else:
+            buff = util.create_buffer(size_or_buffer)
+
+        return fn(
+                self._ctx.handle,
+                ep.bEndpointAddress,
+                intf.bInterfaceNumber,
+                buff,
+                self.__get_timeout(timeout))
+
+    def submit_write(self, endpoint, data, timeout = None):
+        backend = self._ctx.backend
+
+        fn_map = {
+                    util.ENDPOINT_TYPE_BULK:backend.submit_bulk_write,
+                    #util.ENDPOINT_TYPE_INTR:backend.intr_write,
+                    #util.ENDPOINT_TYPE_ISO:backend.iso_write
+                }
+
+        intf, ep = self._ctx.setup_request(self, endpoint)
+        fn = fn_map[util.endpoint_type(ep.bmAttributes)]
+
+        return fn(
+                self._ctx.handle,
+                ep.bEndpointAddress,
+                intf.bInterfaceNumber,
+                _interop.as_array(data),
+                self.__get_timeout(timeout)
+            )
+
     def ctrl_transfer(self, bmRequestType, bRequest, wValue=0, wIndex=0,
             data_or_wLength = None, timeout = None):
         r"""Do a control transfer on the endpoint 0.
