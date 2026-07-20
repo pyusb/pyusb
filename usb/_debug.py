@@ -55,7 +55,7 @@ def methodtrace(logger):
         if not _enable_tracing:
             return f
         def do_trace(*args, **named_args):
-            # this if is just a optimization to avoid unecessary string formatting
+            # this if is just a optimization to avoid unnecessary string formatting
             if logging.DEBUG >= logger.getEffectiveLevel():
                 fn = type(args[0]).__name__ + '.' + f.__name__
                 _trace_function_call(logger, fn, *args[1:], **named_args)
@@ -70,7 +70,7 @@ def functiontrace(logger):
         if not _enable_tracing:
             return f
         def do_trace(*args, **named_args):
-            # this if is just a optimization to avoid unecessary string formatting
+            # this if is just a optimization to avoid unnecessary string formatting
             if logging.DEBUG >= logger.getEffectiveLevel():
                 _trace_function_call(logger, f.__name__, *args, **named_args)
             return f(*args, **named_args)
