@@ -123,7 +123,7 @@ def clear_feature(dev, feature, recipient = None):
     The recipient can be None (on which the status will be queried
     from the device), an Interface or Endpoint descriptors.
     """
-    if feature == ENDPOINT_HALT:
+    if feature == ENDPOINT_HALT and isinstance(recipient, (core.Endpoint, int)):
         dev.clear_halt(recipient)
     else:
         bmRequestType, wIndex = _parse_recipient(recipient, util.CTRL_OUT)
@@ -181,7 +181,7 @@ def get_descriptor(dev, desc_size, desc_type, desc_index, wIndex = 0):
 
     return desc
 
-def set_descriptor(dev, desc, desc_type, desc_index, wIndex = None):
+def set_descriptor(dev, desc, desc_type, desc_index, wIndex = 0):
     r"""Update an existing descriptor or add a new one.
 
     dev is the Device object to which the request will be
