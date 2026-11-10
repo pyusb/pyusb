@@ -380,6 +380,15 @@ def _setup_prototypes(lib):
             c_int
         ]
 
+    # int libusb_set_auto_detach_kernel_driver(libusb_device_handle *dev,
+    #                                          int enable)
+    if hasattr(lib, 'libusb_set_auto_detach_kernel_driver'):
+        lib.libusb_set_auto_detach_kernel_driver.argtypes = [
+                _libusb_device_handle,
+                c_int
+            ]
+        lib.libusb_set_auto_detach_kernel_driver.restype = c_int
+
     # int libusb_get_device_descriptor(
     #                   libusb_device *dev,
     #                   struct libusb_device_descriptor *desc
@@ -926,6 +935,14 @@ class _LibUSB(usb.backend.IBackend):
     @methodtrace(_logger)
     def attach_kernel_driver(self, dev_handle, intf: int):
         _check(self.lib.libusb_attach_kernel_driver(dev_handle.handle, intf))
+
+    @methodtrace(_logger)
+    def set_auto_detach_kernel_driver(self, dev_handle, enable: bool):
+        set_auto_detach = getattr(self.lib, 'libusb_set_auto_detach_kernel_driver', None)
+        if set_auto_detach is None:
+            super().set_auto_detach_kernel_driver(dev_handle, enable)
+            return
+        _check(set_auto_detach(dev_handle.handle, enable))
 
     def __write(self, fn, dev_handle, ep, intf, data, timeout):
         address, length = data.buffer_info()

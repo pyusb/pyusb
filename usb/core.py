@@ -1145,6 +1145,25 @@ class Device(_objfinalizer.AutoFinalizedObject):
             self._ctx.handle,
             interface)
 
+    def set_auto_detach_kernel_driver(self, enable: bool):
+        r"""Enable or disable automatic kernel-driver detachment.
+
+        When enabled, the backend detaches the kernel driver as needed on
+        interface claim and reattaches it on release. The setting applies
+        to the current device handle and defaults to disabled on a new
+        handle.
+
+        Raises NotImplementedError if the backend or platform does not
+        support automatic detachment.
+        """
+        set_auto_detach = getattr(self._ctx.backend, 'set_auto_detach_kernel_driver', None)
+        if set_auto_detach is None:
+            raise NotImplementedError('set_auto_detach_kernel_driver')
+
+        with self._ctx.lock:
+            handle = self._ctx.managed_open()
+            set_auto_detach(handle, enable)
+
     def __iter__(self):
         r"""Iterate over all configurations of the device."""
         for i in range(self.bNumConfigurations):

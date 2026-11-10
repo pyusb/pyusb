@@ -30,7 +30,10 @@
 
 import utils
 import unittest
+from types import SimpleNamespace
+from unittest.mock import Mock, call, sentinel
 import devinfo
+import usb.core
 import usb.util
 import usb.backend.libusb0 as libusb0
 import usb.backend.libusb1 as libusb1
@@ -284,8 +287,67 @@ class BackendTest(unittest.TestCase):
             if utils.is_windows():
                 time.sleep(0.5)
 
+
+class AutoDetachKernelDriverTest(unittest.TestCase):
+    def setUp(self):
+        self.library = Mock()
+        self.library.libusb_init.return_value = 0
+        self.library.libusb_set_auto_detach_kernel_driver.return_value = 0
+        self.backend = libusb1._LibUSB(self.library)
+        descriptor = libusb1._libusb_device_descriptor()
+        descriptor.bus = descriptor.address = descriptor.port_number = None
+        descriptor.port_numbers = descriptor.speed = None
+        self.backend.get_device_descriptor = Mock(return_value=descriptor)
+        self.backend.open_device = Mock(return_value=SimpleNamespace(handle=sentinel.handle))
+        self.backend.close_device = Mock()
+        self.device = usb.core.Device(sentinel.device, self.backend)
+        self.addCleanup(usb.util.dispose_resources, self.device)
+
+    def test_toggle_uses_current_device_handle(self):
+        libusb1._setup_prototypes(self.library)
+        toggle = self.library.libusb_set_auto_detach_kernel_driver
+        self.assertEqual(toggle.argtypes, [libusb1.c_void_p, libusb1.c_int])
+        self.assertIs(toggle.restype, libusb1.c_int)
+
+        self.device.set_auto_detach_kernel_driver(True)
+        self.device.set_auto_detach_kernel_driver(False)
+        self.backend.open_device.assert_called_once_with(sentinel.device)
+        self.assertEqual(toggle.call_args_list, [
+            call(sentinel.handle, True), call(sentinel.handle, False)
+        ])
+
+        usb.util.dispose_resources(self.device)
+        self.backend.open_device.return_value = SimpleNamespace(handle=sentinel.reopened_handle)
+        self.device.set_auto_detach_kernel_driver(True)
+        toggle.assert_called_with(sentinel.reopened_handle, True)
+
+    def test_older_libusb_can_load_without_optional_symbol(self):
+        del self.library.libusb_set_auto_detach_kernel_driver
+        libusb1._setup_prototypes(self.library)
+        with self.assertRaises(NotImplementedError):
+            self.device.set_auto_detach_kernel_driver(True)
+
+    def test_libusb_error_translation(self):
+        toggle = self.library.libusb_set_auto_detach_kernel_driver
+        toggle.return_value = libusb1.LIBUSB_ERROR_NOT_SUPPORTED
+        with self.assertRaises(NotImplementedError):
+            self.device.set_auto_detach_kernel_driver(True)
+
+        toggle.return_value = libusb1.LIBUSB_ERROR_ACCESS
+        with self.assertRaises(usb.core.USBError) as error:
+            self.device.set_auto_detach_kernel_driver(True)
+        self.assertEqual(error.exception.backend_error_code, libusb1.LIBUSB_ERROR_ACCESS)
+
+    def test_legacy_backend_without_method(self):
+        backend = SimpleNamespace(get_device_descriptor=self.backend.get_device_descriptor)
+        device = usb.core.Device(sentinel.device, backend)
+        with self.assertRaises(NotImplementedError):
+            device.set_auto_detach_kernel_driver(True)
+
+
 def get_suite():
     suite = unittest.TestSuite()
+    suite.addTests(unittest.defaultTestLoader.loadTestsFromTestCase(AutoDetachKernelDriverTest))
     for m in (libusb1, libusb0, openusb):
         b = m.get_backend()
         if b is not None and utils.find_my_device(b):
