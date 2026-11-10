@@ -382,3 +382,7 @@ class IBackend(_objfinalizer.AutoFinalizedObject):
         r"""Re-attach an interface's kernel driver, which was previously
         detached using detach_kernel_driver()."""
         _not_implemented(self.attach_kernel_driver)
+
+    def set_auto_detach_kernel_driver(self, dev_handle, enable: bool):
+        r"""Set automatic kernel-driver detachment for this device handle."""
+        _not_implemented(self.set_auto_detach_kernel_driver)
